@@ -1,0 +1,32 @@
+# Neiro-NQ-Quant Configuration File
+
+[collector]
+underlying_symbol = "QQQ"
+futures_symbol = "NQ=F"
+target_dte_mode = "0DTE"      # "0DTE" (hom nay), "NEAR" (1-3 ngay), "WEEKLY"
+near_strikes_count = 25       # So luong Strike quanh ATM de tap trung phan tich vi mo
+request_timeout = 20
+
+[database]
+cloud_storage = "google_drive"
+drive_base_path = "Neiro-NQ/data"
+windows_drive_path = "H:/My Drive/Neiro-NQ/data"
+local_cache_path = "data/cache"
+compression = "snappy"
+duckdb_enabled = true
+
+[engine]
+risk_free_rate = 0.045        # Lai suat phi rui ro (US Treasury 3M ~4.5%)
+air_pocket_threshold = 0.35   # Vung chan khong khi OI < 35% muc trung binh
+sigma_band_factor = 1.0       # Dai bien do ky vong 1-Sigma
+qqq_multiplier = 100.0        # 1 hop dong option QQQ = 100 co phieu
+nq_point_value = 20.0         # 1 diem E-mini NQ = $20 (MNQ = $2)
+
+[dashboard]
+theme = "dark"
+render_engine = "plotly"
+show_air_pockets = true
+auto_ai_prompt = true
+
+[logging]
+level = "INFO"

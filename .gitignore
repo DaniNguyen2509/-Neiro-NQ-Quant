@@ -1,4 +1,4 @@
-﻿# Python
+# Python
 __pycache__/
 *.py[cod]
 *.class
@@ -39,6 +39,7 @@ client_secrets.json
 # Zero-Waste: Runtime Data, Parquet & Caches
 data/
 logs/
+exports/
 *.parquet
 *.sqlite
 *.sqlite3
