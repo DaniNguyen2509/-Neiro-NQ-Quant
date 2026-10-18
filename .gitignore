@@ -1,0 +1,59 @@
+﻿# Python
+__pycache__/
+*.py[cod]
+*.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual Environments
+.venv/
+venv/
+ENV/
+env/
+
+# Environment Variables & Secrets
+.env
+.env.*
+*.env
+credentials.json
+token.json
+service_account.json
+client_secrets.json
+
+# Zero-Waste: Runtime Data, Parquet & Caches
+data/
+logs/
+*.parquet
+*.sqlite
+*.sqlite3
+*.db
+*.csv
+*.tmp
+*.log
+
+# IDE & OS
+.vscode/
+.idea/
+*.swp
+*.swo
+Thumbs.db
+.DS_Store
+
+# Agent Skills Junction
+.agents/skills
