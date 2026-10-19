@@ -15,10 +15,10 @@ Trước đây, hệ thống định lượng Options phụ thuộc vào:
 ## Decision
 1. **Kiến trúc Cloud-Native 100% trên GitHub Actions**:
    - Thiết lập workflow tự động [`.github/workflows/daily_options_sync.yml`](file:///c:/Users/Daniel/Documents/My-Projects/Neiro-NQ-Quant/.github/workflows/daily_options_sync.yml) không phụ thuộc máy tính cá nhân.
-   - Áp dụng **Lưới Cron Thích Ứng 2 Mùa** (`cron: '30 0,7,8,12,13,14,15,16,17 * * 1-5'`), bao quát:
-     * 07:30 VN (00:30 UTC): Chốt Open Interest từ CME Clearing.
-     * 14:30 & 15:30 VN: Mở phiên London mùa hè / mùa đông.
-     * 19:30 - 00:30 VN: Cập nhật mỗi 1 tiếng xuyên suốt phiên Mỹ.
+   - Áp dụng **Lưới Cron Đa Tầng Pre-Session Radar & Dual-Stage 0DTE Thích Ứng 2 Mùa** (14 lần chạy/ngày, `Thứ 2 - Thứ 6`), bao quát:
+     * **07:15 VN (`15 0 * * 1-5`):** Chốt Open Interest từ CME Clearing & OCC cố định cho cả ngày.
+     * **Phiên Âu 2 nấc (`30 5,6,7,8 * * 1-5`):** Radar tiền phiên (12:30/13:30 VN) và In-Session sau mở cửa London 30 phút (14:30/15:30 VN).
+     * **Phiên Mỹ Full-Coverage (`45 11,12,13,14,15,16,17,18,19 * * 1-5`):** Đón đầu tin vĩ mô CPI/NFP (18:45 VN), bao trọn giờ mở cửa NYSE (19:45 - 21:45 VN), London Fix (23:45 VN), và **0DTE Power Hour Radar (02:45 VN)** trước giờ đóng cửa sàn New York.
 2. **Nguồn Dữ liệu Tối ưu (yfinance QQQ -> NQ Mapping)**:
    - Sử dụng Invesco QQQ Trust Options làm proxy chuẩn mực (150+ strikes, đáo hạn 0DTE mỗi ngày, thanh khoản lớn nhất toàn cầu).
    - Tốc độ thực thi < 4 giây, không bị Cloudflare chặn, loại bỏ hoàn toàn Playwright và tiết kiệm 300MB headless browser bloat.

@@ -1,7 +1,7 @@
 # Spec: Neiro-NQ-Quant (Cloud-Native E-mini Nasdaq Quant Terminal)
 
 > **Mục tiêu:** Hệ thống tự động thu thập chuỗi Options, phân tích vi mô dòng tiền Nhà tạo lập (Dealer GEX/DEX/VEX/CHEX theo mô hình Black-76), tính toán Put-Call Parity Synthetic Pivot, phát hiện bẫy thanh khoản vi mô (Air Pockets, Structural Walls), và trực quan hóa Terminal tác chiến tương tác Plotly Dark HUD cho E-mini Nasdaq-100 Futures (`NQ` / `MNQ` / `QQQ` / `NAS100` / `US100`).  
-> **Kiến trúc vận hành:** **100% Cloud-Native Zero-Touch Automation** chạy hoàn toàn trên **GitHub Actions** với Lưới Cron Thích Ứng 2 Mùa (Dual-Season Cron Grid), tự động xuất bản lên **GitHub Pages**, hoàn toàn không phụ thuộc máy tính cá nhân hay phần mềm bên ngoài (Không cần bật máy, Không MT5, Không TradingView).
+> **Kiến trúc vận hành:** **100% Cloud-Native Zero-Touch Automation** chạy hoàn toàn trên **GitHub Actions** với Lưới Cron Đa Tầng Pre-Session Radar & Dual-Stage Thích Ứng 2 Mùa (bao trọn nhịp 0DTE Power Hour), tự động xuất bản lên **GitHub Pages**, hoàn toàn không phụ thuộc máy tính cá nhân hay phần mềm bên ngoài (Không cần bật máy, Không MT5, Không TradingView).
 
 ---
 
@@ -36,10 +36,10 @@
      * *Structural Swing Walls:* Phục kích các thành trì quyền chọn lớn đánh sóng trung hạn.
    - **Đồng bộ Spot MT5 qua Basis Offset:** Hỗ trợ tham số `--basis` ($Spot_{\text{MT5}} = Spot_{\text{Futures}} - \text{Basis}$).
 4. **Tự động hóa Zero-Touch (GitHub Actions & Pages):**
-   - Lưới Cron Thích Ứng 2 Mùa (`cron: '30 0,7,8,12,13,14,15,16,17 * * 1-5'`):
-     * 07:30 VN (00:30 UTC): Chốt số liệu Open Interest chính thức từ CME Clearing.
-     * 14:30 & 15:30 VN: Đón đầu mở phiên London (mùa hè và mùa đông).
-     * 19:30 - 00:30 VN: Cập nhật mỗi 1 tiếng xuyên suốt phiên Mỹ.
+   - **Lưới Cron Đa Tầng Pre-Session Radar & Dual-Stage Thích Ứng 2 Mùa:**
+     * **07:15 VN (`15 0 * * 1-5`):** Chốt Open Interest chính thức từ CME Clearing (cố định Call/Put Wall khung ngày).
+     * **Phiên Âu 2 nấc (`30 5,6,7,8 * * 1-5`):** 12:30 & 13:30 VN (Pre-Europe hè & đông trước Frankfurt/London) + 14:30 & 15:30 VN (In-Session hè & đông sau mở London 30 phút).
+     * **Phiên Mỹ Full-Coverage (`45 11,12,13,14,15,16,17,18,19 * * 1-5`):** 18:45 VN (đón đầu tin vĩ mô CPI/NFP) $\rightarrow$ 19:45, 20:45, 21:45, 22:45, 23:45, 00:45, 01:45 VN (xuyên suốt mở cửa NYSE & London Fix) $\rightarrow$ **02:45 VN (Radar đón đầu 0DTE Power Hour & Market Close)**.
    - Tự động xuất bản Terminal lên **GitHub Pages** (`gh-pages`).
 
 ---
@@ -51,7 +51,7 @@
 - **Lõi toán & Định lượng:** `numpy`, `pandas`, `scipy` (Black-76, Brent solver, Parity).
 - **Trực quan hóa Terminal:** `plotly` (HTML độc lập, responsive, dark ATAS theme).
 - **Cơ sở dữ liệu Đám mây:** `pyarrow`, `duckdb` (Serverless Parquet).
-- **Tự động hóa CI/CD:** GitHub Actions (Dual-Season Cron Grid) + GitHub Pages.
+- **Tự động hóa CI/CD:** GitHub Actions (Lưới Cron Đa Tầng Pre-Session Radar & Dual-Stage) + GitHub Pages.
 - **Kiểm thử tự động:** `pytest`.
 
 ---
@@ -82,7 +82,7 @@ python -m src.main --basis 0.0
 ```
 Neiro-NQ-Quant/
 ├── .github/workflows/
-│   └── daily_options_sync.yml       # Lưới Cron Thích Ứng 2 Mùa & Deploy GitHub Pages
+│   └── daily_options_sync.yml       # Lưới Cron Đa Tầng Pre-Session Radar & Deploy GitHub Pages
 ├── config/
 │   └── settings.toml                # Cấu hình runtime & thông số định lượng
 ├── data/

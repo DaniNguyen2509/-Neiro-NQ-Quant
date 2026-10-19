@@ -6,7 +6,7 @@
 [![Zero-Waste](https://img.shields.io/badge/Zero--Waste-%3C15MB-success.svg)](README.md)
 
 > **Hệ thống Định lượng Vi mô & Terminal Tác chiến E-mini Nasdaq-100 Futures (`NQ` / `MNQ` / `NAS100` / `US100` / `QQQ`)**  
-> **Kiến trúc Cloud-Native 100% (Zero-Touch Automation):** Vận hành hoàn toàn tự động trên **GitHub Actions** theo **Lưới Cron Thích Ứng 2 Mùa**, giải mã ma trận Dealer theo mô hình **Black-76**, trực quan hóa **Plotly Dark Terminal HUD 3 Panels**, tự động xuất bản lên **GitHub Pages**.  
+> **Kiến trúc Cloud-Native 100% (Zero-Touch Automation):** Vận hành hoàn toàn tự động trên **GitHub Actions** theo **Lưới Cron Đa Tầng Pre-Session Radar & Dual-Stage Thích Ứng 2 Mùa**, giải mã ma trận Dealer theo mô hình **Black-76**, trực quan hóa **Plotly Dark Terminal HUD 3 Panels**, tự động xuất bản lên **GitHub Pages**.  
 > ⚠️ **Thuần Python Đám mây:** Không cần bật laptop, **KHÔNG phụ thuộc MT5 hay TradingView**.
 
 ---
@@ -15,10 +15,10 @@
 
 👉 **Bảng điều khiển Tác chiến:** [https://daninguyen2509.github.io/-Neiro-NQ-Quant/](https://daninguyen2509.github.io/-Neiro-NQ-Quant/)
 
-Tự động cập nhật theo Lưới Cron Thích Ứng 2 Mùa (`cron: '30 0,7,8,12,13,14,15,16,17 * * 1-5'`):
-1. **07:30 VN (00:30 UTC):** Chốt Open Interest từ CME Clearing.
-2. **14:30 & 15:30 VN:** Đón đầu mở phiên London (mùa hè / mùa đông).
-3. **19:30 - 00:30 VN:** Cập nhật mỗi 1 tiếng xuyên suốt phiên giao dịch Mỹ.
+Tự động cập nhật theo **Lưới Cron Đa Tầng Pre-Session Radar & Dual-Stage 0DTE** (14 lần/ngày):
+1. **07:15 VN (`15 0 * * 1-5`):** Chốt Open Interest chính thức từ CME Clearing (cố định Call/Put Wall khung ngày).
+2. **Phiên Âu 2 nấc (`30 5,6,7,8 * * 1-5`):** Pre-Europe (12:30 hè / 13:30 đông) & In-Session sau mở cửa London 30p (14:30 hè / 15:30 đông).
+3. **Phiên Mỹ Full-Coverage (`45 11,12,13,14,15,16,17,18,19 * * 1-5`):** Đón đầu tin vĩ mô CPI/NFP (18:45 VN), bao trọn giờ mở cửa NYSE (19:45 - 21:45 VN), London Fix (23:45 VN), và **0DTE Power Hour Radar (02:45 VN)** trước giờ đóng cửa sàn New York.
 
 ---
 
@@ -56,7 +56,7 @@ python -m src.hud.html_dashboard --basis 15.0
 ```
 Neiro-NQ-Quant/
 ├── .github/workflows/
-│   └── daily_options_sync.yml       # Lưới Cron Thích Ứng 2 Mùa & Deploy GitHub Pages
+│   └── daily_options_sync.yml       # Lưới Cron Đa Tầng Pre-Session Radar & Deploy GitHub Pages
 ├── config/
 │   └── settings.toml                # Cấu hình runtime & thông số định lượng
 ├── data/

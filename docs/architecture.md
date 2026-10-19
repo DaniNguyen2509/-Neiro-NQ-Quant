@@ -8,7 +8,7 @@
 
 ## I. TỔNG QUAN KIẾN TRÚC TOÀN CẢNH (END-TO-END PIPELINE)
 
-Hệ thống được thiết kế theo tư duy **Cloud-Native 100% & Zero-Waste**, vận hành hoàn toàn tự động trên **GitHub Actions Runner** theo **Lưới Cron Thích Ứng 2 Mùa**, tự động xuất bản lên **GitHub Pages**, giải phóng hoàn toàn máy tính người dùng:
+Hệ thống được thiết kế theo tư duy **Cloud-Native 100% & Zero-Waste**, vận hành hoàn toàn tự động trên **GitHub Actions Runner** theo **Lưới Cron Đa Tầng Pre-Session Radar & Dual-Stage Thích Ứng 2 Mùa**, tự động xuất bản lên **GitHub Pages**, giải phóng hoàn toàn máy tính người dùng:
 
 ```
 +-----------------------------------------------------------------------------------+
@@ -33,9 +33,9 @@ Hệ thống được thiết kế theo tư duy **Cloud-Native 100% & Zero-Waste
 +-----------------------------------------+   +-------------------------------------+
 |    TẦNG 3: CLOUD STORAGE & CI/CD        |   |   TẦNG 4: LÕI BLACK-76 QUANT ENGINE |
 |                                         |   |                                     |
-|  [GitHub Actions Dual-Season Cron Grid] |   |  - Black-76 Valuation ($e^{-rT}$)   |
-|  '30 0,7,8,12,13,14,15,16,17 * * 1-5'   |   |  - Hybrid Newton-Brent IV Solver    |
-|  Chạy tự động theo CME Clearing & London|   |  - Greeks Bậc 1 & 2: Δ, Γ, ν, V, C  |
+|  [GitHub Actions Pre-Session Radar Grid]|   |  - Black-76 Valuation ($e^{-rT}$)   |
+|  14 runs/ngày (CME, Âu 2 nấc, Mỹ 0DTE)  |   |  - Hybrid Newton-Brent IV Solver    |
+|  Chạy tự động đón đầu mở phiên 30-45p   |   |  - Greeks Bậc 1 & 2: Δ, Γ, ν, V, C  |
 |                                         |   |  - Put-Call Parity Synthetic Pivot  |
 |  [Snapshot & Parquet Storage]           |   |  - Net GEX ($M/1%), Net VEX, CHEX   |
 |  options_prices_NQZ26.csv (< 50KB)      |   |  - Brenner-Subrahmanyam 1-Sigma EM  |
@@ -61,19 +61,43 @@ Hệ thống được thiết kế theo tư duy **Cloud-Native 100% & Zero-Waste
 
 ---
 
-## II. LƯỚI CRON THÍCH ỨNG 2 MÙA & PHÂN TẦNG LƯU TRỮ
+## II. LƯỚI CRON ĐA TẦNG PRE-SESSION RADAR & PHÂN TẦNG LƯU TRỮ
 
-### 1. Lưới Cron Thích Ứng 2 Mùa (Dual-Season Cron Grid)
+### 1. Lưới Cron Đa Tầng Pre-Session Radar & Dual-Stage 0DTE
 
-Biểu thức Cron: `'30 0,7,8,12,13,14,15,16,17 * * 1-5'`
+Áp dụng mô hình **3 Khối Cron chuyên biệt** (`14 lần chạy/ngày, Thứ 2 - Thứ 6`) tối ưu 100% cho cấu trúc E-mini Nasdaq & QQQ Options:
 
-| Giờ UTC | Giờ Việt Nam (UTC+7) | Sự kiện Thị trường & Mục đích Tác chiến |
-|---|---|---|
-| **00:30 UTC** | **07:30 VN** | **Chốt Open Interest CME Clearing:** OCC & CME công bố sổ lệnh OI chính thức cho ngày giao dịch mới. Xác lập Call Wall & Put Wall cơ cấu cố định cho cả ngày. |
-| **07:30 UTC** | **14:30 VN** | **Mở phiên London Mùa Hè:** Dòng tiền Châu Âu kích hoạt, kiểm định biến động tiền phiên Mỹ. |
-| **08:30 UTC** | **15:30 VN** | **Mở phiên London Mùa Đông:** Thích ứng tự động khi thị trường Châu Âu sang giờ mùa đông. |
-| **12:30 UTC** | **19:30 VN** | **Tiền phiên Mỹ (Pre-market US):** Dữ liệu cập nhật trước giờ mở cửa New York. |
-| **13:30 - 17:30 UTC** | **20:30 - 00:30 VN** | **Khung giờ Vàng Phiên Mỹ (Mỗi 1 tiếng 1 lần):** Cập nhật Volume và sự dịch chuyển tức thời của Delta/Gamma Scalping trong phiên chính. |
+```yaml
+on:
+  schedule:
+    # 1. Chot Open Interest ngay moi tu CME Clearing (07:15 VN):
+    - cron: '15 0 * * 1-5'
+
+    # 2. Phien Au 2 nac (Pre-Europe & In-Session Europe thich ung ca 2 mua):
+    - cron: '30 5,6,7,8 * * 1-5'
+
+    # 3. Phien My don tin vi mo (18:45 VN), gio cao diem NYSE & 0DTE Power Hour (02:45 VN):
+    - cron: '45 11,12,13,14,15,16,17,18,19 * * 1-5'
+```
+
+#### Ma trận Lịch trình Tác chiến (UTC vs Giờ Việt Nam):
+
+| Khối | Giờ UTC | Giờ VN (UTC+7) | Sự kiện Thị trường & Mục đích Tác chiến |
+|---|---|---|---|
+| **Khối 1: CME Clearing** | **00:15 UTC** | **07:15 VN** | **Chốt Open Interest CME Clearing & OCC:** OCC & CME công bố sổ lệnh OI chính thức cho ngày mới. Vì OI giữ tĩnh suốt cả ngày giao dịch, bước này chốt cố định **Call Wall, Put Wall & Max Pain** khung ngày chuẩn xác 100%. |
+| **Khối 2: Phiên Âu Nấc 1** | **05:30 UTC** | **12:30 VN** | **Pre-Europe Radar (Mùa Hè):** Quét trước khi sàn Frankfurt mở (13:00 VN) và London mở (14:00 VN) 30–90 phút để lên kịch bản đánh Futures NQ Globex / US100 ban ngày. |
+| | **06:30 UTC** | **13:30 VN** | **Pre-Europe Radar (Mùa Đông):** Quét trước khi sàn Frankfurt mở (14:00 VN) và London mở (15:00 VN) khi Châu Âu chuyển giờ mùa đông. |
+| **Khối 2: Phiên Âu Nấc 2** | **07:30 UTC** | **14:30 VN** | **In-Session Europe (Mùa Hè):** Cập nhật sau khi London chạy 30 phút, đo lường phản ứng giá thực tế và dịch chuyển Delta/Gamma tức thời. |
+| | **08:30 UTC** | **15:30 VN** | **In-Session Europe (Mùa Đông):** Cập nhật sau khi London chạy 30 phút trong mùa đông. |
+| **Khối 3: Pre-US Macro** | **11:45 UTC** | **18:45 VN** | **Pre-US Macro News Radar:** Đón đầu trước các tin tức vĩ mô tối quan trọng của Mỹ (CPI, PPI, Non-Farm Payrolls lúc 19:30 hè / 20:30 đông) từ 45-105 phút. |
+| **Khối 3: Pre-Market US** | **12:45 UTC** | **19:45 VN** | **Pre-Market NYSE (Mùa Hè):** Quét trước giờ mở cửa sàn giao dịch chứng khoán New York (20:30 VN) 45 phút. |
+| **Khối 3: Cao điểm Phiên Mỹ** | **13:45 UTC** | **20:45 VN** | **In-Session Mùa Hè** (sau mở cửa 15p, options QQQ bắt đầu có volume thực) / **Pre-Market NYSE Mùa Đông** (trước mở cửa 21:30 VN 45 phút). |
+| | **14:45 UTC** | **21:45 VN** | **Cao điểm sôi động Mùa Hè (10:45 AM EDT)** / **In-Session Mùa Đông** (sau mở cửa 15p). |
+| | **15:45 UTC** | **22:45 VN** | **Xuyên suốt giữa phiên Mỹ (Mid-Session):** Cập nhật biến động Volatility Squeeze & dịch chuyển Put-Call Parity. |
+| | **16:45 UTC** | **23:45 VN** | **Đón đầu London Fix (00:00 VN):** Nhịp tái cân bằng dòng tiền giữa 2 lục địa Âu - Mỹ. |
+| | **17:45 UTC** | **00:45 VN** | **Nửa sau phiên Mỹ:** Theo dõi sự hấp thụ thanh khoản và xu hướng phiên chiều New York. |
+| | **18:45 UTC** | **01:45 VN** | **Chuẩn bị vào Giờ Vàng Power Hour (14:45 EDT / 13:45 EST):** Nhận diện các bẫy thanh khoản cuối ngày. |
+| **Khối 3: 0DTE Power Hour** | **19:45 UTC** | **02:45 VN** | **0DTE Power Hour Radar & Market Close:** Đón đầu trước khi sàn NYSE đóng cửa (03:00 hè), bắt trọn áp lực **Gamma Pinning / Gamma Unwind** khốc liệt của các nhà tạo lập thị trường đối với hợp đồng 0DTE đáo hạn trong ngày. |
 
 ### 2. Phân tầng Lưu trữ & Zero-Waste
 
