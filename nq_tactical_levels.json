@@ -1,0 +1,116 @@
+{
+  "timestamp": "",
+  "symbol": "QQQ",
+  "futures_symbol": "NQ=F",
+  "metrics": {
+    "spot_price_qqq": 709.8,
+    "nq_futures_price": 29708.75,
+    "basis_ratio": 41.8551,
+    "regime": "NEGATIVE_GAMMA_VOLATILE_EXPANSION",
+    "regime_description": "Dealer khu\u1ebfch \u0111\u1ea1i xu h\u01b0\u1edbng (Mua \u0111u\u1ed5i khi t\u0103ng, B\u00e1n th\u00e1o khi gi\u1ea3m). C\u1ef1c k\u1ef3 nguy hi\u1ec3m khi ch\u1ea1m Air Pocket.",
+    "total_net_gex_millions": -667.25,
+    "level_states": {
+      "call_wall": "DORMANT",
+      "put_wall": "DORMANT",
+      "atm_pivot": "SLICING_RISK"
+    },
+    "qqq_levels": {
+      "call_wall": 735.0,
+      "put_wall": 700.0,
+      "pin_risk_magnet": 735.0,
+      "trigger_up": 735.09,
+      "trigger_down": 697.74,
+      "absolute_gamma_strike": 720.0,
+      "atm_synthetic_pivot": 709.57,
+      "gamma_flip": 525.99,
+      "straddle_implied_move": 9.86,
+      "upper_band_1s": 719.43,
+      "lower_band_1s": 699.71,
+      "upper_band_085s": 717.95,
+      "lower_band_085s": 701.19,
+      "upper_band_2s": 729.29,
+      "lower_band_2s": 689.85
+    },
+    "nq_levels": {
+      "call_wall": 30763.5,
+      "put_wall": 29298.57,
+      "pin_risk_magnet": 30763.5,
+      "trigger_up": 30767.06,
+      "trigger_down": 29203.98,
+      "absolute_gamma_strike": 30135.67,
+      "atm_synthetic_pivot": 29699.12,
+      "gamma_flip": 22015.26,
+      "straddle_implied_move": 412.69,
+      "upper_band_1s": 30111.81,
+      "lower_band_1s": 29286.43,
+      "upper_band_085s": 30049.91,
+      "lower_band_085s": 29348.33,
+      "upper_band_2s": 30524.5,
+      "lower_band_2s": 28873.74
+    },
+    "air_pockets": [
+      {
+        "strike_qqq": 703.0,
+        "strike_nq": 29424.14,
+        "total_oi": 355.0
+      },
+      {
+        "strike_qqq": 704.0,
+        "strike_nq": 29465.99,
+        "total_oi": 598.0
+      }
+    ]
+  },
+  "tactical_recommendations": [
+    {
+      "level_name": "CALL WALL #1",
+      "level_price_nq": 30763.5,
+      "state": "DORMANT",
+      "action": "MONITORING",
+      "entry_guide": "Dung ngoai quan sat. Gia cach level 1054.8 diem NQ.",
+      "stop_loss_nq": 30783.5,
+      "take_profit_nq": 29699.12,
+      "risk_warning": "Chua co phan ung vi mo."
+    },
+    {
+      "level_name": "PUT WALL #1",
+      "level_price_nq": 29298.57,
+      "state": "DORMANT",
+      "action": "MONITORING",
+      "entry_guide": "Dung ngoai quan sat. Gia cach level 410.2 diem NQ.",
+      "stop_loss_nq": 29278.57,
+      "take_profit_nq": 29699.12,
+      "risk_warning": "Chua co phan ung vi mo."
+    },
+    {
+      "level_name": "ATM SYNTHETIC PIVOT",
+      "level_price_nq": 29699.12,
+      "state": "TRIGGERED_TESTING",
+      "action": "PREPARING",
+      "entry_guide": "Gia dang tiep can vung dem (9.6 pts). Quan sat phan ung tai 29699.1.",
+      "stop_loss_nq": 29719.12,
+      "take_profit_nq": 29699.12,
+      "risk_warning": "Khong vao lenh Market non truoc khi co xac nhan nen."
+    },
+    {
+      "level_name": "PIN RISK MAGNET",
+      "level_price_nq": 30763.5,
+      "state": "DORMANT",
+      "action": "MONITORING",
+      "entry_guide": "Dung ngoai quan sat. Gia cach level 1054.8 diem NQ.",
+      "stop_loss_nq": 30783.5,
+      "take_profit_nq": 29699.12,
+      "risk_warning": "Chua co phan ung vi mo."
+    },
+    {
+      "level_name": "GAMMA FLIP POINT",
+      "level_price_nq": 22015.26,
+      "state": "DORMANT",
+      "action": "MONITORING",
+      "entry_guide": "Dung ngoai quan sat. Gia cach level 7693.5 diem NQ.",
+      "stop_loss_nq": 22035.26,
+      "take_profit_nq": 29699.12,
+      "risk_warning": "Chua co phan ung vi mo."
+    }
+  ]
+}

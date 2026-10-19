@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEIRO-NQ-QUANT: E-MINI NASDAQ TACTICAL TERMINAL</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-base: #070B12; --bg-card: #0F172A; --border-color: #1E293B;
+            --text-primary: #F8FAFC; --text-secondary: #94A3B8; --text-muted: #64748B;
+            --neon-green: #22C55E; --neon-red: #EF4444; --neon-blue: #38BDF8; --neon-gold: #FACC15;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            background-color: var(--bg-base); color: var(--text-primary);
+            font-family: 'Inter', -apple-system, sans-serif; padding: 20px; font-size: 13.5px;
+        }
+        .container { max-width: 1460px; margin: 0 auto; }
+        .header {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 16px 24px; background: linear-gradient(135deg, #0F172A 0%, #131E35 100%);
+            border: 1px solid var(--border-color); border-radius: 12px; margin-bottom: 18px;
+        }
+        .brand { display: flex; align-items: center; gap: 12px; }
+        .brand-title {
+            font-size: 20px; font-weight: 800;
+            background: linear-gradient(90deg, #FFFFFF 0%, #93C5FD 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        .pulse-dot {
+            width: 10px; height: 10px; border-radius: 50%; background-color: var(--neon-green);
+            box-shadow: 0 0 10px var(--neon-green); animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 8px rgba(34, 197, 94, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+        }
+        .badge {
+            display: inline-block; padding: 3px 8px; border-radius: 6px; font-size: 11px;
+            font-weight: 700; font-family: 'JetBrains Mono', monospace;
+        }
+        .badge-live { background: rgba(34, 197, 94, 0.15); color: #4ADE80; border: 1px solid rgba(34, 197, 94, 0.4); }
+        .badge-gold { background: rgba(250, 204, 21, 0.15); color: #FACC15; border: 1px solid rgba(250, 204, 21, 0.4); }
+        .badge-pos { background: rgba(74, 222, 128, 0.15); color: #4ADE80; border: 1px solid rgba(74, 222, 128, 0.4); }
+        .badge-neg { background: rgba(248, 113, 113, 0.15); color: #F87171; border: 1px solid rgba(248, 113, 113, 0.4); }
+        .kpi-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; margin-bottom: 18px;
+        }
+        .kpi-card {
+            background-color: var(--bg-card); border: 1px solid var(--border-color);
+            border-radius: 12px; padding: 14px 18px; transition: transform 0.2s;
+        }
+        .kpi-card:hover { transform: translateY(-2px); border-color: #334155; }
+        .kpi-label {
+            font-size: 11px; font-weight: 600; text-transform: uppercase; color: var(--text-secondary); margin-bottom: 4px;
+        }
+        .kpi-val {
+            font-size: 22px; font-weight: 700; font-family: 'JetBrains Mono', monospace; margin-bottom: 4px;
+        }
+        .kpi-sub { font-size: 11.5px; color: var(--text-muted); }
+        .chart-box {
+            background-color: var(--bg-card); border: 1px solid var(--border-color);
+            border-radius: 12px; padding: 10px; margin-bottom: 20px;
+        }
+        .table-box {
+            background-color: var(--bg-card); border: 1px solid var(--border-color);
+            border-radius: 12px; padding: 16px; margin-bottom: 18px; overflow-x: auto;
+        }
+        .section-header {
+            font-size: 14.5px; font-weight: 700; margin-bottom: 12px; color: #E2E8F0;
+            display: flex; align-items: center; gap: 8px;
+        }
+        table { width: 100%; border-collapse: collapse; font-size: 12.5px; text-align: left; }
+        th {
+            background-color: #111C33; color: var(--text-secondary); padding: 10px 12px;
+            font-weight: 600; border-bottom: 1px solid var(--border-color); white-space: nowrap;
+        }
+        td {
+            padding: 10px 12px; border-bottom: 1px solid #162238; font-family: 'JetBrains Mono', monospace;
+        }
+        tr:hover td { background-color: #1E293B; }
+        .row-spot td {
+            background-color: rgba(56, 189, 248, 0.12) !important;
+            border-top: 1px solid var(--neon-blue); border-bottom: 1px solid var(--neon-blue);
+        }
+        .tag-buy { color: #4ADE80; font-weight: 700; }
+        .tag-sell { color: #F87171; font-weight: 700; }
+        .insight-box {
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.6) 0%, rgba(15, 23, 42, 0.8) 100%);
+            border-left: 4px solid var(--neon-blue); border-radius: 8px;
+            padding: 12px 16px; margin-bottom: 18px; font-size: 12.5px; line-height: 1.55;
+        }
+        .footer {
+            text-align: center; font-size: 11px; color: var(--text-muted);
+            padding: 18px 0; border-top: 1px solid var(--border-color);
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <!-- Header -->
+    <div class="header">
+        <div class="brand">
+            <div class="pulse-dot"></div>
+            <div class="brand-title">NEIRO-NQ-QUANT TERMINAL</div>
+            <span class="badge badge-gold">CME E-MINI NASDAQ (NQ)</span>
+            <span class="badge badge-live">100% CLOUD AUTOMATED</span>
+        </div>
+        <div style="font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #D6D3D1;">
+            Cập nhật: <b>19/10/2026 11:26:34 (Giờ VN)</b>
+        </div>
+    </div>
+
+    <!-- Executive KPI Grid -->
+    <div class="kpi-grid">
+        <div class="kpi-card">
+            <div class="kpi-label">Spot CME Futures &mdash; Spot MT5 (Quy đổi)</div>
+            <div class="kpi-val" style="color: #60A5FA;">NQ 19,085.0 <span style="font-size: 15px; color: #38BDF8;">(MT5: ~19,070.0)</span></div>
+            <div class="kpi-sub">Trục ATM CME: <b>19,085 pts</b> | Basis MT5 Spot: <b>+15.0 pts</b></div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-label">Market Regime & Net GEX</div>
+            <div class="kpi-val" style="color: #FACC15;">$+0.0M GEX</div>
+            <div class="kpi-sub"><span class="badge badge-gold">NEUTRAL TRANSITION (CÂN BẰNG)</span></div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-label">Biên Độ 1-Sigma Expected Move</div>
+            <div class="kpi-val" style="color: var(--neon-gold);">±1.2 pts</div>
+            <div class="kpi-sub">Intraday (Rule of 16): <b>±11.9 pts</b> (19,073 &mdash; 19,097)</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-label">Greeks Bậc 2 (Vanna & Charm)</div>
+            <div class="kpi-val" style="color: #38BDF8;">$+0.0M / $+0.0M</div>
+            <div class="kpi-sub">Net VEX (1% IV) | Net CHEX (Ngày decay)</div>
+        </div>
+    </div>
+
+    <!-- 3-Panel Plotly Interactive Chart -->
+    <div class="chart-box">
+        <div style="height:740px; width:100%;">                        <script>window.PlotlyConfig = {MathJaxConfig: 'local'};</script>
+        <script charset="utf-8" src="https://cdn.plot.ly/plotly-3.7.0.min.js" integrity="sha256-jvTGqxNp8AGWEcvNLVuKr+8j5dGe9Yw51LQkmDH+IYA=" crossorigin="anonymous"></script>                <div id="be1b52d2-d0bf-482a-9422-3adc21757860" class="plotly-graph-div" style="height:100%; width:100%;"></div>            <script>                window.PLOTLYENV=window.PLOTLYENV || {};                                if (document.getElementById("be1b52d2-d0bf-482a-9422-3adc21757860")) {                    Plotly.newPlot(                        "be1b52d2-d0bf-482a-9422-3adc21757860",                        [{"hovertemplate":"Strike: %{y:,.0f} pts\u003cbr\u003eNet GEX: $%{x:+.2f}M\u003cextra\u003e\u003c\u002fextra\u003e","marker":{"color":["#4ADE80","#4ADE80","#4ADE80","#4ADE80","#4ADE80","#4ADE80","#4ADE80","#4ADE80","#4ADE80","#4ADE80","#4ADE80","#4ADE80"]},"name":"Net GEX ($M)","orientation":"h","x":{"dtype":"f8","bdata":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"y":{"dtype":"f8","bdata":"AAAAAMBu0kAAAAAAQKPSQAAAAADA19JAAAAAAAAM00AAAAAAgEDTQAAAAAAAddNAAAAAAICp00AAAAAAwN3TQAAAAABAEtRAAAAAAMBG1EAAAAAAAHvUQAAAAACAr9RA"},"type":"bar","xaxis":"x","yaxis":"y"},{"hovertemplate":"Strike: %{y:,.0f}\u003cbr\u003eCall OI: %{x:,}\u003cextra\u003e\u003c\u002fextra\u003e","marker":{"color":"#86EFAC"},"name":"Call OI (N\u1ec1n t\u00edch l\u0169y)","opacity":0.5,"orientation":"h","x":{"dtype":"i1","bdata":"AAAAAAAAAAAAAAAA"},"y":{"dtype":"f8","bdata":"AAAAAMBu0kAAAAAAQKPSQAAAAADA19JAAAAAAAAM00AAAAAAgEDTQAAAAAAAddNAAAAAAICp00AAAAAAwN3TQAAAAABAEtRAAAAAAMBG1EAAAAAAAHvUQAAAAACAr9RA"},"type":"bar","xaxis":"x2","yaxis":"y2"},{"customdata":{"dtype":"i1","bdata":"AAAAAAAAAAAAAAAA"},"hovertemplate":"Strike: %{y:,.0f}\u003cbr\u003ePut OI: %{customdata:,}\u003cextra\u003e\u003c\u002fextra\u003e","marker":{"color":"#FCA5A5"},"name":"Put OI (N\u1ec1n t\u00edch l\u0169y)","opacity":0.5,"orientation":"h","x":{"dtype":"i1","bdata":"AAAAAAAAAAAAAAAA"},"y":{"dtype":"f8","bdata":"AAAAAMBu0kAAAAAAQKPSQAAAAADA19JAAAAAAAAM00AAAAAAgEDTQAAAAAAAddNAAAAAAICp00AAAAAAwN3TQAAAAABAEtRAAAAAAMBG1EAAAAAAAHvUQAAAAACAr9RA"},"type":"bar","xaxis":"x2","yaxis":"y2"},{"hovertemplate":"Strike: %{y:,.0f}\u003cbr\u003eCall Vol: %{x:,}\u003cextra\u003e\u003c\u002fextra\u003e","marker":{"color":"#16A34A"},"name":"Call Volume (L\u1ef1c Mua)","orientation":"h","x":{"dtype":"i1","bdata":"CgAAAAAAAAAAAAAA"},"y":{"dtype":"f8","bdata":"AAAAAMBu0kAAAAAAQKPSQAAAAADA19JAAAAAAAAM00AAAAAAgEDTQAAAAAAAddNAAAAAAICp00AAAAAAwN3TQAAAAABAEtRAAAAAAMBG1EAAAAAAAHvUQAAAAACAr9RA"},"type":"bar","xaxis":"x2","yaxis":"y2"},{"customdata":{"dtype":"i2","bdata":"AQACDDEABgFoAFMAAQCRAKEAPwFoAC8C"},"hovertemplate":"Strike: %{y:,.0f}\u003cbr\u003ePut Vol: %{customdata:,}\u003cextra\u003e\u003c\u002fextra\u003e","marker":{"color":"#DC2626"},"name":"Put Volume (L\u1ef1c B\u00e1n)","orientation":"h","x":{"dtype":"i2","bdata":"\u002f\u002f\u002f+88\u002f\u002f+v6Y\u002f63\u002f\u002f\u002f9v\u002f1\u002f\u002fwf6Y\u002f9H9"},"y":{"dtype":"f8","bdata":"AAAAAMBu0kAAAAAAQKPSQAAAAADA19JAAAAAAAAM00AAAAAAgEDTQAAAAAAAddNAAAAAAICp00AAAAAAwN3TQAAAAABAEtRAAAAAAMBG1EAAAAAAAHvUQAAAAACAr9RA"},"type":"bar","xaxis":"x2","yaxis":"y2"},{"hovertemplate":"Strike: %{y:,.0f}\u003cbr\u003eNet VEX: $%{x:.2f}M\u003cextra\u003e\u003c\u002fextra\u003e","marker":{"color":"#FB923C"},"name":"Net VEX ($M \u002f 1% IV)","orientation":"h","x":{"dtype":"f8","bdata":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"y":{"dtype":"f8","bdata":"AAAAAMBu0kAAAAAAQKPSQAAAAADA19JAAAAAAAAM00AAAAAAgEDTQAAAAAAAddNAAAAAAICp00AAAAAAwN3TQAAAAABAEtRAAAAAAMBG1EAAAAAAAHvUQAAAAACAr9RA"},"type":"bar","xaxis":"x3","yaxis":"y3"},{"hovertemplate":"Strike: %{y:,.0f}\u003cbr\u003eNet CHEX: $%{x:.2f}M\u003cextra\u003e\u003c\u002fextra\u003e","marker":{"color":"#22D3EE"},"name":"Net CHEX ($M \u002f ng\u00e0y)","orientation":"h","x":{"dtype":"f8","bdata":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"y":{"dtype":"f8","bdata":"AAAAAMBu0kAAAAAAQKPSQAAAAADA19JAAAAAAAAM00AAAAAAgEDTQAAAAAAAddNAAAAAAICp00AAAAAAwN3TQAAAAABAEtRAAAAAAMBG1EAAAAAAAHvUQAAAAACAr9RA"},"type":"bar","xaxis":"x3","yaxis":"y3"}],                        {"template":{"data":{"barpolar":[{"marker":{"line":{"color":"rgb(17,17,17)","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"barpolar"}],"bar":[{"error_x":{"color":"#f2f5fa"},"error_y":{"color":"#f2f5fa"},"marker":{"line":{"color":"rgb(17,17,17)","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"bar"}],"carpet":[{"aaxis":{"endlinecolor":"#A2B1C6","gridcolor":"#506784","linecolor":"#506784","minorgridcolor":"#506784","startlinecolor":"#A2B1C6"},"baxis":{"endlinecolor":"#A2B1C6","gridcolor":"#506784","linecolor":"#506784","minorgridcolor":"#506784","startlinecolor":"#A2B1C6"},"type":"carpet"}],"choropleth":[{"colorbar":{"outlinewidth":0,"ticks":""},"type":"choropleth"}],"contourcarpet":[{"colorbar":{"outlinewidth":0,"ticks":""},"type":"contourcarpet"}],"contour":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"contour"}],"heatmap":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"heatmap"}],"histogram2dcontour":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"histogram2dcontour"}],"histogram2d":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"histogram2d"}],"histogram":[{"marker":{"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"histogram"}],"mesh3d":[{"colorbar":{"outlinewidth":0,"ticks":""},"type":"mesh3d"}],"parcoords":[{"line":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"parcoords"}],"pie":[{"automargin":true,"type":"pie"}],"scatter3d":[{"line":{"colorbar":{"outlinewidth":0,"ticks":""}},"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatter3d"}],"scattercarpet":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattercarpet"}],"scattergeo":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattergeo"}],"scattergl":[{"marker":{"line":{"color":"#283442"}},"type":"scattergl"}],"scattermapbox":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattermapbox"}],"scattermap":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattermap"}],"scatterpolargl":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatterpolargl"}],"scatterpolar":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatterpolar"}],"scatter":[{"marker":{"line":{"color":"#283442"}},"type":"scatter"}],"scatterternary":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatterternary"}],"surface":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"surface"}],"table":[{"cells":{"fill":{"color":"#506784"},"line":{"color":"rgb(17,17,17)"}},"header":{"fill":{"color":"#2a3f5f"},"line":{"color":"rgb(17,17,17)"}},"type":"table"}]},"layout":{"annotationdefaults":{"arrowcolor":"#f2f5fa","arrowhead":0,"arrowwidth":1},"autotypenumbers":"strict","coloraxis":{"colorbar":{"outlinewidth":0,"ticks":""}},"colorscale":{"diverging":[[0,"#8e0152"],[0.1,"#c51b7d"],[0.2,"#de77ae"],[0.3,"#f1b6da"],[0.4,"#fde0ef"],[0.5,"#f7f7f7"],[0.6,"#e6f5d0"],[0.7,"#b8e186"],[0.8,"#7fbc41"],[0.9,"#4d9221"],[1,"#276419"]],"sequential":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"sequentialminus":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]},"colorway":["#636efa","#EF553B","#00cc96","#ab63fa","#FFA15A","#19d3f3","#FF6692","#B6E880","#FF97FF","#FECB52"],"font":{"color":"#f2f5fa"},"geo":{"bgcolor":"rgb(17,17,17)","lakecolor":"rgb(17,17,17)","landcolor":"rgb(17,17,17)","showlakes":true,"showland":true,"subunitcolor":"#506784"},"hoverlabel":{"align":"left"},"hovermode":"closest","mapbox":{"style":"dark"},"paper_bgcolor":"rgb(17,17,17)","plot_bgcolor":"rgb(17,17,17)","polar":{"angularaxis":{"gridcolor":"#506784","linecolor":"#506784","ticks":""},"bgcolor":"rgb(17,17,17)","radialaxis":{"gridcolor":"#506784","linecolor":"#506784","ticks":""}},"scene":{"xaxis":{"backgroundcolor":"rgb(17,17,17)","gridcolor":"#506784","gridwidth":2,"linecolor":"#506784","showbackground":true,"ticks":"","zerolinecolor":"#C8D4E3"},"yaxis":{"backgroundcolor":"rgb(17,17,17)","gridcolor":"#506784","gridwidth":2,"linecolor":"#506784","showbackground":true,"ticks":"","zerolinecolor":"#C8D4E3"},"zaxis":{"backgroundcolor":"rgb(17,17,17)","gridcolor":"#506784","gridwidth":2,"linecolor":"#506784","showbackground":true,"ticks":"","zerolinecolor":"#C8D4E3"}},"shapedefaults":{"line":{"color":"#f2f5fa"}},"sliderdefaults":{"bgcolor":"#C8D4E3","bordercolor":"rgb(17,17,17)","borderwidth":1,"tickwidth":0},"ternary":{"aaxis":{"gridcolor":"#506784","linecolor":"#506784","ticks":""},"baxis":{"gridcolor":"#506784","linecolor":"#506784","ticks":""},"bgcolor":"rgb(17,17,17)","caxis":{"gridcolor":"#506784","linecolor":"#506784","ticks":""}},"title":{"x":0.05},"updatemenudefaults":{"bgcolor":"#506784","borderwidth":0},"xaxis":{"automargin":true,"gridcolor":"#283442","linecolor":"#506784","ticks":"","title":{"standoff":15},"zerolinecolor":"#283442","zerolinewidth":2},"yaxis":{"automargin":true,"gridcolor":"#283442","linecolor":"#506784","ticks":"","title":{"standoff":15},"zerolinecolor":"#283442","zerolinewidth":2}}},"xaxis":{"anchor":"y","domain":[0.0,0.3348],"title":{"font":{"size":10},"text":"Net GEX ($M \u002f 1% Move)"},"gridcolor":"#1E293B"},"yaxis":{"anchor":"x","domain":[0.0,1.0],"title":{"font":{"size":11},"text":"E-mini Nasdaq Strike Ladder (NQ pts)"},"tickmode":"array","tickvals":[18875.0,19085.0,19295.0,19504.0,19714.0,19924.0,20134.0,20343.0,20553.0,20763.0,20972.0,21182.0],"ticktext":["18,875","19,085","19,295","19,504","19,714","19,924","20,134","20,343","20,553","20,763","20,972","21,182"],"gridcolor":"#1E293B"},"xaxis2":{"anchor":"y2","domain":[0.3698,0.7046],"title":{"font":{"size":10},"text":"Put OI\u002fVol (-) | Call OI\u002fVol (+)"},"gridcolor":"#1E293B"},"yaxis2":{"anchor":"x2","domain":[0.0,1.0],"matches":"y","showticklabels":false,"tickmode":"array","tickvals":[18875.0,19085.0,19295.0,19504.0,19714.0,19924.0,20134.0,20343.0,20553.0,20763.0,20972.0,21182.0],"gridcolor":"#1E293B"},"xaxis3":{"anchor":"y3","domain":[0.7396,1.0],"title":{"font":{"size":10},"text":"Greeks B\u1eadc 2 ($M Exposure)"},"range":[-11.0,11.0],"gridcolor":"#1E293B"},"yaxis3":{"anchor":"x3","domain":[0.0,1.0],"matches":"y","showticklabels":false,"tickmode":"array","tickvals":[18875.0,19085.0,19295.0,19504.0,19714.0,19924.0,20134.0,20343.0,20553.0,20763.0,20972.0,21182.0],"gridcolor":"#1E293B"},"annotations":[{"font":{"size":16},"showarrow":false,"text":"\u003cb\u003ePanel 1: Net GEX ($M) & M\u1ed1c Chi\u1ebfn Thu\u1eadt\u003c\u002fb\u003e","x":0.1674,"xanchor":"center","xref":"paper","y":1.0,"yanchor":"bottom","yref":"paper"},{"font":{"size":16},"showarrow":false,"text":"\u003cb\u003ePanel 2: D\u00f2ng Ti\u1ec1n Volume vs Open Interest N\u00e9n\u003c\u002fb\u003e","x":0.5372,"xanchor":"center","xref":"paper","y":1.0,"yanchor":"bottom","yref":"paper"},{"font":{"size":16},"showarrow":false,"text":"\u003cb\u003ePanel 3: Greeks B\u1eadc 2 (Vanna & Charm)\u003c\u002fb\u003e","x":0.8698,"xanchor":"center","xref":"paper","y":1.0,"yanchor":"bottom","yref":"paper"},{"bgcolor":"#0284C7","bordercolor":"#38BDF8","borderpad":3,"borderwidth":1,"font":{"color":"#FFFFFF","family":"JetBrains Mono","size":9.5},"showarrow":false,"text":"\u25c6 SPOT CME: 19,085.0 (MT5: ~19,070.0)","x":0.98,"xanchor":"right","xref":"x domain","y":19084.99,"yref":"y"},{"align":"left","arrowcolor":"#EF4444","arrowhead":2,"ax":0,"ay":18,"bgcolor":"rgba(127, 29, 29, 0.92)","bordercolor":"#EF4444","borderwidth":1,"font":{"color":"#FEE2E2","size":8.5},"showarrow":true,"text":"\u003cb\u003e[PUT WALL 18,875] (0 OI)\u003c\u002fb\u003e &bull; Mua Rebound: 18,875-18,890 (SL: 18,855)","x":0.03,"xref":"x domain","y":18868.85,"yref":"y"},{"arrowcolor":"#22C55E","arrowhead":2,"ax":0,"ay":-16,"bgcolor":"rgba(20, 83, 45, 0.92)","bordercolor":"#22C55E","borderwidth":1,"font":{"color":"#DCFCE7","size":8.5},"showarrow":true,"text":"\u003cb\u003eC\u1eecA \u1ea2I 19,085\u003c\u002fb\u003e (Squeeze \u003e 19,091.2 -\u003e TP 19,295)","x":0.03,"xref":"x domain","y":19091.15,"yref":"y"},{"bgcolor":"#1C1917","bordercolor":"#FB923C","borderpad":2,"borderwidth":1,"font":{"color":"#FDBA74","size":8.5},"showarrow":false,"text":"\u25c6 \u0110\u1ec8NH VANNA (+0.0M): V-Rebound","x":0.0,"xanchor":"left","xref":"x3","y":18884.02,"yref":"y3"},{"bgcolor":"#1C1917","bordercolor":"#22D3EE","borderpad":2,"borderwidth":1,"font":{"color":"#67E8F9","size":8.5},"showarrow":false,"text":"\u0110\u1ec8NH CHARM (+0.0M): Gh\u00ecm gi\u00e1 \u0111\u00eam","x":0.0,"xanchor":"right","xref":"x3","y":18865.98,"yref":"y3"}],"shapes":[{"line":{"color":"#475569","dash":"solid"},"type":"line","x0":0,"x1":0,"xref":"x","y0":0,"y1":1,"yref":"y domain"},{"line":{"color":"#38BDF8","width":2.2},"type":"line","x0":0,"x1":1,"xref":"x domain","y0":19084.99,"y1":19084.99,"yref":"y"},{"line":{"color":"#A855F7","dash":"dash","width":1.8},"type":"line","x0":0,"x1":1,"xref":"x domain","y0":18875.0,"y1":18875.0,"yref":"y"},{"line":{"color":"#34D399","dash":"dash","width":1.8},"type":"line","x0":0,"x1":1,"xref":"x domain","y0":18875.0,"y1":18875.0,"yref":"y"},{"line":{"color":"#475569","dash":"solid"},"type":"line","x0":0,"x1":0,"xref":"x2","y0":0,"y1":1,"yref":"y2 domain"},{"line":{"color":"#475569","dash":"solid"},"type":"line","x0":0,"x1":0,"xref":"x3","y0":0,"y1":1,"yref":"y3 domain"}],"font":{"family":"Inter, sans-serif","color":"#F8FAFC"},"margin":{"l":75,"r":30,"t":115,"b":45},"legend":{"font":{"size":10},"orientation":"h","yanchor":"bottom","y":1.07,"xanchor":"center","x":0.5},"paper_bgcolor":"#0A0E17","plot_bgcolor":"#111827","height":740,"barmode":"relative"},                        {"responsive": true, "displayModeBar": true}                    )                };            </script>        </div>
+    </div>
+
+    <!-- 1-Sigma & Greeks Insights -->
+    <div class="insight-box" style="border-left-color: #38BDF8;">
+        <b style="color: #93C5FD; font-size: 13px;">📐 [ĐỘ LỆCH CHUẨN & BIÊN ĐỘ 1-SIGMA NASDAQ]:</b><br>
+        • <b>ATM Straddle (Call + Put ATM):</b> 1.0 pts | Implied Volatility (IV ATM): <b>1.0%</b><br>
+        • <b>Expected Move 1-Sigma (Brenner-Subrahmanyam):</b> ±1.2 pts (Biên độ kỳ: NQ 19,084 &mdash; 19,086)<br>
+        • <b>Intraday Move (Rule of 16):</b> ±11.9 pts (Vùng dao động trong ngày: NQ 19,073 &mdash; 19,097)
+    </div>
+
+    <div class="insight-box" style="border-left-color: #FB923C;">
+        <b style="color: #FDBA74; font-size: 13px;">⚡ [Ý NGHĨA & HƯỚNG DẪN HÀNH ĐỘNG GREEKS BẬC 2 - VANNA & CHARM]:</b><br>
+        • <b>ĐỈNH VANNA ($+0.0M):</b> <b>LỰC ĐẨY V-REBOUND</b> &rarr; Canh BUY lướt sóng khi IV hạ nhiệt sau tin tức hoặc đầu phiên Mỹ.<br>
+        • <b>ĐỈNH CHARM ($+0.0M/ngày):</b> <b>NAM CHÂM GHÌM GIÁ ĐÊM</b> &rarr; Canh CHỐT LỜI hoặc đánh hồi quy về trục này khi về đêm muộn (sau 01:30 sáng VN).
+    </div>
+
+    <!-- Tactical Scalping Table -->
+    <div class="table-box">
+        <div class="section-header">
+            <span>🎯 PHẦN 1: BẢNG TÁC CHIẾN LƯỚT SÓNG TRONG NGÀY (INTRADAY SCALPING - ĂN 30-50 ĐIỂM NQ)</span>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Chiến Lược</th>
+                    <th>Vùng Kích Hoạt (CME)</th>
+                    <th>Entry CME</th>
+                    <th>MT5 Spot (~ Basis)</th>
+                    <th>Hard SL (CME)</th>
+                    <th>Take Profit (TP)</th>
+                    <th>Ghi Chú Hành Vi Market Maker</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="tag-buy">1. BUY MUA ĐUỔI (Squeeze 19,085)</td>
+                    <td>Vượt > 19,091.2</td>
+                    <td>19,093.2</td>
+                    <td style="color:#38BDF8; font-weight:600;">~19,078.2</td>
+                    <td style="color:#F87171;">19,070.7 (14p)</td>
+                    <td style="color:#4ADE80;">19,293.0</td>
+                    <td style="font-family: sans-serif; color: var(--text-secondary);">MM vỡ trận Short -> Gamma Squeeze đẩy giá bốc đầu lên nấc 19,295</td>
+                </tr>
+                <tr>
+                    <td class="tag-sell">2. SELL CHẶN TIỀN TUYẾN (Fade 19,085)</td>
+                    <td>19,075.0 - 19,085.0</td>
+                    <td>19,083.0</td>
+                    <td style="color:#38BDF8; font-weight:600;">~19,068.0</td>
+                    <td style="color:#F87171;">19,097.3 (12p)</td>
+                    <td style="color:#4ADE80;">19,085.0</td>
+                    <td style="font-family: sans-serif; color: var(--text-secondary);">Call Vol cực đại -> MM bán Futures chặn đầu ghìm giá hồi về Spot</td>
+                </tr>
+                <tr>
+                    <td class="tag-buy">3. BUY BẮT SÀN ATM (Rebound 18,875)</td>
+                    <td>18,875.0 - 18,885.0</td>
+                    <td>18,878.0</td>
+                    <td style="color:#38BDF8; font-weight:600;">~18,863.0</td>
+                    <td style="color:#F87171;">18,860.7 (14p)</td>
+                    <td style="color:#4ADE80;">19,083.0</td>
+                    <td style="font-family: sans-serif; color: var(--text-secondary);">Đệm Put hỗ trợ kỹ thuật trong phiên đẩy giá hồi phục cân bằng</td>
+                </tr>
+                <tr>
+                    <td class="tag-sell">4. SELL THỦNG SÀN ATM (Breakdown 18,875)</td>
+                    <td>Thủng &lt; 18,868.8</td>
+                    <td>18,866.8</td>
+                    <td style="color:#38BDF8; font-weight:600;">~18,851.8</td>
+                    <td style="color:#F87171;">18,887.3 (12p)</td>
+                    <td style="color:#4ADE80;">18,836.0</td>
+                    <td style="font-family: sans-serif; color: var(--text-secondary);">Mất mốc ATM Pivot -> Rơi tự do về trạm nghỉ 18,834 (Đệm nấc 2)</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Structural Swing Walls Table -->
+    <div class="table-box">
+        <div class="section-header">
+            <span>🏰 PHẦN 2: BẢNG TÁC CHIẾN PHỤC KÍCH THÀNH TRÌ (STRUCTURAL SWING WALLS - ĐÁNH SÓNG LỚN)</span>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Chiến Lược</th>
+                    <th>Vùng Kích Hoạt (CME)</th>
+                    <th>Entry CME</th>
+                    <th>MT5 Spot (~ Basis)</th>
+                    <th>Hard SL (CME)</th>
+                    <th>Take Profit (TP)</th>
+                    <th>Ghi Chú Cấu Trúc Khối Lượng</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="tag-sell">5. BÁN ĐỈNH CALL WALL (18,875)</td>
+                    <td>18,860.0 - 18,875.0</td>
+                    <td>18,872.0</td>
+                    <td style="color:#38BDF8; font-weight:600;">~18,857.0</td>
+                    <td style="color:#F87171;">18,900.0 (25p)</td>
+                    <td style="color:#4ADE80;">19,085.0 / 19,085.0</td>
+                    <td style="font-family: sans-serif; color: var(--text-secondary);">Call Wall 0 OI (Nóc nhà kiên cố cuối cùng của MM)</td>
+                </tr>
+                <tr>
+                    <td class="tag-buy">6. MUA ĐÁY PUT WALL (18,875)</td>
+                    <td>18,875.0 - 18,890.0</td>
+                    <td>18,878.0</td>
+                    <td style="color:#38BDF8; font-weight:600;">~18,863.0</td>
+                    <td style="color:#F87171;">18,850.0 (25p)</td>
+                    <td style="color:#4ADE80;">18,875.0 / 19,085.0</td>
+                    <td style="font-family: sans-serif; color: var(--text-secondary);">Major Put Wall 0 OI (Đáy bê tông cốt thép phòng ngự của cá mập)</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Microstructure Strike Table -->
+    <div class="table-box">
+        <div class="section-header">
+            <span>📊 BẢNG DỮ LIỆU ĐỊNH LƯỢNG MICROSTRUCTURE TỪNG STRIKE (E-MINI NASDAQ & MT5 SPOT)</span>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Strike NQ</th>
+                    <th>MT5 Spot (~ Basis)</th>
+                    <th>Net GEX ($M)</th>
+                    <th>Call OI</th>
+                    <th>Put OI</th>
+                    <th>Call Vol</th>
+                    <th>Put Vol</th>
+                    <th>Net VEX ($M)</th>
+                    <th>Net CHEX ($M)</th>
+                </tr>
+            </thead>
+            <tbody>
+                
+        <tr >
+            <td><b>19,295 pts</b></td>
+            <td style="color: #38BDF8;">~19,280.0</td>
+            <td style="color: #4ADE80; font-weight: 600;">$+0.00M</td>
+            <td>0</td>
+            <td>0</td>
+            <td>0</td>
+            <td>49</td>
+            <td style="color: #FB923C;">$+0.00M</td>
+            <td style="color: #22D3EE;">$+0.00M</td>
+        </tr>
+        
+        <tr class="row-spot">
+            <td><b>19,085 pts</b></td>
+            <td style="color: #38BDF8;">~19,070.0</td>
+            <td style="color: #4ADE80; font-weight: 600;">$+0.00M</td>
+            <td>0</td>
+            <td>0</td>
+            <td>0</td>
+            <td>3,074</td>
+            <td style="color: #FB923C;">$+0.00M</td>
+            <td style="color: #22D3EE;">$+0.00M</td>
+        </tr>
+        
+        <tr >
+            <td><b>18,875 pts</b></td>
+            <td style="color: #38BDF8;">~18,860.0</td>
+            <td style="color: #4ADE80; font-weight: 600;">$+0.00M</td>
+            <td>0</td>
+            <td>0</td>
+            <td>10</td>
+            <td>1</td>
+            <td style="color: #FB923C;">$+0.00M</td>
+            <td style="color: #22D3EE;">$+0.00M</td>
+        </tr>
+        
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+        NEIRO-NQ-QUANT TERMINAL &bull; 100% Cloud-Native &bull; Zero-Touch Automation &bull; Zero-Waste (&lt; 15MB)
+    </div>
+</div>
+</body>
+</html>
