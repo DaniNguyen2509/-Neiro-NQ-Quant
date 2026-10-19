@@ -1,0 +1,95 @@
+name: CME E-mini Nasdaq Options Automated Sync & Tactical Terminal (Neiro-NQ-Quant)
+
+on:
+  schedule:
+    # 00:30 UTC = 07:30 Vietnam (Chot Open Interest moi nhat tu CME Clearing cho ca ngay)
+    # 07:30 UTC = 14:30 Vietnam (Dau phien London Mua He)
+    # 08:30 UTC = 15:30 Vietnam (Dau phien London Mua Dong)
+    # Khung Gio Vang phien My (chay moi 1 tieng tu 19:30 den 00:30 dem Vietnam):
+    # 12:30, 13:30, 14:30, 15:30, 16:30, 17:30 UTC
+    # Chay tu Thu 2 den Thu 6 hang tuan (Thich ung 100% ca Mua He & Mua Dong)
+    - cron: '30 0,7,8,12,13,14,15,16,17 * * 1-5'
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/daily_options_sync.yml'
+      - 'src/**'
+      - 'requirements.txt'
+  workflow_dispatch:
+    inputs:
+      basis:
+        description: 'Spot MT5 Basis Offset (e.g. 0.0 or 15.0)'
+        required: false
+        default: '0.0'
+        type: string
+      source:
+        description: 'Options Data Source (yfinance = free & fast, barchart = Playwright)'
+        required: false
+        default: 'yfinance'
+        type: choice
+        options:
+          - yfinance
+          - barchart
+
+concurrency:
+  group: options-sync
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+jobs:
+  sync-and-deploy:
+    name: Sync Nasdaq Options & Deploy Tactical Terminal
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pandas plotly scipy numpy yfinance requests pyarrow duckdb
+
+      - name: Generate Plotly Tactical HTML Dashboard (Fast & Free)
+        run: |
+          BASIS_VAL="${{ github.event.inputs.basis || '0.0' }}"
+          DATA_SOURCE="${{ github.event.inputs.source || 'yfinance' }}"
+          echo "[*] Running Neiro-NQ-Quant with Source: $DATA_SOURCE, Basis: $BASIS_VAL..."
+          python -m src.hud.html_dashboard --source "$DATA_SOURCE" --basis "$BASIS_VAL" --output exports/latest_nq_dashboard.html exports/index.html
+          ls -lh exports/
+
+      - name: Upload Tactical Dashboard Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: nasdaq-tactical-dashboard
+          path: |
+            exports/latest_nq_dashboard.html
+            exports/index.html
+            data/options_prices_NQZ26.csv
+          retention-days: 7
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        if: github.ref == 'refs/heads/main'
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./exports
+
+      - name: Commit and Push Updated Options Data
+        run: |
+          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          if [ -f data/options_prices_NQZ26.csv ]; then
+            git add data/options_prices_NQZ26.csv
+            git diff --staged --quiet || (git commit -m "chore(data): auto-sync Nasdaq NQ options chain [skip ci]" && git push)
+          fi

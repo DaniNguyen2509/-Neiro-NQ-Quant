@@ -1,6 +1,7 @@
 # Python
 __pycache__/
 *.py[cod]
+*.pyo
 *.class
 *.so
 .Python
@@ -20,6 +21,7 @@ share/python-wheels/
 *.egg-info/
 .installed.cfg
 *.egg
+.pytest_cache/
 
 # Virtual Environments
 .venv/
@@ -37,9 +39,9 @@ service_account.json
 client_secrets.json
 
 # Zero-Waste: Runtime Data, Parquet & Caches
-data/
+data/*
 logs/
-exports/
+exports/*
 *.parquet
 *.sqlite
 *.sqlite3
@@ -47,6 +49,15 @@ exports/
 *.csv
 *.tmp
 *.log
+
+# Whitelist active options dataset for GitHub Actions
+!data/options_prices_NQZ26.csv
+!data/options_prices_*.csv
+
+# Whitelist export HTML for Pages deployment
+!exports/latest_nq_dashboard.html
+!exports/index.html
+!exports/nq_tactical_levels.json
 
 # IDE & OS
 .vscode/

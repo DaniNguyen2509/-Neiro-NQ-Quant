@@ -8,7 +8,7 @@ import datetime
 import math
 import numpy as np
 import pandas as pd
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any, Optional, Tuple
 
 from src.collector.base import BaseCollector
 from src.collector.greeks import vectorized_black_scholes_greeks, estimate_iv_brent
@@ -148,6 +148,67 @@ class NasdaqCollector(BaseCollector):
         df_chain = self._enrich_quant_metrics(df_chain, spot)
         return df_chain
 
+    def fetch_standardized_nq_chain(self, expiration_date: Optional[str] = None) -> Tuple[pd.DataFrame, Dict[str, float]]:
+        """
+        Fetch QQQ options chain via yfinance and map cleanly to E-mini NQ strikes.
+        Returns (standardized DataFrame ready for Black-76 quant engine, prices dict).
+        Fast, zero-cost, no browser, and bypasses Cloudflare entirely.
+        """
+        prices = self.get_underlying_prices()
+        spot = prices["underlying"]
+        futures = prices["futures"]
+        basis = prices["basis"]
+
+        df_raw = self.fetch_options_chain(expiration_date=expiration_date)
+        
+        # Standardize for Black-76 quant engine: strike is mapped to NQ index points
+        def safe_f(v, default=0.0) -> float:
+            if v is None or pd.isna(v):
+                return default
+            try:
+                val = float(v)
+                return default if (math.isnan(val) or math.isinf(val)) else val
+            except Exception:
+                return default
+
+        def safe_i(v, default=0) -> int:
+            if v is None or pd.isna(v):
+                return default
+            try:
+                val = float(v)
+                return default if (math.isnan(val) or math.isinf(val)) else int(val)
+            except Exception:
+                return default
+
+        rows = []
+        for _, r in df_raw.iterrows():
+            stk_q = safe_f(r.get('strike'), 500.0)
+            stk_nq = round(stk_q * basis, 0)
+            rows.append({
+                "strike": stk_nq,
+                "strikeQQQ": stk_q,
+                "callBid": safe_f(r.get('callBid')),
+                "callAsk": safe_f(r.get('callAsk')),
+                "callMid": safe_f(r.get('callMid')),
+                "callLatest": safe_f(r.get('callMid')),
+                "callVolume": safe_i(r.get('callVolume')),
+                "callOpenInterest": safe_i(r.get('callOpenInterest')),
+                "callGamma": safe_f(r.get('callGamma'), 0.0003),
+                "callIV": safe_f(r.get('callIV'), 0.18),
+                "putBid": safe_f(r.get('putBid')),
+                "putAsk": safe_f(r.get('putAsk')),
+                "putMid": safe_f(r.get('putMid')),
+                "putLatest": safe_f(r.get('putMid')),
+                "putVolume": safe_i(r.get('putVolume')),
+                "putOpenInterest": safe_i(r.get('putOpenInterest')),
+                "putGamma": safe_f(r.get('putGamma'), 0.0003),
+                "putIV": safe_f(r.get('putIV'), 0.18),
+                "expirationDate": r.get('expirationDate', datetime.date.today().strftime("%Y-%m-%d")),
+            })
+
+        df_nq = pd.DataFrame(rows).sort_values("strike").drop_duplicates(subset=["strike"]).reset_index(drop=True)
+        return df_nq, prices
+
     def fetch_dual_frame_chains(self) -> Dict[str, pd.DataFrame]:
         """
         Fetch both Front-Frame (0DTE/Weekly) and Institutional-Frame (Monthly).
@@ -257,3 +318,43 @@ class NasdaqCollector(BaseCollector):
             })
             
         return pd.DataFrame(rows)
+
+
+def generate_benchmark_nq_chain(spot: float = 20500.0) -> pd.DataFrame:
+    """Generate high-fidelity benchmark E-mini NQ options chain for offline / test execution."""
+    atm = round(spot / 50.0) * 50.0
+    offsets = [
+        -1500, -1250, -1000, -800, -600, -500, -400, -300, -250, -200, -150, -100, -50,
+        0, 50, 100, 150, 200, 250, 300, 400, 500, 600, 800, 1000, 1250, 1500
+    ]
+    rows = []
+    for off in offsets:
+        stk = atm + off
+        c_oi = max(100.0, 3800.0 - abs(off) * 1.8 + (1200.0 if off == 500 else 0.0))
+        p_oi = max(100.0, 4200.0 - abs(off) * 1.9 + (1500.0 if off == -500 else 0.0))
+        c_vol = round(c_oi * 0.35)
+        p_vol = round(p_oi * 0.40)
+        c_mid = max(5.0, spot - stk + 60.0) if stk <= spot else max(5.0, 75.0 - off * 0.08)
+        p_mid = max(5.0, stk - spot + 60.0) if stk >= spot else max(5.0, 75.0 + off * 0.08)
+
+        rows.append({
+            "strike": float(stk),
+            "callBid": round(c_mid * 0.98, 2),
+            "callAsk": round(c_mid * 1.02, 2),
+            "callMid": round(c_mid, 2),
+            "callLatest": round(c_mid, 2),
+            "callVolume": int(c_vol),
+            "callOpenInterest": int(c_oi),
+            "callGamma": 0.00032,
+            "callIV": 0.185,
+            "putBid": round(p_mid * 0.98, 2),
+            "putAsk": round(p_mid * 1.02, 2),
+            "putMid": round(p_mid, 2),
+            "putLatest": round(p_mid, 2),
+            "putVolume": int(p_vol),
+            "putOpenInterest": int(p_oi),
+            "putGamma": 0.00032,
+            "putIV": 0.190,
+        })
+    return pd.DataFrame(rows)
+

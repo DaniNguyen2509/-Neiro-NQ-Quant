@@ -1,8 +1,8 @@
 """
 Neiro-NQ-Quant: Main Execution Pipeline.
-Collects Nasdaq Options, computes Greeks & GEX matrix, evaluates Level State Machine,
-saves Parquet to Cloud/Local, and renders Interactive Dashboard.
-Zero-Waste & ASCII Compliant.
+Collects Nasdaq Options (via Barchart Scraper or Yahoo Finance), computes Black-76 Greeks & GEX matrix,
+evaluates Level State Machine, saves Parquet/CSV, and renders Interactive Dark Terminal Dashboard.
+100% Cloud-Native, Zero-Waste & ASCII/UTF-8 Compliant.
 """
 import os
 import sys
@@ -21,7 +21,9 @@ from src.collector.nasdaq_collector import NasdaqCollector
 from src.collector.storage import ParquetStorageManager
 from src.quant_engine.structure import calculate_microstructure_levels
 from src.quant_engine.state_machine import LevelStateMachine
+from src.quant_engine.engine import process_options_chain_black76
 from src.dashboard.visualizer import build_tactical_dashboard, generate_ai_briefing
+from src.hud.html_dashboard import build_and_export_dashboard
 
 
 def run_pipeline(
@@ -30,12 +32,33 @@ def run_pipeline(
     dual_frame: bool = False,
     export_html: bool = True,
     output_html: str = "exports/latest_nq_dashboard.html",
-    output_json: str = "exports/nq_tactical_levels.json"
+    output_json: str = "exports/nq_tactical_levels.json",
+    basis: float = 0.0,
+    input_csv: Optional[str] = None,
+    multiplier: float = 20.0,
 ):
     print("=" * 80)
     print(f"[*] [Neiro-NQ-Quant] Starting E-mini Nasdaq Quant Pipeline ({symbol} -> {futures_symbol})")
     print("=" * 80)
     
+    # 1. Fast & Free Black-76 Quant Pipeline via yfinance (Default)
+    if not dual_frame:
+        print(f"[*] Step 1: Processing Live Black-76 Quant Matrix via yfinance (Basis: {basis:+0.1f}, Multiplier: {multiplier})...")
+        build_and_export_dashboard(
+            csv_path=input_csv or "data/options_prices_NQZ26.csv",
+            output_paths=[output_html, "exports/index.html"],
+            basis=basis,
+            multiplier=multiplier,
+            source="csv" if input_csv else "yfinance",
+        )
+        print(f"[+] Step 2: Tactical HTML Dashboard published successfully.")
+        print("=" * 80)
+        print("[DONE] Cloud Pipeline completed successfully!")
+        print("=" * 80)
+        return
+
+
+    # Standard YFinance / Multi-frame workflow
     # 1. Collector
     collector = NasdaqCollector(symbol=symbol, futures_symbol=futures_symbol)
     if dual_frame:
@@ -109,7 +132,6 @@ def run_pipeline(
     if export_html:
         print("[*] Step 7: Generating Plotly Interactive Dashboard...")
         build_tactical_dashboard(df_chain, metrics, output_html_path=output_html)
-        # Also maintain index.html for direct GitHub Pages web viewing
         export_dir = os.path.dirname(os.path.abspath(output_html))
         index_path = os.path.join(export_dir, "index.html")
         try:
@@ -150,6 +172,9 @@ if __name__ == "__main__":
     parser.add_argument("--export-html", action="store_true", default=True, help="Export interactive HTML dashboard")
     parser.add_argument("--output-html", default="exports/latest_nq_dashboard.html", help="Path to output HTML file")
     parser.add_argument("--output-json", default="exports/nq_tactical_levels.json", help="Path to output JSON feed")
+    parser.add_argument("--input-csv", default=None, help="Path to pre-scraped options CSV")
+    parser.add_argument("--basis", type=float, default=0.0, help="Spot MT5 Basis offset (Spot_MT5 = Spot_Futures - basis)")
+    parser.add_argument("--multiplier", type=float, default=20.0, help="Contract multiplier (20 for NQ, 2 for MNQ)")
     parser.add_argument("--loop", type=int, default=0, help="Sync loop interval in seconds (e.g. 300 for 5 mins). Default 0 (run once)")
     
     args = parser.parse_args()
@@ -165,7 +190,10 @@ if __name__ == "__main__":
                     dual_frame=args.dual_frame,
                     export_html=args.export_html,
                     output_html=args.output_html,
-                    output_json=args.output_json
+                    output_json=args.output_json,
+                    basis=args.basis,
+                    input_csv=args.input_csv,
+                    multiplier=args.multiplier,
                 )
                 next_time = (datetime.datetime.now() + datetime.timedelta(seconds=args.loop)).strftime("%H:%M:%S")
                 print(f"[*] Sleeping {args.loop}s... Next sync at {next_time}\n")
@@ -183,5 +211,9 @@ if __name__ == "__main__":
             dual_frame=args.dual_frame,
             export_html=args.export_html,
             output_html=args.output_html,
-            output_json=args.output_json
+            output_json=args.output_json,
+            basis=args.basis,
+            input_csv=args.input_csv,
+            multiplier=args.multiplier,
         )
+
