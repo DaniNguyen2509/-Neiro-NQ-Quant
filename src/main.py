@@ -109,6 +109,15 @@ def run_pipeline(
     if export_html:
         print("[*] Step 7: Generating Plotly Interactive Dashboard...")
         build_tactical_dashboard(df_chain, metrics, output_html_path=output_html)
+        # Also maintain index.html for direct GitHub Pages web viewing
+        export_dir = os.path.dirname(os.path.abspath(output_html))
+        index_path = os.path.join(export_dir, "index.html")
+        try:
+            import shutil
+            shutil.copy(output_html, index_path)
+            print(f"[+] Created web root index: {index_path}")
+        except Exception as e:
+            print(f"[!] Warning: Could not create index.html: {e}")
 
     # 8. Mirror to Google Drive root if connected
     drive_root = None
@@ -141,13 +150,38 @@ if __name__ == "__main__":
     parser.add_argument("--export-html", action="store_true", default=True, help="Export interactive HTML dashboard")
     parser.add_argument("--output-html", default="exports/latest_nq_dashboard.html", help="Path to output HTML file")
     parser.add_argument("--output-json", default="exports/nq_tactical_levels.json", help="Path to output JSON feed")
+    parser.add_argument("--loop", type=int, default=0, help="Sync loop interval in seconds (e.g. 300 for 5 mins). Default 0 (run once)")
     
     args = parser.parse_args()
-    run_pipeline(
-        symbol=args.symbol,
-        futures_symbol=args.futures,
-        dual_frame=args.dual_frame,
-        export_html=args.export_html,
-        output_html=args.output_html,
-        output_json=args.output_json
-    )
+    
+    if args.loop > 0:
+        import time
+        print(f"[*] [Loop Mode] Auto-synchronizing every {args.loop}s ({args.loop/60:.1f} mins). Press Ctrl+C to stop.")
+        while True:
+            try:
+                run_pipeline(
+                    symbol=args.symbol,
+                    futures_symbol=args.futures,
+                    dual_frame=args.dual_frame,
+                    export_html=args.export_html,
+                    output_html=args.output_html,
+                    output_json=args.output_json
+                )
+                next_time = (datetime.datetime.now() + datetime.timedelta(seconds=args.loop)).strftime("%H:%M:%S")
+                print(f"[*] Sleeping {args.loop}s... Next sync at {next_time}\n")
+                time.sleep(args.loop)
+            except KeyboardInterrupt:
+                print("\n[!] Auto-sync stopped by user.")
+                break
+            except Exception as e:
+                print(f"[!] Warning in loop execution ({e}). Retrying in {args.loop}s...")
+                time.sleep(args.loop)
+    else:
+        run_pipeline(
+            symbol=args.symbol,
+            futures_symbol=args.futures,
+            dual_frame=args.dual_frame,
+            export_html=args.export_html,
+            output_html=args.output_html,
+            output_json=args.output_json
+        )

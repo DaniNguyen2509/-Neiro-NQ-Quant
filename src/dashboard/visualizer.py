@@ -66,18 +66,18 @@ def build_tactical_dashboard(
         df_plot = df.copy()
     df_plot = df_plot.sort_values('strike', ascending=True).reset_index(drop=True)
 
-    # Ensure 2nd order Greeks exist
-    if 'netVEX' not in df_plot.columns:
-        df_plot['netVEX'] = 0.0
-    if 'netCHEX' not in df_plot.columns:
-        df_plot['netCHEX'] = 0.0
-    if 'callVolume' not in df_plot.columns:
-        df_plot['callVolume'] = df_plot['callOpenInterest'] * 0.3
-    if 'putVolume' not in df_plot.columns:
-        df_plot['putVolume'] = df_plot['putOpenInterest'] * 0.35
+    # Ensure 2nd order Greeks and volumes exist without NaNs
+    for col in ['netVEX', 'netCHEX', 'callGEX', 'putGEX', 'netGEX']:
+        if col not in df_plot.columns:
+            df_plot[col] = 0.0
+        df_plot[col] = df_plot[col].fillna(0.0)
+    for col in ['callVolume', 'putVolume', 'callOpenInterest', 'putOpenInterest']:
+        if col not in df_plot.columns:
+            df_plot[col] = 0.0
+        df_plot[col] = df_plot[col].fillna(0.0)
 
-    total_vex = float(df['netVEX'].sum()) if 'netVEX' in df.columns else 0.0
-    total_chex = float(df['netCHEX'].sum()) if 'netCHEX' in df.columns else 0.0
+    total_vex = float(df['netVEX'].fillna(0.0).sum()) if 'netVEX' in df.columns else 0.0
+    total_chex = float(df['netCHEX'].fillna(0.0).sum()) if 'netCHEX' in df.columns else 0.0
 
     # Max VEX and Min CHEX for callouts
     max_vex_row = df_plot.loc[df_plot['netVEX'].idxmax()] if not df_plot.empty else None
@@ -476,13 +476,13 @@ def generate_standalone_html_report(
     for _, row in df_sorted.iterrows():
         stk_q = row['strike']
         stk_nq = row.get('strikeNQ', stk_q * basis)
-        gex = row.get('netGEX', 0.0)
-        c_oi = int(row.get('callOpenInterest', 0))
-        p_oi = int(row.get('putOpenInterest', 0))
-        c_vol = int(row.get('callVolume', 0))
-        p_vol = int(row.get('putVolume', 0))
-        vex = row.get('netVEX', 0.0)
-        chex = row.get('netCHEX', 0.0)
+        gex = float(0.0 if pd.isna(row.get('netGEX')) else row.get('netGEX', 0.0))
+        c_oi = int(0 if pd.isna(row.get('callOpenInterest')) else row.get('callOpenInterest', 0))
+        p_oi = int(0 if pd.isna(row.get('putOpenInterest')) else row.get('putOpenInterest', 0))
+        c_vol = int(0 if pd.isna(row.get('callVolume')) else row.get('callVolume', 0))
+        p_vol = int(0 if pd.isna(row.get('putVolume')) else row.get('putVolume', 0))
+        vex = float(0.0 if pd.isna(row.get('netVEX')) else row.get('netVEX', 0.0))
+        chex = float(0.0 if pd.isna(row.get('netCHEX')) else row.get('netCHEX', 0.0))
         
         gex_style = "color: #00E676; font-weight: 600;" if gex >= 0 else "color: #FF5252; font-weight: 600;"
         is_spot_near = abs(stk_q - spot) <= 2.5
