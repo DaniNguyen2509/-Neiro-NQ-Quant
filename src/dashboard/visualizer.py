@@ -165,6 +165,39 @@ def build_tactical_dashboard(
         row=1, col=1
     )
 
+    # Detailed Tactical Callout Boxes (Exact Neiro-Quant style)
+    min_gex = df_plot['netGEX'].min()
+    max_gex = df_plot['netGEX'].max()
+    fig.add_annotation(
+        x=min_gex * 0.9, y=pw_qqq,
+        text=(
+            f"<b>[MAJOR PUT WALL ({pw_qqq:.0f}) ({pw_oi:,} OI - HỖ TRỢ ĐÁY NỀN)]</b><br>"
+            f"• Vùng Mua (Rebound Buy): {pw_nq:,.0f} - {pw_nq+15:,.0f} | SL: {pw_nq-20:,.0f} | TP: {nq_spot:,.0f}<br>"
+            f"• Waterfall Breakout: Thủng < {pw_nq-15:,.0f} -> Bán Tháo Nhanh"
+        ),
+        showarrow=True, arrowhead=2, arrowcolor="#FF5252",
+        font=dict(size=9, color="#FFCDD2"),
+        bgcolor="rgba(127, 29, 29, 0.85)", bordercolor="#FF5252", borderwidth=1,
+        align="left",
+        row=1, col=1
+    )
+    fig.add_annotation(
+        x=max_gex * 0.75, y=cw_qqq,
+        text=f"<b>CỬA ẢI {cw_qqq:.0f} (Squeeze > {trigger_up_nq:,.0f} -> TP {band_1s_up_nq:,.0f})</b>",
+        showarrow=True, arrowhead=2, arrowcolor="#00E676",
+        font=dict(size=9, color="#C8E6C9"),
+        bgcolor="rgba(6, 78, 59, 0.85)", bordercolor="#00E676", borderwidth=1,
+        row=1, col=1
+    )
+    fig.add_annotation(
+        x=0, y=pivot_qqq,
+        text=f"<b>SÀN ĐỠ ATM {pivot_qqq:.0f} (Rebound: {pivot_nq-10:,.0f} - {pivot_nq+10:,.0f})</b>",
+        showarrow=True, arrowhead=2, arrowcolor="#00E5FF",
+        font=dict(size=9, color="#E0F7FA"),
+        bgcolor="rgba(8, 51, 68, 0.85)", bordercolor="#00E5FF", borderwidth=1,
+        row=1, col=1
+    )
+
     # -------------------------------------------------------------------------
     # PANEL 2: Volume vs Open Interest (Put on Left, Call on Right)
     # -------------------------------------------------------------------------
@@ -220,6 +253,27 @@ def build_tactical_dashboard(
     fig.add_hline(y=spot, line_color="#2979FF", line_width=1.5, row=1, col=2)
     fig.add_hline(y=cw_qqq, line_dash="dash", line_color="#00E676", line_width=1.0, row=1, col=2)
     fig.add_hline(y=pw_qqq, line_dash="dash", line_color="#FF1744", line_width=1.0, row=1, col=2)
+
+    # Volume Spike Callouts (Exact Neiro-Quant style)
+    if not df_plot.empty:
+        max_pvol_idx = df_plot['putVolume'].idxmax()
+        pvol_row = df_plot.loc[max_pvol_idx]
+        fig.add_annotation(
+            x=-pvol_row['putVolume'], y=pvol_row['strike'],
+            text=f"Put Vol: {int(pvol_row['putVolume']):,} | OI: {int(pvol_row['putOpenInterest']):,}",
+            showarrow=False, xanchor="right",
+            font=dict(size=9, color="#FF5252"),
+            row=1, col=2
+        )
+        max_cvol_idx = df_plot['callVolume'].idxmax()
+        cvol_row = df_plot.loc[max_cvol_idx]
+        fig.add_annotation(
+            x=cvol_row['callVolume'], y=cvol_row['strike'],
+            text=f"Call Vol: {int(cvol_row['callVolume']):,} | OI: {int(cvol_row['callOpenInterest']):,}",
+            showarrow=False, xanchor="left",
+            font=dict(size=9, color="#00E676"),
+            row=1, col=2
+        )
 
     # -------------------------------------------------------------------------
     # PANEL 3: 2nd Order Greeks: Vanna (VEX) & Charm (CHEX)
@@ -775,6 +829,20 @@ def generate_standalone_html_report(
     </div>
     <div class="radar-grid">
         {radar_cards_html}
+    </div>
+
+    <!-- 1-Sigma Expected Move & Greeks Bac 2 Insights (Exact Neiro-Quant Colab Style) -->
+    <div class="insight-box" style="border-left-color: #60A5FA; margin-bottom: 16px;">
+        <b style="color: #93C5FD; font-size: 14px;">📐 [ĐỘ LỆCH CHUẨN & BIÊN ĐỘ 1-SIGMA]:</b><br>
+        • <b>ATM Straddle (Call + Put ATM):</b> ${straddle_move/basis:.2f} (QQQ) | NQ ±{straddle_move:,.1f} pts | Implied Volatility (IV): ~18.5%<br>
+        • <b>Expected Move 1-Sigma (Brenner-Subrahmanyam):</b> ±{straddle_move:,.1f} pts (Biên độ cả kỳ: NQ {band_1s_dn_nq:,.1f} &mdash; {band_1s_up_nq:,.1f})<br>
+        • <b>Intraday Expected Move (Rule of 16):</b> ±{intraday_move:,.1f} pts (Vùng dao động trong ngày: NQ {nq_spot-intraday_move:,.1f} &mdash; {nq_spot+intraday_move:,.1f})
+    </div>
+
+    <div class="insight-box" style="border-left-color: #F59E0B; margin-bottom: 24px;">
+        <b style="color: #FCD34D; font-size: 14px;">⚡ [Ý NGHĨA & HÀNH ĐỘNG GREEKS BẬC 2 - VANNA & CHARM]:</b><br>
+        • <b>ĐỈNH VANNA (+{total_vex:.1f}M):</b> <b>LỰC ĐẨY V-REBOUND</b> &rarr; Canh BUY lướt sóng khi IV hạ nhiệt sau tin tức hoặc đầu phiên.<br>
+        • <b>ĐỈNH CHARM ({total_chex:.1f}M/ngày):</b> <b>NAM CHÂM GHÌM GIÁ ĐÊM</b> &rarr; Canh CHỐT LỜI hoặc đánh hồi quy (Mean-Reversion) về mốc này khi về đêm muộn.
     </div>
 
     <!-- Tactical Scalping Table -->
