@@ -93,11 +93,11 @@ def build_tactical_dashboard(
     fig = make_subplots(
         rows=1, cols=3,
         shared_yaxes=True,
-        horizontal_spacing=0.035,
+        horizontal_spacing=0.045,
         subplot_titles=(
-            "<b>Panel 1: Net GEX ($M) & Mốc Chiến Thuật (SL/TP)</b>",
-            "<b>Panel 2: Dòng Tiền Volume vs Open Interest Nén</b>",
-            "<b>Panel 3: Greeks Bậc 2: Vanna (VEX) & Charm (CHEX)</b>"
+            "<b>Panel 1: Net GEX ($M) & Mốc Cản</b>",
+            "<b>Panel 2: Volume vs Open Interest Nén</b>",
+            "<b>Panel 3: Greeks Bậc 2: Vanna & Charm</b>"
         ),
         column_widths=[0.36, 0.36, 0.28]
     )
@@ -347,17 +347,36 @@ def build_tactical_dashboard(
             x=0.5,
             font=dict(size=10)
         ),
-        margin=dict(l=75, r=30, t=95, b=45),
-        height=720,
+        margin=dict(l=85, r=30, t=95, b=45),
+        height=780,
         barmode='relative'
     )
 
-    # Format Y-Axis as Strike Price Ladder
-    ticks_y = df_plot['strike'].tolist()
+    # Format Y-Axis as Strike Price Ladder with Smart Spacing
+    # QQQ has 1-dollar increments near ATM, causing 40+ overlapping labels if every strike is shown.
+    # We display clean 5-dollar step intervals while ALWAYS preserving critical key levels (Spot, CW, PW, Pivot).
+    all_strikes = sorted(df_plot['strike'].unique().tolist())
+    key_levels = [spot, cw_qqq, pw_qqq, pivot_qqq]
+    key_strikes = set()
+    for kl in key_levels:
+        if all_strikes:
+            closest = min(all_strikes, key=lambda s: abs(s - kl))
+            key_strikes.add(closest)
+
+    # Keep multiples of 5, plus key structural strikes
+    candidate_ticks = [s for s in all_strikes if (s % 5 == 0) or (s in key_strikes)]
+    # Filter to avoid any collision (minimum 2.0 distance unless it's a key strike)
+    clean_ticks = []
+    for s in sorted(candidate_ticks):
+        if not clean_ticks or (s - clean_ticks[-1] >= 2.0) or (s in key_strikes):
+            clean_ticks.append(s)
+    ticks_y = clean_ticks
     labels_y = [f"${s:.0f} (NQ {s*basis:.0f})" for s in ticks_y]
+
     fig.update_yaxes(
         tickvals=ticks_y,
         ticktext=labels_y,
+        tickfont=dict(size=10, color="#CBD5E1"),
         gridcolor="#1E293B",
         title_text="E-mini Nasdaq Strike Ladder ($)",
         row=1, col=1
