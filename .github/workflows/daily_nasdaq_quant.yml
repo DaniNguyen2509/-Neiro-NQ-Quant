@@ -39,7 +39,7 @@ jobs:
         with:
           name: nasdaq-tactical-dashboard
           path: |
-            exports/latest_dashboard.html
+            exports/latest_nq_dashboard.html
             exports/nq_tactical_levels.json
           retention-days: 7
 

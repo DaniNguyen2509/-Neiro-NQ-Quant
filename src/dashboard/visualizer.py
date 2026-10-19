@@ -969,7 +969,7 @@ def generate_standalone_html_report(
 
     <!-- Footer -->
     <div class="footer">
-        NEIRO-NQ-QUANT TERMINAL &bull; 100% Python Cloud-First &bull; Zero-Waste (&lt; 15MB) &bull; Tự động đồng bộ hóa Google Drive: <code>latest_dashboard.html</code>
+        NEIRO-NQ-QUANT TERMINAL &bull; 100% Python Cloud-First &bull; Zero-Waste (&lt; 15MB) &bull; Tự động đồng bộ hóa Google Drive: <code>latest_nq_dashboard.html</code>
     </div>
 </div>
 </body>

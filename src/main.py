@@ -29,7 +29,7 @@ def run_pipeline(
     futures_symbol: str = "NQ=F",
     dual_frame: bool = False,
     export_html: bool = True,
-    output_html: str = "exports/latest_dashboard.html",
+    output_html: str = "exports/latest_nq_dashboard.html",
     output_json: str = "exports/nq_tactical_levels.json"
 ):
     print("=" * 80)
@@ -122,7 +122,7 @@ def run_pipeline(
             import shutil
             shutil.copy(output_json, os.path.join(drive_root, "nq_tactical_levels.json"))
             if export_html and os.path.exists(output_html):
-                shutil.copy(output_html, os.path.join(drive_root, "latest_dashboard.html"))
+                shutil.copy(output_html, os.path.join(drive_root, "latest_nq_dashboard.html"))
             print(f"[+] Synchronized dashboard & JSON to Google Drive: {drive_root}")
         except Exception as e:
             print(f"[!] Warning: Could not mirror to Drive root: {e}")
@@ -139,7 +139,7 @@ if __name__ == "__main__":
     parser.add_argument("--futures", default="NQ=F", help="Futures reference symbol (default: NQ=F)")
     parser.add_argument("--dual-frame", action="store_true", default=False, help="Enable Dual-Frame collection (0DTE + Monthly)")
     parser.add_argument("--export-html", action="store_true", default=True, help="Export interactive HTML dashboard")
-    parser.add_argument("--output-html", default="exports/latest_dashboard.html", help="Path to output HTML file")
+    parser.add_argument("--output-html", default="exports/latest_nq_dashboard.html", help="Path to output HTML file")
     parser.add_argument("--output-json", default="exports/nq_tactical_levels.json", help="Path to output JSON feed")
     
     args = parser.parse_args()
