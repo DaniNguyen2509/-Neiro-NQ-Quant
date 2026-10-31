@@ -1,6 +1,11 @@
 name: CME E-mini Nasdaq Options Automated Sync & Tactical Terminal (Neiro-NQ-Quant)
 
 on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - 'README.md'
+      - 'docs/**'
   schedule:
     # 1. Chot Open Interest ngay moi tu CME Clearing (07:15 VN = 00:15 UTC):
     - cron: '15 0 * * 1-5'
@@ -8,10 +13,8 @@ on:
     - cron: '30 7 * * 1-5'
     # 3. Phien My Pre-market (19:45 VN = 12:45 UTC):
     - cron: '45 12 * * 1-5'
-    # 4. Phien My In-Session (21:45 VN = 14:45 UTC):
-    - cron: '45 14 * * 1-5'
-    # 5. Phien My Power Hour (02:45 VN = 19:45 UTC):
-    - cron: '45 19 * * 1-5'
+    # 4. Phien My Cao diem & Xuyen suot phien (Moi 1 tieng tu 20:45 den 02:45 VN = 13:45 den 19:45 UTC):
+    - cron: '45 13,14,15,16,17,18,19 * * 1-5'
   workflow_dispatch:
     inputs:
       basis:
