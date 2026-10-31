@@ -86,14 +86,31 @@ class NasdaqCollector(BaseCollector):
                 hist_fut = tk_fut.history(period="1d")
                 if not hist_fut.empty:
                     futures_price = float(hist_fut["Close"].iloc[-1])
+
+            # 3. Fetch Cash Index (^NDX) to auto-calculate MT5 CFD basis offset
+            ndx_price = futures_price - 149.0
+            try:
+                tk_ndx = yf.Ticker("^NDX")
+                fast_ndx = getattr(tk_ndx, "fast_info", None)
+                if fast_ndx and "lastPrice" in fast_ndx:
+                    ndx_price = float(fast_ndx["lastPrice"])
+                else:
+                    hist_ndx = tk_ndx.history(period="1d")
+                    if not hist_ndx.empty:
+                        ndx_price = float(hist_ndx["Close"].iloc[-1])
+            except Exception:
+                pass
         except Exception as e:
             print(f"[NasdaqCollector] Price fetch fallback used ({e})")
 
         basis_ratio = futures_price / max(1.0, spot_price)
+        auto_basis_offset = max(0.0, futures_price - ndx_price)
         return {
             "underlying": float(spot_price),
             "futures": float(futures_price),
-            "basis": float(basis_ratio)
+            "ndx": float(ndx_price),
+            "basis": float(basis_ratio),
+            "basis_offset": float(round(auto_basis_offset, 2)),
         }
 
     def fetch_options_chain(self, expiration_date: Optional[str] = None) -> pd.DataFrame:

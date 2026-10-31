@@ -65,6 +65,7 @@ def load_options_dataset(
     """
     df_raw = None
     eff_multiplier = multiplier
+    eff_basis = basis
 
     # 1. Primary Source: Live yfinance (Fast, 100% Free, No Browser, Bypasses Cloudflare)
     if source == "yfinance":
@@ -78,6 +79,12 @@ def load_options_dataset(
                 basis_ratio = max(1.0, float(prices.get("basis", 41.3)))
                 # QQQ options have 100 shares multiplier; scale to equivalent NQ futures points
                 eff_multiplier = round(100.0 / basis_ratio, 4)
+
+                # Auto-calculate live MT5 CFD basis offset if not manually overridden
+                if eff_basis == 0.0 and "basis_offset" in prices:
+                    eff_basis = float(prices["basis_offset"])
+                    print(f"[+] [Dashboard] Auto-detected live MT5 CFD Basis Offset: {eff_basis:+.2f} points (NQ Futures vs ^NDX Cash).")
+
                 print(f"[+] Loaded {len(df_raw)} strikes via yfinance (QQQ ${prices['underlying']:.2f} -> NQ {prices['futures']:.2f}, Basis: {basis_ratio:.2f}, EffMult: {eff_multiplier}).")
                 # Save snapshot to CSV if path provided
                 if csv_path:
@@ -136,11 +143,12 @@ def load_options_dataset(
         multiplier=eff_multiplier,
         risk_free_rate=0.045,
         dte_days=dte_val,
-        basis_offset=basis,
+        basis_offset=eff_basis,
     )
     meta["raw_source"] = source
     meta["effective_multiplier"] = eff_multiplier
     meta["dte_days"] = dte_val
+    meta["basis_offset"] = eff_basis
     return df_enriched, meta
 
 
