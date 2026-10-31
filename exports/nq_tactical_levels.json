@@ -1,12 +1,12 @@
 {
-  "timestamp": "2026-10-31T23:29:43.898601+00:00",
+  "timestamp": "2026-10-31T23:50:35.800220+00:00",
   "symbol": "QQQ",
   "futures_symbol": "NQ=F",
   "source": "yfinance",
   "metrics": {
     "spot_price": 28568.77,
-    "spot_mt5": 28568.77,
-    "basis_offset": 0.0,
+    "spot_mt5": 28419.62,
+    "basis_offset": 149.15,
     "multiplier": 2.4199,
     "atm_strike": 28514.0,
     "atm_straddle": 426.26,
