@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import argparse
 import datetime
+import json
 import math
 import os
 import sys
@@ -63,6 +64,7 @@ def load_options_dataset(
     or fall back to CSV file / embedded benchmark data.
     """
     df_raw = None
+    eff_multiplier = multiplier
 
     # 1. Primary Source: Live yfinance (Fast, 100% Free, No Browser, Bypasses Cloudflare)
     if source == "yfinance":
@@ -73,25 +75,41 @@ def load_options_dataset(
             df_live, prices = collector.fetch_standardized_nq_chain()
             if not df_live.empty and len(df_live) >= 5:
                 df_raw = df_live
-                print(f"[+] Loaded {len(df_raw)} strikes via yfinance (QQQ ${prices['underlying']:.2f} -> NQ {prices['futures']:.2f}).")
+                basis_ratio = max(1.0, float(prices.get("basis", 41.3)))
+                # QQQ options have 100 shares multiplier; scale to equivalent NQ futures points
+                eff_multiplier = round(100.0 / basis_ratio, 4)
+                print(f"[+] Loaded {len(df_raw)} strikes via yfinance (QQQ ${prices['underlying']:.2f} -> NQ {prices['futures']:.2f}, Basis: {basis_ratio:.2f}, EffMult: {eff_multiplier}).")
                 # Save snapshot to CSV if path provided
                 if csv_path:
                     try:
                         p_csv = Path(csv_path)
                         p_csv.parent.mkdir(parents=True, exist_ok=True)
                         df_raw.to_csv(p_csv, index=False)
-                    except Exception:
-                        pass
+                        print(f"[+] Fresh options snapshot saved to CSV: {csv_path}")
+                    except Exception as e:
+                        print(f"[!] Warning: Could not save snapshot to {csv_path}: {e}")
         except Exception as e:
             print(f"[Dashboard] Notice: yfinance fetch encountered ({e}). Checking CSV/benchmark fallback...")
 
-    # 2. Secondary Source: Local CSV dataset
+    # 2. Secondary Source: Local CSV dataset (with quality & freshness validation)
     if (df_raw is None or df_raw.empty) and csv_path and os.path.exists(csv_path):
         try:
-            df_raw = pd.read_csv(csv_path)
-            col_clean = {c: c.strip() for c in df_raw.columns}
-            df_raw.rename(columns=col_clean, inplace=True)
-            print(f"[+] Loaded {len(df_raw)} strikes from CSV: {csv_path}")
+            df_cand = pd.read_csv(csv_path)
+            col_clean = {c: c.strip() for c in df_cand.columns}
+            df_cand.rename(columns=col_clean, inplace=True)
+            
+            # Check for valid Open Interest
+            total_oi = 0
+            if "callOpenInterest" in df_cand.columns and "putOpenInterest" in df_cand.columns:
+                total_oi = float(pd.to_numeric(df_cand["callOpenInterest"], errors="coerce").fillna(0).sum() +
+                                 pd.to_numeric(df_cand["putOpenInterest"], errors="coerce").fillna(0).sum())
+            
+            if total_oi <= 0:
+                print(f"[Dashboard] Warning: CSV at {csv_path} has ZERO total Open Interest. Rejecting stale/empty CSV.")
+            else:
+                df_raw = df_cand
+                eff_multiplier = multiplier
+                print(f"[+] Loaded {len(df_raw)} strikes from CSV: {csv_path} (Total OI: {int(total_oi):,})")
         except Exception as e:
             print(f"[Dashboard] Warning: Could not read CSV at {csv_path} ({e}). Using benchmark.")
             df_raw = None
@@ -99,16 +117,30 @@ def load_options_dataset(
     # 3. Tertiary Fallback: High-fidelity benchmark data
     if df_raw is None or df_raw.empty or len(df_raw) < 5:
         print("[Dashboard] Loading high-fidelity E-mini NQ benchmark options chain...")
-        df_raw = generate_benchmark_nq_chain(spot=20500.0)
+        df_raw = generate_benchmark_nq_chain(spot=28500.0)
+        eff_multiplier = multiplier
+
+    # Determine dynamic DTE from expiration date
+    dte_val = 1.0
+    if "expirationDate" in df_raw.columns and not df_raw["expirationDate"].empty:
+        exp_val = str(df_raw["expirationDate"].iloc[0])
+        try:
+            from src.collector.nasdaq_collector import calculate_dte
+            dte_val = calculate_dte(exp_val)
+        except Exception:
+            dte_val = 1.0
 
     # Calculate complete quantitative matrix via Black-76
     df_enriched, meta = process_options_chain_black76(
         df_raw,
-        multiplier=multiplier,
+        multiplier=eff_multiplier,
         risk_free_rate=0.045,
-        dte_days=1.0,
+        dte_days=dte_val,
         basis_offset=basis,
     )
+    meta["raw_source"] = source
+    meta["effective_multiplier"] = eff_multiplier
+    meta["dte_days"] = dte_val
     return df_enriched, meta
 
 
@@ -767,6 +799,23 @@ def build_and_export_dashboard(
         with open(p, "w", encoding="utf-8") as f:
             f.write(html_content)
         print(f"[+] [Dashboard] Exported standalone terminal to: {p} ({p.stat().st_size:,} bytes)")
+
+    # Also export hot tactical JSON feed
+    json_path = Path("exports/nq_tactical_levels.json")
+    try:
+        json_path.parent.mkdir(parents=True, exist_ok=True)
+        json_feed = {
+            "timestamp": datetime.datetime.now(datetime.timezone.utc).isoformat(),
+            "symbol": "QQQ" if source == "yfinance" else "NQ",
+            "futures_symbol": "NQ=F",
+            "source": source,
+            "metrics": meta,
+        }
+        with open(json_path, "w", encoding="utf-8") as jf:
+            json.dump(json_feed, jf, indent=2, default=str)
+        print(f"[+] [Dashboard] Exported hot tactical JSON to: {json_path}")
+    except Exception as e:
+        print(f"[!] Warning: Could not export JSON feed: {e}")
 
     return output_paths[0]
 

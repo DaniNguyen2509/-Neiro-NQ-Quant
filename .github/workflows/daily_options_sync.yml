@@ -1,33 +1,17 @@
 name: CME E-mini Nasdaq Options Automated Sync & Tactical Terminal (Neiro-NQ-Quant)
 
 on:
-  # Tam dung schedule tu dong & push trigger de nhuong quota GitHub Actions cho Gold
-  # schedule:
-  #   # 1. Chot Open Interest ngay moi tu CME Clearing (07:15 VN):
-  #   - cron: '15 0 * * 1-5'
-  #
-  #   # 2. Phien Au 2 nac (Pre-Europe & In-Session Europe thich ung ca 2 mua):
-  #   #    05:30 UTC = 12:30 VN (Pre-Europe Mua He: truoc Frankfurt 13:00 & London 14:00)
-  #   #    06:30 UTC = 13:30 VN (Pre-Europe Mua Dong: truoc Frankfurt 14:00 & London 15:00)
-  #   #    07:30 UTC = 14:30 VN (In-Session Europe Mua He sau khi London chay 30p)
-  #   #    08:30 UTC = 15:30 VN (In-Session Europe Mua Dong sau khi London chay 30p)
-  #   - cron: '30 5,6,7,8 * * 1-5'
-  #
-  #   # 3. Phien My don tin vi mo (18:45 VN), gio cao diem NYSE & 0DTE Power Hour (02:45 VN):
-  #   #    11:45 UTC = 18:45 VN (Pre-US: don dau tin vi mo CPI/NFP 19:30 he / 20:30 dong 45p)
-  #   #    12:45 UTC = 19:45 VN (Pre-market NYSE Mua He: truoc mo cua 20:30)
-  #   #    13:45 UTC = 20:45 VN (In-Session He sau mo cua 15p / Pre-market NYSE Mua Dong)
-  #   #    14:45 UTC = 21:45 VN (Cao diem He / In-Session Dong sau mo cua 15p)
-  #   #    15:45, 16:45 UTC = 22:45, 23:45 VN (Xuyen suot giua phien & London Fix 00:00)
-  #   #    17:45, 18:45 UTC = 00:45, 01:45 VN (Nua sau phien My)
-  #   #    19:45 UTC = 02:45 VN (Radar don dau 0DTE Power Hour truoc gio dong cua NYSE)
-  #   - cron: '45 11,12,13,14,15,16,17,18,19 * * 1-5'
-  # push:
-  #   branches: [main]
-  #   paths:
-  #     - '.github/workflows/daily_options_sync.yml'
-  #     - 'src/**'
-  #     - 'requirements.txt'
+  schedule:
+    # 1. Chot Open Interest ngay moi tu CME Clearing (07:15 VN = 00:15 UTC):
+    - cron: '15 0 * * 1-5'
+    # 2. Phien Au (14:30 VN = 07:30 UTC):
+    - cron: '30 7 * * 1-5'
+    # 3. Phien My Pre-market (19:45 VN = 12:45 UTC):
+    - cron: '45 12 * * 1-5'
+    # 4. Phien My In-Session (21:45 VN = 14:45 UTC):
+    - cron: '45 14 * * 1-5'
+    # 5. Phien My Power Hour (02:45 VN = 19:45 UTC):
+    - cron: '45 19 * * 1-5'
   workflow_dispatch:
     inputs:
       basis:
@@ -88,6 +72,7 @@ jobs:
           path: |
             exports/latest_nq_dashboard.html
             exports/index.html
+            exports/nq_tactical_levels.json
             data/options_prices_NQZ26.csv
           retention-days: 7
 
@@ -102,7 +87,5 @@ jobs:
         run: |
           git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
-          if [ -f data/options_prices_NQZ26.csv ]; then
-            git add data/options_prices_NQZ26.csv
-            git diff --staged --quiet || (git commit -m "chore(data): auto-sync Nasdaq NQ options chain [skip ci]" && git push)
-          fi
+          git add data/options_prices_NQZ26.csv exports/nq_tactical_levels.json || true
+          git diff --staged --quiet || (git commit -m "chore(data): auto-sync Nasdaq NQ options chain [skip ci]" && git push)

@@ -14,6 +14,19 @@ from src.collector.base import BaseCollector
 from src.collector.greeks import vectorized_black_scholes_greeks, estimate_iv_brent
 
 
+def calculate_dte(expiration_date_str: str) -> float:
+    """Calculate fractional days to expiration (assuming 16:00 ET settlement)."""
+    try:
+        exp_date = datetime.datetime.strptime(str(expiration_date_str)[:10], "%Y-%m-%d").date()
+        today = datetime.date.today()
+        diff_days = (exp_date - today).days
+        if diff_days <= 0:
+            return 0.35  # Intraday 0DTE (~8.5 trading hours remaining)
+        return float(diff_days)
+    except Exception:
+        return 1.0
+
+
 class NasdaqCollector(BaseCollector):
     """Collector specialized for E-mini Nasdaq & QQQ Options with Dual-Frame support."""
 
@@ -34,7 +47,11 @@ class NasdaqCollector(BaseCollector):
             import yfinance as yf
             tk = yf.Ticker(self.symbol)
             expirations = list(tk.options)
-            if expirations:
+            today_str = datetime.date.today().strftime("%Y-%m-%d")
+            valid = [e for e in expirations if e >= today_str]
+            if valid:
+                return sorted(valid)
+            elif expirations:
                 return sorted(expirations)
         except Exception as e:
             print(f"[NasdaqCollector] Warning: Could not fetch online expirations ({e})")
@@ -97,10 +114,14 @@ class NasdaqCollector(BaseCollector):
             tk = yf.Ticker(self.symbol)
             all_expiries = list(tk.options)
             
-            if not target_expiry and all_expiries:
+            today_str = datetime.date.today().strftime("%Y-%m-%d")
+            valid_expiries = [e for e in all_expiries if e >= today_str] if all_expiries else []
+            if not target_expiry and valid_expiries:
+                target_expiry = valid_expiries[0]
+            elif not target_expiry and all_expiries:
                 target_expiry = all_expiries[0]
             elif not target_expiry:
-                target_expiry = datetime.date.today().strftime("%Y-%m-%d")
+                target_expiry = today_str
                 
             if all_expiries and target_expiry in all_expiries:
                 chain = tk.option_chain(target_expiry)
@@ -145,7 +166,8 @@ class NasdaqCollector(BaseCollector):
         if df_chain.empty or len(df_chain) < 5:
             df_chain = self._generate_benchmark_chain(spot, basis)
             
-        df_chain = self._enrich_quant_metrics(df_chain, spot)
+        dte_days = calculate_dte(target_expiry or datetime.date.today().strftime("%Y-%m-%d"))
+        df_chain = self._enrich_quant_metrics(df_chain, spot, dte_days=dte_days)
         return df_chain
 
     def fetch_standardized_nq_chain(self, expiration_date: Optional[str] = None) -> Tuple[pd.DataFrame, Dict[str, float]]:
@@ -184,21 +206,28 @@ class NasdaqCollector(BaseCollector):
         for _, r in df_raw.iterrows():
             stk_q = safe_f(r.get('strike'), 500.0)
             stk_nq = round(stk_q * basis, 0)
+            # Scale option premiums proportionally from QQQ dollars to NQ futures index points
+            c_bid = round(safe_f(r.get('callBid')) * basis, 2)
+            c_ask = round(safe_f(r.get('callAsk')) * basis, 2)
+            c_mid = round(safe_f(r.get('callMid')) * basis, 2)
+            p_bid = round(safe_f(r.get('putBid')) * basis, 2)
+            p_ask = round(safe_f(r.get('putAsk')) * basis, 2)
+            p_mid = round(safe_f(r.get('putMid')) * basis, 2)
             rows.append({
                 "strike": stk_nq,
                 "strikeQQQ": stk_q,
-                "callBid": safe_f(r.get('callBid')),
-                "callAsk": safe_f(r.get('callAsk')),
-                "callMid": safe_f(r.get('callMid')),
-                "callLatest": safe_f(r.get('callMid')),
+                "callBid": c_bid,
+                "callAsk": c_ask,
+                "callMid": c_mid,
+                "callLatest": c_mid,
                 "callVolume": safe_i(r.get('callVolume')),
                 "callOpenInterest": safe_i(r.get('callOpenInterest')),
                 "callGamma": safe_f(r.get('callGamma'), 0.0003),
                 "callIV": safe_f(r.get('callIV'), 0.18),
-                "putBid": safe_f(r.get('putBid')),
-                "putAsk": safe_f(r.get('putAsk')),
-                "putMid": safe_f(r.get('putMid')),
-                "putLatest": safe_f(r.get('putMid')),
+                "putBid": p_bid,
+                "putAsk": p_ask,
+                "putMid": p_mid,
+                "putLatest": p_mid,
                 "putVolume": safe_i(r.get('putVolume')),
                 "putOpenInterest": safe_i(r.get('putOpenInterest')),
                 "putGamma": safe_f(r.get('putGamma'), 0.0003),
@@ -229,9 +258,9 @@ class NasdaqCollector(BaseCollector):
             "institutional": df_inst
         }
 
-    def _enrich_quant_metrics(self, df: pd.DataFrame, spot: float) -> pd.DataFrame:
+    def _enrich_quant_metrics(self, df: pd.DataFrame, spot: float, dte_days: float = 1.0) -> pd.DataFrame:
         """Vectorized enrichment: calculates Greeks (Delta, Gamma, Vega, Vanna, Charm), GEX, DEX, VEX, CHEX."""
-        t_years = max(1.0 / 365.0, 1.0 / 365.0)
+        t_years = max(float(dte_days) / 365.0, 1.0 / (365.0 * 1440.0))
         r = self.risk_free_rate
         mult = 100.0
         scale = (spot ** 2) * 0.01 / 1e6
@@ -320,7 +349,7 @@ class NasdaqCollector(BaseCollector):
         return pd.DataFrame(rows)
 
 
-def generate_benchmark_nq_chain(spot: float = 20500.0) -> pd.DataFrame:
+def generate_benchmark_nq_chain(spot: float = 28500.0) -> pd.DataFrame:
     """Generate high-fidelity benchmark E-mini NQ options chain for offline / test execution."""
     atm = round(spot / 50.0) * 50.0
     offsets = [

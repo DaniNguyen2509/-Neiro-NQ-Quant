@@ -63,8 +63,15 @@ def process_options_chain_black76(
     r = float(risk_free_rate)
 
     # 1. Put-Call Parity Implied Synthetic Futures Pivot
-    diff = (df_clean["callMid"] - df_clean["putMid"]).abs()
-    atm_idx = diff.idxmin()
+    # Select strike closest to ATM where both Call and Put have real positive quotes
+    valid_quotes = df_clean[(df_clean["callMid"] > 0.5) & (df_clean["putMid"] > 0.5)]
+    if not valid_quotes.empty:
+        diff = (valid_quotes["callMid"] - valid_quotes["putMid"]).abs()
+        atm_idx = diff.idxmin()
+    else:
+        diff = (df_clean["callMid"] - df_clean["putMid"]).abs()
+        atm_idx = diff.idxmin()
+
     atm_strike = float(df_clean.loc[atm_idx, "strike"])
     c_mid_atm = float(df_clean.loc[atm_idx, "callMid"])
     p_mid_atm = float(df_clean.loc[atm_idx, "putMid"])
@@ -82,12 +89,18 @@ def process_options_chain_black76(
     c_ivs = df_clean["callIV"].values.astype(float).copy()
     p_ivs = df_clean["putIV"].values.astype(float).copy()
 
-    # Fill zero IVs via Newton-Brent Black-76 solver
+    # Fill zero or artifact IVs via Newton-Brent Black-76 solver
     for i in range(len(df_clean)):
-        if c_ivs[i] <= 0.005 or math.isnan(c_ivs[i]):
-            c_ivs[i] = solve_iv_newton_brent(call_mids[i], s_implied, strikes[i], T_years, r, is_call=True)
-        if p_ivs[i] <= 0.005 or math.isnan(p_ivs[i]):
-            p_ivs[i] = solve_iv_newton_brent(put_mids[i], s_implied, strikes[i], T_years, r, is_call=False)
+        if c_ivs[i] <= 0.01 or c_ivs[i] >= 2.5 or math.isnan(c_ivs[i]):
+            if call_mids[i] > 0.01:
+                c_ivs[i] = solve_iv_newton_brent(call_mids[i], s_implied, strikes[i], T_years, r, is_call=True)
+            else:
+                c_ivs[i] = 0.18
+        if p_ivs[i] <= 0.01 or p_ivs[i] >= 2.5 or math.isnan(p_ivs[i]):
+            if put_mids[i] > 0.01:
+                p_ivs[i] = solve_iv_newton_brent(put_mids[i], s_implied, strikes[i], T_years, r, is_call=False)
+            else:
+                p_ivs[i] = 0.18
 
     df_clean["callIV"] = np.round(c_ivs, 4)
     df_clean["putIV"] = np.round(p_ivs, 4)

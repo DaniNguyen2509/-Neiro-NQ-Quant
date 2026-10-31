@@ -106,7 +106,7 @@ def run_pipeline(
     # 6. Export Hot Tactical JSON Feed
     os.makedirs(os.path.dirname(os.path.abspath(output_json)), exist_ok=True)
     json_feed = {
-        "timestamp": str(pd.Timestamp.now(datetime.timezone.utc) if 'pd' in locals() else ""),
+        "timestamp": datetime.datetime.now(datetime.timezone.utc).isoformat(),
         "symbol": symbol,
         "futures_symbol": futures_symbol,
         "metrics": metrics,
