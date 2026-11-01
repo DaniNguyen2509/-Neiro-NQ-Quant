@@ -684,7 +684,26 @@ def generate_html_terminal(df: pd.DataFrame, meta: Dict[str, Any], fig: go.Figur
         .kpi-val {{
             font-size: 20px; font-weight: 700; font-family: 'JetBrains Mono', monospace; margin-bottom: 3px;
         }}
-        .kpi-sub {{ font-size: 11px; color: var(--text-muted); }}
+                .kpi-sub {{ font-size: 11px; color: var(--text-muted); }}
+
+        /* Unified Quick-Jump Sticky Navigation Bar */
+        html {{ scroll-behavior: smooth; }}
+        .quick-nav-bar {{
+            position: sticky; top: 0; z-index: 100;
+            display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
+            background: rgba(8, 13, 22, 0.96); backdrop-filter: blur(8px);
+            border: 1px solid #1E293B; border-radius: 8px;
+            padding: 8px 14px; margin-bottom: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+        }}
+        .nav-tab {{
+            color: #94A3B8; text-decoration: none; font-size: 11px; font-weight: 600;
+            padding: 4px 10px; border-radius: 5px; border: 1px solid transparent;
+            transition: all 0.2s; font-family: 'JetBrains Mono', monospace;
+        }}
+        .nav-tab:hover, .nav-tab.active {{
+            background: #131E31; color: #38BDF8; border-color: #243550;
+        }}
 
         /* ATAS Orderflow Terminal Box */
         .atas-terminal-box {{
@@ -847,8 +866,20 @@ def generate_html_terminal(df: pd.DataFrame, meta: Dict[str, Any], fig: go.Figur
         </div>
     </div>
 
+    <!-- Unified Quick-Jump Navigation Bar -->
+    <div class="quick-nav-bar">
+        <span style="font-family:'JetBrains Mono', monospace; font-size:11px; color:#38BDF8; font-weight:700; margin-right:4px;">🧭 CHUYỂN NHANH:</span>
+        <a href="#sec-atas" class="nav-tab active">⚡ 1. Nến & Footprint ATAS</a>
+        <a href="#sec-insights" class="nav-tab">📐 2. Thống Kê 1-Sigma</a>
+        <a href="#sec-scalping" class="nav-tab">🎯 3. Lướt Sóng Trong Ngày</a>
+        <a href="#sec-swing" class="nav-tab">🏰 4. Phục Kích Thành Trì</a>
+        <a href="#sec-charts" class="nav-tab">📊 5. Biểu Đồ 3-Panel Strike</a>
+        <a href="#sec-microstructure" class="nav-tab">📋 6. Bảng Chi Tiết Strike</a>
+        <a href="#sec-glossary" class="nav-tab">📖 7. Từ Điển Thuật Ngữ ATAS</a>
+    </div>
+
     <!-- True ATAS Realtime Orderflow Footprint Candlestick Terminal -->
-    <div class="atas-terminal-box">
+    <div class="atas-terminal-box" id="sec-atas">
         <div class="atas-toolbar">
             <div class="atas-tools-left">
                 <span class="atas-badge">#NQZ6</span>
@@ -880,7 +911,7 @@ def generate_html_terminal(df: pd.DataFrame, meta: Dict[str, Any], fig: go.Figur
     </div>
 
     <!-- 1-Sigma & Greeks Insights -->
-    <div class="insight-box" style="border-left-color: #38BDF8;">
+    <div class="insight-box" id="sec-insights" style="border-left-color: #38BDF8;">
         <b style="color: #93C5FD; font-size: 13px;">📐 [ĐỘ LỆCH CHUẨN & BIÊN ĐỘ 1-SIGMA NASDAQ]:</b><br>
         • <b>ATM Straddle (Call + Put ATM):</b> {meta['atm_straddle']:,.1f} pts | Implied Volatility (IV ATM): <b>{meta['sigma_atm']*100:.1f}%</b><br>
         • <b>Expected Move 1-Sigma (Brenner-Subrahmanyam):</b> ±{expected_move:,.1f} pts (Biên độ kỳ: NQ {meta['lower_band_1s']:,.0f} &mdash; {meta['upper_band_1s']:,.0f})<br>
@@ -894,7 +925,7 @@ def generate_html_terminal(df: pd.DataFrame, meta: Dict[str, Any], fig: go.Figur
     </div>
 
     <!-- Tactical Scalping Table -->
-    <div class="table-box">
+    <div class="table-box" id="sec-scalping">
         <div class="section-header">
             <span>🎯 PHẦN 1: BẢNG TÁC CHIẾN LƯỚT SÓNG TRONG NGÀY (INTRADAY SCALPING - ĂN 30-50 ĐIỂM NQ)</span>
         </div>
@@ -952,7 +983,7 @@ def generate_html_terminal(df: pd.DataFrame, meta: Dict[str, Any], fig: go.Figur
     </div>
 
     <!-- Structural Swing Walls Table -->
-    <div class="table-box">
+    <div class="table-box" id="sec-swing">
         <div class="section-header">
             <span>🏰 PHẦN 2: BẢNG PHỤC KÍCH THÀNH TRÌ CẤU TRÚC (STRUCTURAL SWING WALLS - ĂN 100-250 ĐIỂM NQ)</span>
         </div>
@@ -992,7 +1023,7 @@ def generate_html_terminal(df: pd.DataFrame, meta: Dict[str, Any], fig: go.Figur
     </div>
 
     <!-- 3-Panel Plotly Interactive Chart -->
-    <div class="chart-box">
+    <div class="chart-box" id="sec-charts">
         <div class="section-header" style="padding: 6px 10px;">
             <span>📈 BIỂU ĐỒ ĐỊNH LƯỢNG 3 PANEL CHUYÊN SÂU (NET GEX &bull; VOLUME/OI &bull; VANNA/CHARM)</span>
         </div>
@@ -1000,7 +1031,7 @@ def generate_html_terminal(df: pd.DataFrame, meta: Dict[str, Any], fig: go.Figur
     </div>
 
     <!-- Microstructure Strike Table -->
-    <div class="table-box">
+    <div class="table-box" id="sec-microstructure">
         <div class="section-header">
             <span>{micro_header}</span>
         </div>
@@ -1025,7 +1056,7 @@ def generate_html_terminal(df: pd.DataFrame, meta: Dict[str, Any], fig: go.Figur
     </div>
 
     <!-- ATAS Orderflow & Quant Terminology Glossary -->
-    <div class="table-box" style="margin-top: 20px; border-left: 4px solid #38BDF8;">
+    <div class="table-box" id="sec-glossary" style="margin-top: 20px; border-left: 4px solid #38BDF8;">
         <div class="section-header">
             <span>📖 BẢNG CHÚ THÍCH Ý NGHĨA & HƯỚNG DẪN TÁC CHIẾN CÁC DẢI CẢN ORDERFLOW (CHUẨN ATAS)</span>
         </div>
