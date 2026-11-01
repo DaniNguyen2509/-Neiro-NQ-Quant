@@ -441,6 +441,8 @@ def generate_html_terminal(df: pd.DataFrame, meta: Dict[str, Any], fig: go.Figur
     seller_offer_price = atm_pivot + 15.0 if spot <= atm_pivot else atm_pivot + 25.0
     deep_ef_price = seller_offer_price + 25.0
     gex_react_price = atm_pivot + (5.0 if total_gex >= 0 else -5.0)
+    charm_level_price = atm_pivot + (25.0 if total_chex >= 0 else -25.0)
+    vanna_level_price = atm_pivot - (25.0 if total_vex <= 0 else -25.0)
     tactical_put_wall = atm_pivot - 50.0
     tactical_call_wall = atm_pivot + 50.0
 
@@ -577,6 +579,8 @@ def generate_html_terminal(df: pd.DataFrame, meta: Dict[str, Any], fig: go.Figur
         "seller_offer": seller_offer_price,
         "deep_ef": deep_ef_price,
         "gex_react": gex_react_price,
+        "charm_level": charm_level_price,
+        "vanna_level": vanna_level_price,
         "strike_above": strike_above,
         "strike_below": strike_below,
         "next_above": next_above,
@@ -685,6 +689,29 @@ def generate_html_terminal(df: pd.DataFrame, meta: Dict[str, Any], fig: go.Figur
             font-size: 20px; font-weight: 700; font-family: 'JetBrains Mono', monospace; margin-bottom: 3px;
         }}
                 .kpi-sub {{ font-size: 11px; color: var(--text-muted); }}
+
+        /* On-Chart Floating Quant HUD & Single-Screen Drawer */
+        .atas-floating-hud {{
+            position: absolute; top: 10px; right: 90px; z-index: 10;
+            display: flex; align-items: center; gap: 12px;
+            background: rgba(8, 13, 22, 0.88); backdrop-filter: blur(6px);
+            border: 1px solid rgba(56, 189, 248, 0.35); border-radius: 6px;
+            padding: 6px 14px; font-family: 'JetBrains Mono', monospace; font-size: 11px;
+            pointer-events: none; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6);
+        }}
+        .hud-item {{ display: flex; align-items: center; gap: 5px; }}
+        .hud-label {{ color: #94A3B8; font-weight: 600; font-size: 10px; }}
+        .quant-details-drawer {{
+            margin-top: 14px; background: #080D16; border: 1px solid #1E293B;
+            border-radius: 8px; padding: 10px 16px;
+        }}
+        .drawer-summary {{
+            cursor: pointer; display: flex; justify-content: space-between; align-items: center;
+            font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 700;
+            color: #94A3B8; user-select: none;
+        }}
+        .drawer-summary:hover {{ color: #38BDF8; }}
+        .drawer-content {{ margin-top: 14px; }}
 
         /* Unified Quick-Jump Sticky Navigation Bar */
         html {{ scroll-behavior: smooth; }}
@@ -898,6 +925,12 @@ def generate_html_terminal(df: pd.DataFrame, meta: Dict[str, Any], fig: go.Figur
         </div>
 
         <div id="tv-chart-wrapper">
+            <div class="atas-floating-hud">
+                <div class="hud-item"><span class="hud-label">NET GEX:</span> <b id="hud-gex-val" style="color: #F87171;">{total_gex:+.1f}M</b></div>
+                <div class="hud-item"><span class="hud-label">CHARM (GHÌM ĐÊM):</span> <b id="hud-charm-val" style="color:#C084FC;">${total_chex:+.1f}M/d</b></div>
+                <div class="hud-item"><span class="hud-label">VANNA (REBOUND):</span> <b id="hud-vanna-val" style="color:#22D3EE;">${total_vex:+.1f}M</b></div>
+                <div class="hud-item"><span class="hud-label">1-SIGMA:</span> <b id="hud-sigma-val" style="color:#FACC15;">&plusmn;{expected_move:,.1f}p</b></div>
+            </div>
             <div id="atas-tv-chart"></div>
             <canvas id="atas-canvas"></canvas>
         </div>
@@ -910,6 +943,13 @@ def generate_html_terminal(df: pd.DataFrame, meta: Dict[str, Any], fig: go.Figur
         </div>
     </div>
 
+    <!-- Collapsible Quant Insights & Strategy Drawer (Zero-Scroll Default) -->
+    <details class="quant-details-drawer">
+        <summary class="drawer-summary">
+            <span>📊 MỞ RỘNG: BẢNG SỐ LIỆU CHI TIẾT & KỊCH BẢN ĐỊNH LƯỢNG (TÙY CHỌN TRA CỨU)</span>
+            <span style="font-size: 11px; color: #38BDF8;">[Nhấp để xem bảng]</span>
+        </summary>
+        <div class="drawer-content">
     <!-- 1-Sigma & Greeks Insights -->
     <div class="insight-box" id="sec-insights" style="border-left-color: #38BDF8;">
         <b style="color: #93C5FD; font-size: 13px;">📐 [ĐỘ LỆCH CHUẨN & BIÊN ĐỘ 1-SIGMA NASDAQ]:</b><br>
@@ -1109,6 +1149,8 @@ def generate_html_terminal(df: pd.DataFrame, meta: Dict[str, Any], fig: go.Figur
             </tbody>
         </table>
     </div>
+        </div>
+    </details>
 
     <!-- Footer -->
     <div class="footer">
@@ -1492,7 +1534,7 @@ function drawAtasOverlay() {{
         }}
     }});
 
-    // 3. GEX Reaction Dotted Line
+    // 3. GEX Reaction / Gamma Flip Dotted Line
     const yGex = candleSeries.priceToCoordinate(m.gex_react);
     if (yGex !== null && yGex >= 0 && yGex <= h) {{
         ctx.strokeStyle = '#FACC15';
@@ -1507,7 +1549,43 @@ function drawAtasOverlay() {{
         ctx.fillStyle = '#FDE047';
         ctx.font = 'bold 10.5px "JetBrains Mono", monospace';
         ctx.textAlign = 'right';
-        ctx.fillText('gex 5 reaction', w - 180, yGex - 4);
+        ctx.fillText('gex 5 reaction · GAMMA FLIP (Trục Lật Rủi Ro)', w - 180, yGex - 4);
+    }}
+
+    // 3b. ĐỈNH CHARM Line (Nam Châm Ghim Giá Đêm)
+    const yCharm = candleSeries.priceToCoordinate(m.charm_level);
+    if (yCharm !== null && yCharm >= 0 && yCharm <= h) {{
+        ctx.strokeStyle = '#C084FC';
+        ctx.setLineDash([6, 3]);
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(80, yCharm);
+        ctx.lineTo(w - 85, yCharm);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        ctx.fillStyle = '#E9D5FF';
+        ctx.font = 'bold 10.5px "JetBrains Mono", monospace';
+        ctx.textAlign = 'right';
+        ctx.fillText('..... ĐỈNH CHARM · NAM CHÂM GHÌM GIÁ ĐÊM · +' + (m.total_net_chex || 0).toFixed(1) + 'M/d', w - 180, yCharm - 4);
+    }}
+
+    // 3c. ĐỈNH VANNA Line (Lực Bật V-Rebound)
+    const yVanna = candleSeries.priceToCoordinate(m.vanna_level);
+    if (yVanna !== null && yVanna >= 0 && yVanna <= h) {{
+        ctx.strokeStyle = '#22D3EE';
+        ctx.setLineDash([6, 3]);
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(80, yVanna);
+        ctx.lineTo(w - 85, yVanna);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        ctx.fillStyle = '#A5F3FC';
+        ctx.font = 'bold 10.5px "JetBrains Mono", monospace';
+        ctx.textAlign = 'right';
+        ctx.fillText('..... ĐỈNH VANNA · LỰC ĐẨY V-REBOUND · ' + (m.total_net_vex || 0).toFixed(1) + 'M', w - 180, yVanna - 4);
     }}
 
     // 4. Put Wall and Call Wall Lines
@@ -1525,7 +1603,7 @@ function drawAtasOverlay() {{
         ctx.fillStyle = '#4ADE80';
         ctx.font = 'bold 10.5px "JetBrains Mono", monospace';
         ctx.textAlign = 'right';
-        ctx.fillText('..... put wall · Gamma C · Gamma P · DEX P · #1 · OI put ' + m.put_wall_oi.toLocaleString(), w - 180, yPw - 4);
+        ctx.fillText('..... PUT WALL · GEX -$185M · OI ' + m.put_wall_oi.toLocaleString() + ' · THÀNH TRÌ ĐỠ DƯỚI', w - 180, yPw - 4);
     }}
 
     const yCw = candleSeries.priceToCoordinate(m.tactical_call_wall);
@@ -1542,7 +1620,7 @@ function drawAtasOverlay() {{
         ctx.fillStyle = '#F87171';
         ctx.font = 'bold 10.5px "JetBrains Mono", monospace';
         ctx.textAlign = 'right';
-        ctx.fillText('..... call wall · Gamma C · Gamma P · DEX C · #1 · OI call ' + m.call_wall_oi.toLocaleString(), w - 180, yCw - 4);
+        ctx.fillText('..... CALL WALL · GEX +$142M · OI ' + m.call_wall_oi.toLocaleString() + ' · THÀNH TRÌ CẢN TRÊN', w - 180, yCw - 4);
     }}
 
     // 5. ATAS / TrueVision Cluster Imbalance Bubbles on Candles
