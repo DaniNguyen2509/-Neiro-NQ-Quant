@@ -124,21 +124,11 @@
 
         /* Body & Chart */
         .atas-body-container {
-            display: flex; flex: 1; width: 100%; height: calc(100vh - 58px);
+            display: flex; flex: 1; width: 100%; height: calc(100vh - 56px);
             position: relative; overflow: hidden; background: #000000;
         }
-        .atas-left-tools {
-            width: 32px; background: #0B0E14; border-right: 1px solid #1A222F;
-            display: flex; flex-direction: column; align-items: center; padding: 6px 0; gap: 8px;
-            color: #64748B; font-size: 12px; z-index: 8; user-select: none; flex-shrink: 0;
-        }
-        .tool-btn {
-            cursor: pointer; padding: 2px; border-radius: 3px; transition: all 0.2s;
-            display: flex; align-items: center; justify-content: center; width: 22px; height: 22px;
-        }
-        .tool-btn:hover, .tool-btn.active { color: #38BDF8; background: #1C2433; }
         #tv-chart-wrapper {
-            position: relative; flex: 1; height: 100%; background-color: #000000;
+            position: relative; width: 100%; height: 100%; background-color: #000000;
         }
         #atas-tv-chart { width: 100%; height: 100%; }
         #atas-canvas {
@@ -146,30 +136,16 @@
             pointer-events: none; z-index: 5;
         }
 
-        /* Bottom Status */
-        .atas-bottom-status {
-            height: 24px; background: #07090E; border-top: 1px solid #141A24;
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 0 12px; font-family: 'JetBrains Mono', monospace; font-size: 10.5px; color: #64748B;
-            flex-shrink: 0;
-        }
-        .atas-logo-badge {
-            display: flex; align-items: center; gap: 6px; color: #94A3B8; font-weight: 700;
-        }
-        .atas-vol-bar {
-            background: #0F172A; border: 1px solid #1E293B; height: 18px;
-            padding: 0 12px; border-radius: 3px; display: flex; align-items: center;
-            color: #60A5FA; font-weight: 700; font-size: 11px;
-        }
         .atas-floating-hud {
-            position: absolute; top: 8px; left: 10px; z-index: 10;
-            display: flex; flex-direction: column; gap: 3px;
-            background: rgba(6, 8, 13, 0.90); border: 1px solid #1E293B; border-radius: 4px;
-            padding: 6px 10px; font-family: 'JetBrains Mono', monospace; font-size: 11px;
+            position: absolute; top: 10px; left: 12px; z-index: 10;
+            display: flex; flex-direction: column; gap: 4px;
+            background: rgba(8, 11, 18, 0.92); border: 1px solid #1E293B; border-radius: 4px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6);
+            padding: 8px 12px; font-family: 'JetBrains Mono', monospace; font-size: 11px;
             pointer-events: none;
         }
-        .hud-item { display: flex; align-items: center; gap: 6px; white-space: nowrap; }
-        .hud-label { color: #94A3B8; font-weight: 600; font-size: 10.5px; min-width: 120px; }
+        .hud-item { display: flex; align-items: center; gap: 8px; white-space: nowrap; }
+        .hud-label { color: #94A3B8; font-weight: 700; font-size: 10.5px; min-width: 130px; }
         .atas-win-topbar, .atas-win-subbar { overflow: hidden; white-space: nowrap; }
         .atas-top-left, .atas-top-center, .atas-top-right { flex-shrink: 1; min-width: 0; overflow: hidden; }
         .atas-subbar-right { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -177,27 +153,20 @@
 </head>
 <body>
 <div class="atas-desktop-window" id="sec-atas">
-    <!-- 100% Authentic ATAS Application Toolbar -->
+    <!-- Clean Neiro Quant Topbar -->
     <div class="atas-win-topbar">
         <div class="atas-top-left">
             <span class="atas-blue-indicator"></span>
-            <div class="atas-tab active"><span class="atas-tab-text">#NQZ6</span></div>
-            <span class="atas-win-sep">|</span>
-            <div class="atas-btn-icon"><span style="font-size:10px;">📈</span> 1 Lots</div>
+            <div class="atas-tab active"><span class="atas-tab-text">NEIRO QUANT &bull; NQ M15</span></div>
             <span class="atas-win-sep">|</span>
             <div class="atas-tf-group">
-                <button class="timeframe-pill" onclick="setTimeframe('5m')">M5</button>
-                <button class="timeframe-pill" onclick="setTimeframe('1h')">H1</button>
-                <button class="timeframe-pill" onclick="setTimeframe('d')">D</button>
-                <button class="timeframe-pill active" onclick="setTimeframe('1m')">M1 ⌵</button>
+                <button class="timeframe-pill" onclick="setTimeframe('1m')">1M</button>
+                <button class="timeframe-pill" onclick="setTimeframe('5m')">5M</button>
+                <button class="timeframe-pill active" onclick="setTimeframe('15m')">15M</button>
+                <button class="timeframe-pill" onclick="setTimeframe('1h')">1H</button>
+                <button class="timeframe-pill" onclick="setTimeframe('d')">1D</button>
             </div>
-            <span class="atas-win-sep">|</span>
-            <button class="atas-icon-btn" title="Indicators">📊 Indicators</button>
-            <span class="atas-win-sep">|</span>
-            <span class="atas-icon-btn" title="Mouse Mode">🖱️ 0</span>
-            <span class="atas-icon-btn" title="Grid Layout">⊞</span>
-            <span class="atas-icon-btn" title="DOM Trader">🗖 DOM Trader ⌵</span>
-            <span class="atas-badge-contract">NQ 1m</span>
+            <span class="atas-badge-contract">M15 CANDLES</span>
         </div>
 
         <!-- Center: Quantitative Metrics -->
@@ -222,27 +191,18 @@
             </div>
         </div>
 
-        <!-- Right: Authentic ATAS Controls -->
         <div class="atas-top-right">
-            <span class="atas-icon-btn" title="Fullscreen">⛶</span>
-            <span class="atas-icon-btn" title="Link Symbol">🔗</span>
-            <button class="atas-camera-btn" title="Snapshot" onclick="alert('ATAS Snapshot captured')">📷</button>
-            <span class="atas-icon-btn" title="Calendar">📅</span>
-            <span class="atas-icon-btn" style="color: #E2E8F0; font-weight:700;">ETH</span>
-            <span class="atas-win-sep">|</span>
-            <button class="win-btn" title="Settings">⚙</button>
-            <span class="win-btn win-min" title="Minimize">—</span>
-            <span class="win-btn win-close" title="Close">✕</span>
+            <span style="color:#64748B; font-size:11px; font-weight:600; margin-right:8px;">CME GLOBEX &bull; 01/11/2026 11:55:09 (VN)</span>
         </div>
     </div>
 
-    <!-- Authentic ATAS Subbar Watermark -->
+    <!-- Authentic Greeks Subbar -->
     <div class="atas-win-subbar">
         <div class="atas-subbar-left">
-            <span class="atas-watermark-text">NEIRO-NQ-QUANT TERMINAL &bull; TradingPlatform by Rithmic™ &bull; Powered by OMNE™</span>
+            <span class="atas-watermark-text" style="color:#38BDF8; font-weight:700;">NEIRO-NQ-QUANT TERMINAL &bull; CME E-MINI NASDAQ-100 [M15]</span>
         </div>
         <div class="atas-subbar-right">
-            <span style="color:#38BDF8; font-weight:700;">⚡ LIVE BLACK-76 REALTIME GREEKS RADAR:</span>
+            <span style="color:#38BDF8; font-weight:700;">⚡ LIVE BLACK-76 REALTIME GREEKS RADAR (M15):</span>
             <span id="live-greeks-radar" style="margin-left: 6px; color: #CBD5E1;">
                 Delta &Delta;: <b>0.505</b> | Gamma &Gamma;: <b>0.00042</b> | Vega &nu;: <b>$18.5M</b> | Theta &theta;: <b>-$28.5k/d</b> | Vanna (VEX): <b>+$2.8M</b> | Charm (CHEX): <b>-$1.4M/d</b>
             </span>
@@ -250,22 +210,8 @@
         </div>
     </div>
 
-    <!-- Main ATAS Body -->
+    <!-- Main M15 Chart Body (100% Full Width & Height) -->
     <div class="atas-body-container">
-        <!-- Authentic ATAS Left Drawing Toolbar -->
-        <div class="atas-left-tools">
-            <span class="tool-btn active" title="Con trỏ">✛</span>
-            <span class="tool-btn" title="Đường xu hướng">╱</span>
-            <span class="tool-btn" title="Tia ngang">━</span>
-            <span class="tool-btn" title="Mũi tên">↗</span>
-            <span class="tool-btn" title="Vẽ tự do">✎</span>
-            <span class="tool-btn" title="Văn bản">T</span>
-            <span class="tool-btn" title="Hộp vùng cản">▭</span>
-            <span class="tool-btn" title="Thước đo">📏</span>
-            <div style="flex: 1;"></div>
-            <span class="tool-btn" title="Cài đặt">⚙</span>
-        </div>
-
         <div id="tv-chart-wrapper">
             <div class="atas-floating-hud">
                 <div class="hud-item"><span class="hud-label">GEX (Net Gamma):</span> <b id="hud-gex-val" style="color:#F87171;">$-474.0M</b></div>
@@ -278,19 +224,6 @@
             </div>
             <div id="atas-tv-chart"></div>
             <canvas id="atas-canvas"></canvas>
-        </div>
-    </div>
-
-    <!-- Bottom Status Bar -->
-    <div class="atas-bottom-status">
-        <div class="atas-logo-badge">
-            <span style="color:#38BDF8; font-weight:800;">ATAS</span>
-            <span style="color:#94A3B8;">TrueVision Levels &bull; 11h [+]</span>
-            <span style="color:#475569; font-size:9.5px; margin-left:8px;">Cập nhật: 01/11/2026 11:46:46 (VN)</span>
-        </div>
-        <div style="display:flex; align-items:center; gap:10px;">
-            <span style="color:#475569; font-size:10px;">CME GLOBEX</span>
-            <div class="atas-vol-bar">32793639</div>
         </div>
     </div>
 </div>
@@ -442,28 +375,28 @@ const initialBasePrice = window.INITIAL_META.spot;
 let isSimulating = false; // Default OFF: Stands still on CME official close
 let simInterval = null;
 let lastCandle = null;
-let currentTimeframe = '1m';
-let currentPeriod = 60; // 60s default for 1M
+let currentTimeframe = '15m';
+let currentPeriod = 900; // 900s default for M15 candles
 let clusterBubbles = [];
 let anchoredZones = [];
-let volumeProfileBins = [];
 
-// Brownian-Bridge Candlestick Generator: Smooth realistic 1M walk ending EXACTLY at currentP
-function generateRealisticCandles(currentP, numBars = 60, periodSec = 60) {
+// Brownian-Bridge Candlestick Generator: Smooth realistic M15 walk ending EXACTLY at currentP
+function generateRealisticCandles(currentP, numBars = 60, periodSec = 900) {
     const bars = [];
     const nowSec = Math.floor(Date.now() / 1000);
     const startSec = nowSec - (numBars * periodSec);
 
+    // M15 Volatility for NQ Futures
+    const vol = 4.2 * Math.sqrt(periodSec / 900);
     const increments = [];
     let sum = 0;
-    const vol = 1.25 * Math.sqrt(periodSec / 60);
     for (let i = 0; i < numBars; i++) {
         const r = (Math.random() - 0.49) * 2.0 * vol;
         increments.push(r);
         sum += r;
     }
 
-    const targetDrift = (Math.random() - 0.5) * 6.0;
+    const targetDrift = (Math.random() - 0.5) * 14.0;
     const startP = currentP - targetDrift;
     const correction = (targetDrift - sum) / numBars;
 
@@ -475,39 +408,35 @@ function generateRealisticCandles(currentP, numBars = 60, periodSec = 60) {
         const change = increments[i] + correction;
         const open = Math.round(p * 4) / 4;
         const close = Math.round((p + change) * 4) / 4;
-        const high = Math.round((Math.max(open, close) + Math.random() * vol * 0.9) * 4) / 4;
-        const low = Math.round((Math.min(open, close) - Math.random() * vol * 0.9) * 4) / 4;
+        const high = Math.round((Math.max(open, close) + Math.random() * vol * 0.9 + 1.5) * 4) / 4;
+        const low = Math.round((Math.min(open, close) - Math.random() * vol * 0.9 - 1.5) * 4) / 4;
         p = close;
         const barTime = t - (t % periodSec);
         bars.push({ time: barTime, open, high, low, close });
 
-        // Generate authentic ATAS blue and gold footprint cluster bubbles along reversal candles
-        if (i >= numBars - 24 && (i % 2 === 0 || i >= numBars - 6)) {
-            const clusterCounts = [4, 5, 3, 6, 4];
-            const numPills = clusterCounts[i % clusterCounts.length];
-            const stepY = (high - low) / (numPills + 1);
-            const sampleVols = [33, 52, 30, 40, 41, 51, 42, 43, 50, 54, 46, 55, 65, 36, 35, 59, 37, 30, 35, 37];
-            for (let k = 0; k < numPills; k++) {
-                const v = sampleVols[(i * 3 + k) % sampleVols.length];
-                const isGold = (v >= 42); // Ochre/gold for high absorption, dark blue for Delta
+        // Generate authentic Footprint delta cluster bubbles along key reversal M15 candles
+        if (i === numBars - 20 || i === numBars - 12 || i === numBars - 28) {
+            const clusterCounts = 5;
+            const stepY = (high - low) / (clusterCounts + 1);
+            const sampleVols = [35, 42, 55, 46, 50, 38, 52];
+            for (let k = 0; k < clusterCounts; k++) {
+                const v = sampleVols[(i + k) % sampleVols.length];
                 clusterBubbles.push({
                     time: barTime,
                     price: low + stepY * (k + 1),
                     vol: v,
-                    isGold: isGold
+                    isGold: (v >= 45) // Ochre/gold for high absorption, dark blue for Delta
                 });
             }
         }
     }
 
-    // ATAS anchored orderflow zones: each zone accompanies specific candles (đi theo từng nến)
+    // Orderflow absorption zones DRAWN DIRECTLY ON THE M15 CANDLES:
     anchoredZones = [];
     const zoneDefs = [
-        { idx: numBars - 24, endIdx: numBars - 20, label: 'deep ef stack', side: 'high', oval: true },
-        { idx: numBars - 21, endIdx: numBars - 18, label: '',              side: 'high', oval: true },
-        { idx: numBars - 18, endIdx: numBars - 13, label: 'buyer abs',     side: 'low',  oval: true },
-        { idx: numBars - 11, endIdx: numBars - 6,  label: 'seller offer',  side: 'high', oval: true, tag: '+1R' },
-        { idx: numBars - 6,  endIdx: numBars - 2,  label: '',              side: 'low',  oval: false },
+        { idx: numBars - 28, endIdx: numBars - 25, label: 'deep of stack', side: 'high', oval: true },
+        { idx: numBars - 20, endIdx: numBars - 16, label: 'buyer abs',     side: 'low',  oval: true },
+        { idx: numBars - 12, endIdx: numBars - 8,  label: 'seller offer',  side: 'high', oval: true, tag: '+1R' },
     ];
     zoneDefs.forEach(z => {
         const b = bars[z.idx];
@@ -515,12 +444,12 @@ function generateRealisticCandles(currentP, numBars = 60, periodSec = 60) {
         if (!b) return;
         const bodyTop = Math.max(b.open, b.close);
         const bodyBot = Math.min(b.open, b.close);
-        const top = z.side === 'high' ? b.high : bodyBot + 1.25;
-        const bot = z.side === 'high' ? Math.max(bodyTop - 1.25, b.low) : b.low;
+        const top = z.side === 'high' ? b.high : bodyBot + 1.75;
+        const bot = z.side === 'high' ? Math.max(bodyTop - 1.75, b.low) : b.low;
         anchoredZones.push({
             time: b.time,
             endTime: bEnd ? bEnd.time : null,
-            top: Math.max(top, bot + 1.0),
+            top: Math.max(top, bot + 1.25),
             bottom: bot,
             label: z.label,
             oval: z.oval,
@@ -532,17 +461,6 @@ function generateRealisticCandles(currentP, numBars = 60, periodSec = 60) {
     bars[bars.length - 1].close = currentP;
     bars[bars.length - 1].high = Math.max(bars[bars.length - 1].high, currentP);
     bars[bars.length - 1].low = Math.min(bars[bars.length - 1].low, currentP);
-
-    // Left Volume Profile bins
-    volumeProfileBins = [];
-    const minP = currentP - 50.0;
-    const maxP = currentP + 50.0;
-    for (let pStep = minP; pStep <= maxP; pStep += 2.5) {
-        volumeProfileBins.push({
-            price: pStep,
-            volume: Math.floor(40 + Math.random() * 110)
-        });
-    }
 
     return bars;
 }
@@ -594,7 +512,7 @@ function initAtasChart() {
         wickDownColor: '#71717A',
     });
 
-    buildHistoricalBars(60);
+    buildHistoricalBars(900);
 
     livePriceLine = candleSeries.createPriceLine({
         price: currentPrice,
@@ -627,7 +545,7 @@ function initAtasChart() {
     drawAtasOverlay();
 }
 
-function buildHistoricalBars(periodSec = 60) {
+function buildHistoricalBars(periodSec = 900) {
     currentPeriod = periodSec;
     const bars = generateRealisticCandles(currentPrice, 60, periodSec);
     lastCandle = bars[bars.length - 1];
@@ -641,7 +559,7 @@ function buildHistoricalBars(periodSec = 60) {
 }
 
 // ----------------------------------------------------------------------------
-// ATAS Orderflow Canvas Drawing Engine
+// Neiro-Quant Orderflow Canvas Drawing Engine
 // ----------------------------------------------------------------------------
 function drawAtasOverlay() {
     const canvas = document.getElementById('atas-canvas');
@@ -653,45 +571,9 @@ function drawAtasOverlay() {
     ctx.clearRect(0, 0, w, h);
 
     const m = window.INITIAL_META;
+    const rightX = w - 70;
 
-    // 1. Left Volume Profile Histogram (purple/slate bars)
-    if (volumeProfileBins && volumeProfileBins.length > 0) {
-        volumeProfileBins.forEach(bin => {
-            const y = candleSeries.priceToCoordinate(bin.price);
-            if (y !== null && y >= 0 && y <= h) {
-                const barW = Math.min(65, bin.volume * 0.45);
-                ctx.fillStyle = 'rgba(99, 102, 241, 0.22)';
-                ctx.fillRect(4, y - 2, barW, 4);
-                ctx.fillStyle = 'rgba(129, 140, 248, 0.50)';
-                ctx.fillRect(4, y - 2, barW * 0.4, 4);
-            }
-        });
-    }
-
-    // 2. Exact ATAS Orderflow Shaded Zones (matching atas_crop_boxes.png)
-    const startX = Math.max(80, Math.floor(w * 0.30));
-    const rightX = w - 75;
-    const boxW = Math.max(100, rightX - startX);
-
-    // A. Put Wall Dotted Line (Yellow)
-    const yPw = candleSeries.priceToCoordinate(m.tactical_put_wall || (m.spot + 20.0));
-    if (yPw !== null && yPw >= 0 && yPw <= h) {
-        ctx.strokeStyle = '#FACC15';
-        ctx.setLineDash([2, 3]);
-        ctx.lineWidth = 1.2;
-        ctx.beginPath();
-        ctx.moveTo(80, yPw);
-        ctx.lineTo(rightX, yPw);
-        ctx.stroke();
-        ctx.setLineDash([]);
-
-        ctx.fillStyle = '#FEF08A';
-        ctx.font = '10px "JetBrains Mono", monospace';
-        ctx.textAlign = 'right';
-        ctx.fillText('..... Put wall · Gamma C · Gamma P · DEX P · #1 · OI put ' + (m.put_wall_oi || 31287).toLocaleString(), rightX - 5, yPw - 4);
-    }
-
-    // B. ATAS orderflow zones: tightly accompanying specific candles (đi theo từng nến)
+    // 1. Orderflow Absorption Zones: Drawn directly on the M15 candles (đi theo từng nến)
     anchoredZones.forEach(z => {
         const x0 = chart.timeScale().timeToCoordinate(z.time);
         const x1 = z.endTime ? chart.timeScale().timeToCoordinate(z.endTime) : null;
@@ -704,14 +586,14 @@ function drawAtasOverlay() {
         const xe = (x1 !== null && x1 > x0) ? (x1 + 8) : (x0 + 38);
         const wBox = Math.max(22, Math.min(xe - xs, rightX - xs - 8));
 
-        // 1. Shaded orderflow absorption block tightly bounding these candles
+        // Shaded orderflow absorption block tightly bounding these candles
         ctx.fillStyle = 'rgba(148, 163, 184, 0.28)';
         ctx.fillRect(xs, top, wBox, hz);
         ctx.strokeStyle = 'rgba(203, 213, 225, 0.55)';
         ctx.lineWidth = 1;
         ctx.strokeRect(xs, top, wBox, hz);
 
-        // 2. Red oval circling the trigger candle footprint cluster at x0
+        // Red oval circling the trigger candle footprint cluster at x0
         if (z.oval) {
             ctx.strokeStyle = 'rgba(239, 68, 68, 0.92)';
             ctx.lineWidth = 1.6;
@@ -720,7 +602,7 @@ function drawAtasOverlay() {
             ctx.stroke();
         }
 
-        // 3. Label badge placed directly at candle x0
+        // Label badge placed directly at candle x0
         if (z.label) {
             ctx.font = 'bold 10px "JetBrains Mono", monospace';
             const tw = ctx.measureText(z.label).width;
@@ -734,7 +616,7 @@ function drawAtasOverlay() {
             ctx.fillText(z.label, x0, ly);
         }
 
-        // 4. Tag (+1R) placed right at candle x0
+        // Tag (+1R) placed right at candle x0
         if (z.tag) {
             ctx.font = 'bold 9.5px "JetBrains Mono", monospace';
             const ty = z.side === 'high' ? (top - 23) : (top + hz + 28);
@@ -744,35 +626,30 @@ function drawAtasOverlay() {
         }
     });
 
-    // F. gex 5 reaction (White outlined box)
-    const yGex = candleSeries.priceToCoordinate(m.gex_react || (m.spot - 15.0));
-    if (yGex !== null && yGex >= 0 && yGex <= h) {
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
-        ctx.lineWidth = 1;
-        ctx.strokeRect(80, yGex - 8, rightX - 80, 16);
+    // 2. Footprint Delta Cluster Bubbles directly on reversal candles
+    if (clusterBubbles && clusterBubbles.length > 0) {
+        clusterBubbles.forEach(cb => {
+            const x = chart.timeScale().timeToCoordinate(cb.time);
+            const y = candleSeries.priceToCoordinate(cb.price);
+            if (x !== null && y !== null && x >= 10 && x <= rightX - 10 && y >= 10 && y <= h - 20) {
+                // Gold/Ochre (#B45309) for absorption, Dark Blue (#1D4ED8) for Delta
+                ctx.fillStyle = cb.isGold ? '#B45309' : '#1D4ED8';
+                ctx.beginPath();
+                ctx.arc(x, y, 8.5, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.strokeStyle = cb.isGold ? '#FDE047' : '#93C5FD';
+                ctx.lineWidth = 0.8;
+                ctx.stroke();
 
-        ctx.fillStyle = '#FFFFFF';
-        ctx.font = 'bold 11px "JetBrains Mono", monospace';
-        ctx.textAlign = 'center';
-        ctx.fillText('gex 5 reaction', startX + (boxW / 2), yGex + 4);
-
-        // Bottom dotted level #5 31246.00
-        ctx.strokeStyle = '#FACC15';
-        ctx.setLineDash([2, 3]);
-        ctx.lineWidth = 1;
-        ctx.beginPath();
-        ctx.moveTo(80, yGex + 18);
-        ctx.lineTo(rightX, yGex + 18);
-        ctx.stroke();
-        ctx.setLineDash([]);
-
-        ctx.fillStyle = '#FACC15';
-        ctx.font = '10px "JetBrains Mono", monospace';
-        ctx.textAlign = 'right';
-        ctx.fillText('#5 ' + (m.gex_react - 5).toFixed(2), rightX - 5, yGex + 15);
+                ctx.fillStyle = '#FFFFFF';
+                ctx.font = 'bold 8.5px "JetBrains Mono", monospace';
+                ctx.textAlign = 'center';
+                ctx.fillText(cb.vol, x, y + 3);
+            }
+        });
     }
 
-    // F2. Key Greeks levels: Call/Put Wall, Gamma Flip, Gamma Squeeze, Vanna, Charm
+    // 3. Key Greeks levels: Call/Put Wall, Gamma Flip, Gamma Squeeze, Vanna, Charm
     const keyLevels = [
         { p: m.tactical_call_wall || m.call_wall, c: '#EF4444', d: [6, 4], txt: 'CALL WALL ' + Math.round(m.tactical_call_wall || m.call_wall) + ' · OI ' + (m.call_wall_oi || 0).toLocaleString() },
         { p: m.tactical_put_wall || m.put_wall,   c: '#22C55E', d: [6, 4], txt: 'PUT WALL ' + Math.round(m.tactical_put_wall || m.put_wall) + ' · OI ' + (m.put_wall_oi || 0).toLocaleString() },
@@ -837,7 +714,7 @@ function drawAtasOverlay() {
         }
     });
 
-    // F3. Per-strike Greeks exposure profile (GEX | VEX | CHEX | THETA)
+    // 4. Per-strike Greeks exposure profile (GEX | VEX | CHEX | THETA)
     const opts = window.INITIAL_OPTIONS || [];
     if (opts.length && opts[0].currentNetGEX !== undefined) {
         const cols = [
@@ -868,51 +745,6 @@ function drawAtasOverlay() {
                 ctx.fillStyle = v >= 0 ? c.pos : c.neg;
                 ctx.fillRect(v >= 0 ? cx : cx - len, y - 2.5, len, 5);
             });
-        });
-    }
-
-    // G. Right Axis Volume Histogram Bars (ATAS tick ladder volume)
-    const rightTicks = [
-        { offset: 25.0, w: 26, isBlue: false },
-        { offset: 20.0, w: 38, isBlue: true },
-        { offset: 15.0, w: 18, isBlue: false },
-        { offset: 10.0, w: 45, isBlue: true },
-        { offset: 5.0, w: 12, isBlue: false },
-        { offset: -2.5, w: 22, isBlue: false },
-        { offset: -7.5, w: 34, isBlue: true },
-        { offset: -12.5, w: 48, isBlue: true },
-        { offset: -17.5, w: 15, isBlue: false },
-        { offset: -22.5, w: 30, isBlue: true },
-        { offset: -27.5, w: 42, isBlue: true },
-    ];
-    rightTicks.forEach(t => {
-        const y = candleSeries.priceToCoordinate(currentPrice + t.offset);
-        if (y !== null && y >= 0 && y <= h) {
-            ctx.fillStyle = t.isBlue ? 'rgba(56, 189, 248, 0.85)' : 'rgba(255, 255, 255, 0.85)';
-            ctx.fillRect(rightX, y - 1.5, t.w, 3);
-        }
-    });
-
-    // 3. Authentic ATAS Blue and Gold Footprint Cluster Bubbles
-    if (clusterBubbles && clusterBubbles.length > 0) {
-        clusterBubbles.forEach(cb => {
-            const x = chart.timeScale().timeToCoordinate(cb.time);
-            const y = candleSeries.priceToCoordinate(cb.price);
-            if (x !== null && y !== null && x >= 75 && x <= rightX - 10 && y >= 10 && y <= h - 20) {
-                // Gold/Ochre (#B45309) for absorption, Dark Blue (#1D4ED8) for Delta
-                ctx.fillStyle = cb.isGold ? '#B45309' : '#1D4ED8';
-                ctx.beginPath();
-                ctx.arc(x, y, 8.5, 0, Math.PI * 2);
-                ctx.fill();
-                ctx.strokeStyle = cb.isGold ? '#FDE047' : '#93C5FD';
-                ctx.lineWidth = 0.8;
-                ctx.stroke();
-
-                ctx.fillStyle = '#FFFFFF';
-                ctx.font = 'bold 8.5px "JetBrains Mono", monospace';
-                ctx.textAlign = 'center';
-                ctx.fillText(cb.vol, x, y + 3);
-            }
         });
     }
 }
@@ -1096,7 +928,7 @@ function setTimeframe(tf) {
         '1h': 3600,
         'd': 86400
     };
-    const period = periodMap[currentTimeframe] || 60;
+    const period = periodMap[currentTimeframe] || 900;
 
     document.querySelectorAll('.timeframe-pill').forEach(btn => {
         if (btn.innerText.toLowerCase() === currentTimeframe) {
