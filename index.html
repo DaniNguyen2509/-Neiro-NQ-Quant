@@ -10,41 +10,81 @@
     <script src="https://unpkg.com/lightweight-charts@4.2.0/dist/lightweight-charts.standalone.production.js"></script>
     <style>
         :root {
-            --bg-base: #000000; --bg-card: #0A0F18; --border-color: #1A2333;
+            --bg-base: #000000; --bg-card: #0A0F18; --border-color: #141A24;
             --text-primary: #F8FAFC; --text-secondary: #94A3B8; --text-muted: #64748B;
             --neon-green: #22C55E; --neon-red: #EF4444; --neon-blue: #38BDF8; --neon-gold: #FACC15;
             --neon-coral: #F43F5E;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body {
-            background-color: var(--bg-base); color: var(--text-primary);
-            font-family: 'Inter', -apple-system, sans-serif; padding: 14px; font-size: 13px;
+        html, body {
+            width: 100%; height: 100%; margin: 0; padding: 0;
+            overflow: hidden; background-color: #000000;
+            font-family: 'Inter', -apple-system, sans-serif;
+            color: #F8FAFC;
         }
-        .container { width: 100%; max-width: 100%; margin: 0; padding: 4px 12px; }
-
-        .header {
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 10px 18px; background: #080D16;
-            border: 1px solid var(--border-color); border-radius: 8px; margin-bottom: 10px;
+        .atas-desktop-window {
+            display: flex; flex-direction: column;
+            width: 100vw; height: 100vh;
+            background-color: #000000;
+            user-select: none;
         }
-        .brand { display: flex; align-items: center; gap: 10px; }
-        .brand-title {
-            font-size: 17px; font-weight: 800;
-            background: linear-gradient(90deg, #FFFFFF 0%, #93C5FD 100%);
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-            font-family: 'JetBrains Mono', monospace; letter-spacing: 0.5px;
+        /* ATAS Desktop Titlebar */
+        .atas-win-topbar {
+            height: 38px; background: #0B0E14; border-bottom: 1px solid #161D29;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 10px; font-family: 'JetBrains Mono', monospace; font-size: 11px;
+            flex-shrink: 0;
+        }
+        .atas-top-left, .atas-top-center, .atas-top-right {
+            display: flex; align-items: center; gap: 6px;
+        }
+        .atas-tab {
+            background: #141C28; border: 1px solid #233144; color: #FFFFFF;
+            padding: 4px 10px; border-radius: 3px; font-weight: 700; font-size: 11.5px;
+            cursor: pointer;
+        }
+        .atas-tab.active {
+            background: #192538; border-color: #38BDF8; color: #38BDF8;
+        }
+        .atas-win-sep { color: #334155; margin: 0 2px; }
+        .atas-top-tag {
+            background: #0E141F; border: 1px solid #1E293B; color: #94A3B8;
+            padding: 3px 8px; border-radius: 3px; font-size: 11px; font-weight: 600;
+        }
+        .atas-tf-group { display: flex; align-items: center; gap: 2px; }
+        .timeframe-pill {
+            background: transparent; color: #64748B; border: 1px solid transparent;
+            padding: 3px 7px; border-radius: 3px; font-size: 11px; cursor: pointer; font-weight: 600;
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .timeframe-pill.active, .timeframe-pill:hover {
+            background: #162030; color: #38BDF8; border-color: #243550;
+        }
+        .atas-top-btn {
+            background: #0E141F; border: 1px solid #1E293B; color: #CBD5E1;
+            padding: 3px 8px; border-radius: 3px; font-size: 11px; cursor: pointer;
+            display: flex; align-items: center; gap: 4px; font-family: 'JetBrains Mono', monospace;
+        }
+        .atas-top-btn:hover { background: #162030; border-color: #38BDF8; }
+        .atas-badge-sm {
+            background: #0F172A; border: 1px solid #1E293B; color: #64748B;
+            padding: 1px 6px; border-radius: 3px; font-size: 10px;
+        }
+        .atas-badge-contract {
+            background: rgba(56, 189, 248, 0.12); border: 1px solid rgba(56, 189, 248, 0.3);
+            color: #38BDF8; padding: 2px 7px; border-radius: 3px; font-size: 10.5px; font-weight: 700;
         }
         .pulse-dot {
-            width: 9px; height: 9px; border-radius: 50%; background-color: var(--neon-green);
-            box-shadow: 0 0 10px var(--neon-green); animation: pulse 2s infinite;
+            width: 7px; height: 7px; border-radius: 50%; background-color: var(--neon-green);
+            box-shadow: 0 0 8px var(--neon-green); animation: pulse 2s infinite;
         }
         @keyframes pulse {
-            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7); }
-            70% { transform: scale(1); box-shadow: 0 0 0 8px rgba(34, 197, 94, 0); }
-            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+            0% { transform: scale(0.95); opacity: 0.8; }
+            70% { transform: scale(1.1); opacity: 1; }
+            100% { transform: scale(0.95); opacity: 0.8; }
         }
         .badge {
-            display: inline-block; padding: 2px 7px; border-radius: 4px; font-size: 10.5px;
+            display: inline-block; padding: 2px 6px; border-radius: 3px; font-size: 10.5px;
             font-weight: 700; font-family: 'JetBrains Mono', monospace;
         }
         .badge-live { background: rgba(34, 197, 94, 0.15); color: #4ADE80; border: 1px solid rgba(34, 197, 94, 0.4); }
@@ -52,336 +92,208 @@
         .badge-pos { background: rgba(74, 222, 128, 0.15); color: #4ADE80; border: 1px solid rgba(74, 222, 128, 0.4); }
         .badge-neg { background: rgba(248, 113, 113, 0.15); color: #F87171; border: 1px solid rgba(248, 113, 113, 0.4); }
 
-        .ticker-bar {
-            display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;
-            background: #080D16; border: 1px solid #162030; border-radius: 8px; padding: 8px 16px; margin-bottom: 12px;
-            font-family: 'JetBrains Mono', monospace;
+        .atas-ticker-pill {
+            display: flex; align-items: center; gap: 5px; background: #0E141F;
+            border: 1px solid #1A2433; padding: 3px 8px; border-radius: 4px;
         }
-        .ticker-items { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
-        .ticker-item { display: flex; align-items: center; gap: 6px; font-size: 12px; }
-        .ticker-symbol { font-weight: 800; color: #FFFFFF; font-size: 13px; }
-        .ticker-price { font-weight: 800; font-size: 14.5px; color: #38BDF8; transition: color 0.2s; }
-        .ticker-change { font-size: 11.5px; font-weight: 600; padding: 2px 5px; border-radius: 4px; }
+        .atas-sym-label { color: #64748B; font-size: 10.5px; font-weight: 600; }
+        .atas-price-val { font-size: 12.5px; font-weight: 800; }
+        .atas-mt5-tag { color: #64748B; font-size: 10px; }
+        .ticker-change { font-size: 10.5px; font-weight: 600; padding: 1px 4px; border-radius: 3px; }
         .change-up { color: #4ADE80; background: rgba(34, 197, 94, 0.12); }
         .change-down { color: #F87171; background: rgba(239, 68, 68, 0.12); }
-        .ticker-controls { display: flex; align-items: center; gap: 8px; }
+        .atas-quant-pill {
+            display: flex; align-items: center; gap: 5px; background: #0E141F;
+            border: 1px solid #1A2433; padding: 3px 8px; border-radius: 4px; font-size: 11px;
+        }
+        .atas-pill-lbl { color: #64748B; font-size: 10px; }
         .btn-ctrl {
-            background: #111A29; color: #94A3B8; border: 1px solid #23354E; padding: 4px 9px;
-            border-radius: 5px; font-size: 11px; font-weight: 600; cursor: pointer; transition: all 0.2s;
+            background: #111A29; color: #94A3B8; border: 1px solid #23354E; padding: 3px 8px;
+            border-radius: 4px; font-size: 10.5px; font-weight: 600; cursor: pointer; transition: all 0.2s;
             font-family: 'JetBrains Mono', monospace;
         }
         .btn-ctrl:hover, .btn-ctrl.active { background: #1E293B; color: #38BDF8; border-color: #38BDF8; }
         .btn-sim { background: rgba(34, 197, 94, 0.15); color: #4ADE80; border-color: rgba(34, 197, 94, 0.4); }
         .btn-sim.paused { background: rgba(239, 68, 68, 0.15); color: #F87171; border-color: rgba(239, 68, 68, 0.4); }
+        .atas-win-controls {
+            display: flex; align-items: center; gap: 4px; margin-left: 4px;
+        }
+        .win-btn {
+            width: 20px; height: 20px; display: flex; align-items: center; justify-content: center;
+            background: #111722; border: 1px solid #1E293B; border-radius: 3px;
+            color: #64748B; font-size: 9.5px; cursor: pointer;
+        }
+        .win-btn:hover { background: #1E293B; color: #F8FAFC; }
+        .win-close:hover { background: #EF4444; color: #FFFFFF; border-color: #EF4444; }
 
-        .kpi-grid {
-            display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 10px; margin-bottom: 12px;
+        /* Subbar Watermark & Radar */
+        .atas-win-subbar {
+            height: 24px; background: #080A0E; border-bottom: 1px solid #121822;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 10px; font-family: 'JetBrains Mono', monospace; font-size: 10.5px;
+            flex-shrink: 0;
         }
-        .kpi-card {
-            background-color: var(--bg-card); border: 1px solid var(--border-color);
-            border-radius: 8px; padding: 12px 16px; transition: transform 0.2s, border-color 0.2s;
-        }
-        .kpi-card:hover { border-color: #2E3E59; transform: translateY(-1px); }
-        .kpi-label {
-            font-size: 11px; font-weight: 600; text-transform: uppercase; color: var(--text-secondary); margin-bottom: 4px;
-            letter-spacing: 0.5px;
-        }
-        .kpi-val {
-            font-size: 20px; font-weight: 700; font-family: 'JetBrains Mono', monospace; margin-bottom: 3px;
-        }
-                .kpi-sub { font-size: 11px; color: var(--text-muted); }
+        .atas-watermark-text { color: #475569; font-size: 10px; font-weight: 500; }
+        .atas-subbar-right { display: flex; align-items: center; font-size: 10.5px; }
 
-        /* On-Chart Floating Quant HUD & Single-Screen Drawer */
-        .atas-floating-hud {
-            position: absolute; top: 10px; right: 90px; z-index: 10;
-            display: flex; align-items: center; gap: 12px;
-            background: rgba(8, 13, 22, 0.88); backdrop-filter: blur(6px);
-            border: 1px solid rgba(56, 189, 248, 0.35); border-radius: 6px;
-            padding: 6px 14px; font-family: 'JetBrains Mono', monospace; font-size: 11px;
-            pointer-events: none; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6);
-        }
-        .hud-item { display: flex; align-items: center; gap: 5px; }
-        .hud-label { color: #94A3B8; font-weight: 600; font-size: 10px; }
-        .quant-details-drawer {
-            margin-top: 14px; background: #080D16; border: 1px solid #1E293B;
-            border-radius: 8px; padding: 10px 16px;
-        }
-        .drawer-summary {
-            cursor: pointer; display: flex; justify-content: space-between; align-items: center;
-            font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 700;
-            color: #94A3B8; user-select: none;
-        }
-        .drawer-summary:hover { color: #38BDF8; }
-        .drawer-content { margin-top: 14px; }
-
-        /* Unified Quick-Jump Sticky Navigation Bar */
-        html { scroll-behavior: smooth; }
-        .quick-nav-bar {
-            position: sticky; top: 0; z-index: 100;
-            display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
-            background: rgba(8, 13, 22, 0.96); backdrop-filter: blur(8px);
-            border: 1px solid #1E293B; border-radius: 8px;
-            padding: 8px 14px; margin-bottom: 12px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
-        }
-        .nav-tab {
-            color: #94A3B8; text-decoration: none; font-size: 11px; font-weight: 600;
-            padding: 4px 10px; border-radius: 5px; border: 1px solid transparent;
-            transition: all 0.2s; font-family: 'JetBrains Mono', monospace;
-        }
-        .nav-tab:hover, .nav-tab.active {
-            background: #131E31; color: #38BDF8; border-color: #243550;
-        }
-
-        /* Authentic ATAS Layout Components */
+        /* Body & Chart */
         .atas-body-container {
-            display: flex; width: 100%; position: relative;
+            display: flex; flex: 1; width: 100%; height: calc(100vh - 62px);
+            position: relative; overflow: hidden; background: #000000;
         }
         .atas-left-tools {
-            width: 38px; background: #05080E; border-right: 1px solid #162030;
-            display: flex; flex-direction: column; align-items: center; padding: 12px 0; gap: 14px;
-            color: #64748B; font-size: 13px; z-index: 8; user-select: none;
+            width: 36px; background: #06080D; border-right: 1px solid #141A24;
+            display: flex; flex-direction: column; align-items: center; padding: 8px 0; gap: 10px;
+            color: #64748B; font-size: 12.5px; z-index: 8; user-select: none; flex-shrink: 0;
         }
         .tool-btn {
-            cursor: pointer; padding: 4px; border-radius: 4px; transition: all 0.2s;
-            display: flex; align-items: center; justify-content: center; width: 26px; height: 26px;
+            cursor: pointer; padding: 3px; border-radius: 3px; transition: all 0.2s;
+            display: flex; align-items: center; justify-content: center; width: 24px; height: 24px;
         }
         .tool-btn:hover, .tool-btn.active { color: #38BDF8; background: #111A29; }
-        .atas-bottom-status {
-            display: flex; justify-content: space-between; align-items: center;
-            background: #05080E; border-top: 1px solid #141D2B; padding: 6px 16px;
-            font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #64748B;
-        }
-
-        /* ATAS Orderflow Terminal Box */
-        .atas-terminal-box {
-            background: #000000; border: 1px solid #1E293B; border-radius: 8px;
-            overflow: hidden; margin-bottom: 16px; position: relative;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
-        }
-        .atas-toolbar {
-            display: flex; justify-content: space-between; align-items: center;
-            background: #080D15; padding: 8px 14px; border-bottom: 1px solid #162030;
-        }
-        .atas-tools-left { display: flex; align-items: center; gap: 8px; }
-        .atas-badge {
-            background: #111A29; border: 1px solid #23354E; color: #E2E8F0;
-            padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: 700;
-            font-family: 'JetBrains Mono', monospace;
-        }
-        .atas-tools-right { display: flex; align-items: center; gap: 6px; font-family: 'JetBrains Mono', monospace; font-size: 11px; }
-        .timeframe-pill {
-            background: transparent; color: #64748B; border: 1px solid transparent; padding: 3px 8px;
-            border-radius: 4px; font-size: 11px; cursor: pointer; font-weight: 600;
-        }
-        .timeframe-pill.active, .timeframe-pill:hover { background: #131E31; color: #38BDF8; border-color: #243550; }
-
         #tv-chart-wrapper {
-            position: relative; width: 100%; height: 750px; background-color: #000000;
+            position: relative; flex: 1; height: 100%; background-color: #000000;
         }
         #atas-tv-chart { width: 100%; height: 100%; }
         #atas-canvas {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             pointer-events: none; z-index: 5;
         }
+        .atas-floating-hud {
+            position: absolute; top: 8px; left: 12px; z-index: 10;
+            display: flex; align-items: center; gap: 10px;
+            background: rgba(6, 8, 13, 0.88); backdrop-filter: blur(6px);
+            border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 4px;
+            padding: 4px 10px; font-family: 'JetBrains Mono', monospace; font-size: 10px;
+            pointer-events: none; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.8);
+        }
+        .hud-item { display: flex; align-items: center; gap: 4px; }
+        .hud-label { color: #64748B; font-weight: 600; font-size: 9.5px; }
 
-
-
-        .chart-box {
-            background-color: var(--bg-card); border: 1px solid var(--border-color);
-            border-radius: 8px; padding: 10px; margin-bottom: 16px;
+        /* Bottom Status */
+        .atas-bottom-status {
+            height: 24px; background: #05070B; border-top: 1px solid #111722;
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 0 14px; font-family: 'JetBrains Mono', monospace; font-size: 10.5px; color: #64748B;
+            flex-shrink: 0;
         }
-        .table-box {
-            background-color: var(--bg-card); border: 1px solid var(--border-color);
-            border-radius: 8px; padding: 16px; margin-bottom: 14px; overflow-x: auto;
-        }
-        .section-header {
-            font-size: 13.5px; font-weight: 700; margin-bottom: 12px; color: #E2E8F0;
-            display: flex; align-items: center; justify-content: space-between;
-        }
-        table { width: 100%; border-collapse: collapse; font-size: 12px; text-align: left; }
-        th {
-            background-color: #0B111D; color: var(--text-secondary); padding: 9px 12px;
-            font-weight: 600; border-bottom: 1px solid var(--border-color); white-space: nowrap;
-        }
-        td {
-            padding: 9px 12px; border-bottom: 1px solid #131B29; font-family: 'JetBrains Mono', monospace;
-        }
-        tr:hover td { background-color: #141E30; }
-        .row-spot td {
-            background-color: rgba(56, 189, 248, 0.12) !important;
-            border-top: 1px solid var(--neon-blue); border-bottom: 1px solid var(--neon-blue);
-        }
-        .tag-buy { color: #4ADE80; font-weight: 700; }
-        .tag-sell { color: #F87171; font-weight: 700; }
-        .insight-box {
-            background: linear-gradient(135deg, rgba(16, 24, 38, 0.8) 0%, rgba(10, 15, 25, 0.9) 100%);
-            border-left: 4px solid var(--neon-blue); border-radius: 6px;
-            padding: 10px 14px; margin-bottom: 12px; font-size: 12px; line-height: 1.5;
-        }
-        .footer {
-            text-align: center; font-size: 11px; color: var(--text-muted);
-            padding: 18px 0; border-top: 1px solid var(--border-color); font-family: 'JetBrains Mono', monospace;
+        .vol-pill {
+            background: #0C121B; border: 1px solid #192333; padding: 2px 8px;
+            border-radius: 3px; color: #94A3B8; font-size: 10px;
         }
     </style>
 </head>
 <body>
-<div class="container">
-    <!-- Header -->
-    <div class="header">
-        <div class="brand">
-            <div class="pulse-dot"></div>
-            <div class="brand-title">NEIRO-NQ-QUANT TERMINAL</div>
-            <span class="badge badge-gold">CME E-MINI NASDAQ (NQ)</span>
-            <span class="badge badge-live">100% CLOUD AUTOMATED</span>
-        </div>
-        <div style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #94A3B8;">
-            Cập nhật: <b id="lbl-last-update">01/11/2026 10:36:37 (Giờ VN)</b>
-        </div>
-    </div>
-
-    <!-- Live Ticker Realtime Bar -->
-    <div class="ticker-bar">
-        <div class="ticker-items">
-            <div class="ticker-item">
-                <span class="pulse-dot" style="width:7px; height:7px;"></span>
-                <span class="ticker-symbol">NQ=F</span>
-                <span class="ticker-price" id="top-ticker-price">28,534.00</span>
-                <span class="ticker-change change-up" id="top-ticker-change">+0.00 (+0.00%)</span>
-            </div>
-            <div class="ticker-item" style="color: #64748B;">|</div>
-            <div class="ticker-item">
-                <span style="color: #94A3B8;">ATM TRỤC:</span>
-                <b style="color: #F8FAFC;" id="top-ticker-atm">28,514 pts</b>
-            </div>
-            <div class="ticker-item" style="color: #64748B;">|</div>
-            <div class="ticker-item">
-                <span style="color: #94A3B8;">ATM IV:</span>
-                <b style="color: #FACC15;" id="top-ticker-iv">35.8%</b>
-            </div>
-            <div class="ticker-item" style="color: #64748B;">|</div>
-            <div class="ticker-item">
-                <span style="color: #94A3B8;">SOFR / T-Bill 13W (r):</span>
-                <b style="color: #38BDF8;" id="top-ticker-r">3.97%</b>
-            </div>
-            <div class="ticker-item" style="color: #64748B;">|</div>
-            <div class="ticker-item">
-                <span style="color: #94A3B8;">DTE:</span>
-                <b style="color: #A855F7;">1.0 ngày</b>
-            </div>
-            <div class="ticker-item" style="color: #64748B;">|</div>
-            <div class="ticker-item">
-                <span style="color: #94A3B8;">F0 LÝ THUYẾT:</span>
-                <b style="color: #E2E8F0;" id="top-ticker-f0-fair">28,524.1</b>
-            </div>
-            <div class="ticker-item" style="color: #64748B;">|</div>
-            <div class="ticker-item">
-                <span style="color: #94A3B8;">ĐỘ LỆCH &Delta;F:</span>
-                <span id="top-ticker-delta-f" class="badge badge-pos">+9.9 pts (PREMIUM &bull; MUA ĐUỔI)</span>
-            </div>
-        </div>
-        <div class="ticker-controls">
-            <button class="btn-ctrl btn-sim paused" id="btn-toggle-sim" onclick="toggleSimulation()">❚❚ SIMULATION: OFF</button>
-            <button class="btn-ctrl" onclick="resetToLiveCME()">↺ RESET CME</button>
-        </div>
-    </div>
-
-    <!-- Executive KPI Grid -->
-    <div class="kpi-grid">
-        
-        <div class="kpi-card">
-            <div class="kpi-label">SPOT CME FUTURES (F0) &mdash; CME GLOBEX</div>
-            <div class="kpi-val" style="color: #60A5FA;" id="kpi-spot-display">NQ <span id="kpi-spot-num">28,534.0</span></div>
-            <div class="kpi-sub">F0 Lý Thuyết: <b id="kpi-fair-f0">28,524.1</b> | Độ Lệch &Delta;F: <b id="kpi-delta-f" style="color: #4ADE80;">+9.9 pts</b> (<span id="kpi-delta-status">PREMIUM &bull; MUA ĐUỔI</span>)</div>
-        </div>
-        
-        <div class="kpi-card" id="kpi-gex-card">
-            <div class="kpi-label">Market Regime & Net GEX</div>
-            <div class="kpi-val" style="color: #F87171;" id="kpi-gex-val">$-474.0M GEX</div>
-            <div class="kpi-sub" id="kpi-gex-sub"><span class="badge badge-neg" id="regime-badge">NEGATIVE GAMMA (KHUẾCH ĐẠI / BREAKOUT)</span></div>
-        </div>
-        <div class="kpi-card" id="kpi-move-card">
-            <div class="kpi-label">Biên Độ 1-Sigma Expected Move</div>
-            <div class="kpi-val" style="color: var(--neon-gold);" id="kpi-move-val">±534.2 pts</div>
-            <div class="kpi-sub" id="kpi-move-sub">Intraday (Rule of 16): <b>±637.9 pts</b></div>
-        </div>
-        <div class="kpi-card" id="kpi-vex-card">
-            <div class="kpi-label">Greeks Bậc 2 (Vanna & Charm)</div>
-            <div class="kpi-val" style="color: #38BDF8;" id="kpi-vex-val">$-4.5M / $+34.6M</div>
-            <div class="kpi-sub">Net VEX (1% IV) | Net CHEX (Ngày decay)</div>
-        </div>
-    </div>
-
-    <!-- Realtime ATM Greeks Live Radar -->
-    <div class="insight-box" style="border-left-color: #38BDF8; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
-        <div>
-            <b style="color: #38BDF8; font-size: 12.5px;">⚡ LIVE BLACK-76 REALTIME GREEKS RADAR (TRỤC ATM):</b>
-            <span style="font-family:'JetBrains Mono', monospace; margin-left: 8px; color: #E2E8F0;" id="live-greeks-radar">
-                Delta &Delta;: <b>0.505</b> | Gamma &Gamma;: <b>0.00042</b> | Vega &nu;: <b>$18.5M</b> | Theta &theta;: <b>-$28.5k/d</b> | Vanna: <b>+$2.8M</b> | Charm: <b>-$1.4M/d</b>
-            </span>
-        </div>
-        <div style="font-family:'JetBrains Mono', monospace; font-size: 11px; color: #4ADE80;">
-            ● Recalculated Client-Side in 0.1ms
-        </div>
-    </div>
-
-
-
-    <!-- True ATAS Realtime Orderflow Footprint Candlestick Terminal -->
-    <div class="atas-terminal-box" id="sec-atas">
-        <div class="atas-toolbar">
-            <div class="atas-tools-left">
-                <span class="atas-badge">#NQZ6</span>
-                <span class="atas-badge" style="color: #38BDF8;">1 Lots</span>
-                <span class="atas-badge" style="color: #4ADE80;">CME GLOBEX</span>
-                <span style="color: #64748B; font-size: 11px; margin-left: 6px;">TradingPattern by Rithmic &bull; Powered by NEIRO-QUANT</span>
-            </div>
-            <div class="atas-tools-right">
-                <span style="color: #64748B;">Khung:</span>
-                <button class="timeframe-pill active" onclick="setTimeframe('1m')">1M</button>
-                <button class="timeframe-pill" onclick="setTimeframe('5m')">5M</button>
+<div class="atas-desktop-window" id="sec-atas">
+    <!-- ATAS Top Application Bar (Native Desktop Titlebar) -->
+    <div class="atas-win-topbar">
+        <div class="atas-top-left">
+            <div class="atas-tab active"><span class="atas-tab-text">#NQZ6</span></div>
+            <span class="atas-win-sep">|</span>
+            <div class="atas-top-tag lock-icon" title="Symbol Locked">🔒</div>
+            <div class="atas-top-tag">1 Lots</div>
+            <span class="atas-win-sep">|</span>
+            <div class="atas-tf-group">
+                <button class="timeframe-pill active" onclick="setTimeframe('1m')">M1</button>
+                <button class="timeframe-pill" onclick="setTimeframe('5m')">M5</button>
                 <button class="timeframe-pill" onclick="setTimeframe('15m')">15M</button>
-                <button class="timeframe-pill" onclick="setTimeframe('1h')">1H</button>
+                <button class="timeframe-pill" onclick="setTimeframe('1h')">H1</button>
                 <button class="timeframe-pill" onclick="setTimeframe('D')">D</button>
             </div>
+            <span class="atas-win-sep">|</span>
+            <button class="atas-top-btn"><span style="color:#38BDF8;">✎</span> Indicators</button>
+            <span class="atas-badge-sm">0</span>
+            <button class="atas-top-btn">DOM Trader</button>
+            <span class="atas-badge-contract">NQ 1m</span>
         </div>
 
-                <div class="atas-body-container">
-            <!-- Authentic ATAS Left Drawing Toolbar -->
-            <div class="atas-left-tools">
-                <span class="tool-btn active" title="Con trỏ">✛</span>
-                <span class="tool-btn" title="Đường xu hướng">╱</span>
-                <span class="tool-btn" title="Tia ngang">━</span>
-                <span class="tool-btn" title="Mũi tên">↗</span>
-                <span class="tool-btn" title="Vẽ tự do">✎</span>
-                <span class="tool-btn" title="Văn bản">T</span>
-                <span class="tool-btn" title="Hộp vùng cản">▭</span>
-                <span class="tool-btn" title="Thước đo">📏</span>
-                <div style="flex: 1;"></div>
-                <span class="tool-btn" title="Cài đặt">⚙</span>
+        <!-- Center: Realtime Quantitative Ticker & Fair Value -->
+        <div class="atas-top-center">
+            <div class="atas-ticker-pill">
+                <span class="pulse-dot"></span>
+                <span class="atas-sym-label">SPOT CME:</span>
+                <b class="atas-price-val" id="top-ticker-price" style="color: #38BDF8;">28,534.00</b>
+                <span class="ticker-change change-up" id="top-ticker-change">+0.00 (+0.00%)</span>
+                <span class="atas-mt5-tag">(MT5: ~<span id="kpi-mt5-num">28,534.0</span>)</span>
             </div>
-
-            <div id="tv-chart-wrapper">
-                <div class="atas-floating-hud">
-                    <div class="hud-item"><span class="hud-label">NET GEX:</span> <b id="hud-gex-val" style="color: #F87171;">-474.0M</b></div>
-                    <div class="hud-item"><span class="hud-label">CHARM (GHÌM ĐÊM):</span> <b id="hud-charm-val" style="color:#C084FC;">$+34.6M/d</b></div>
-                    <div class="hud-item"><span class="hud-label">VANNA (REBOUND):</span> <b id="hud-vanna-val" style="color:#22D3EE;">$-4.5M</b></div>
-                    <div class="hud-item"><span class="hud-label">1-SIGMA:</span> <b id="hud-sigma-val" style="color:#FACC15;">&plusmn;534.2p</b></div>
-                </div>
-                <div id="atas-tv-chart"></div>
-                <canvas id="atas-canvas"></canvas>
+            <div class="atas-quant-pill">
+                <span class="atas-pill-lbl">F0 FAIR:</span>
+                <b id="top-ticker-f0-fair" style="color:#F1F5F9;">28,524.1</b>
+                <span class="atas-pill-lbl">&Delta;F:</span>
+                <span id="top-ticker-delta-f" class="badge badge-pos">+9.9 pts</span>
+            </div>
+            <div class="atas-quant-pill">
+                <span class="atas-pill-lbl">GEX:</span> <b id="kpi-gex-val" style="color:#F87171;">$-474.0M</b>
+                <span class="atas-pill-lbl">CHARM:</span> <b id="top-charm-val" style="color:#C084FC;">$+34.6M/d</b>
+                <span class="atas-pill-lbl">VANNA:</span> <b id="kpi-vex-val" style="color:#22D3EE;">$-4.5M</b>
+                <span class="atas-pill-lbl">1-&sigma;:</span> <b id="kpi-move-val" style="color:#FACC15;">&plusmn;534.2p</b>
             </div>
         </div>
 
-        <div class="atas-bottom-status">
-            <div><span style="color: #38BDF8; font-weight:700;">TrueVision Levels</span> &bull; 11h [+]</div>
-            <div>Vol Total: <b style="color: #E2E8F0;" id="bottom-vol-count">32,793,639</b></div>
+        <!-- Right: Actions & Window Controls -->
+        <div class="atas-top-right">
+            <button class="btn-ctrl btn-sim paused" id="btn-toggle-sim" onclick="toggleSimulation()">❚❚ SIM</button>
+            <button class="btn-ctrl" onclick="resetToLiveCME()">↺ CME</button>
+            <div class="atas-win-controls">
+                <span class="win-btn win-min" title="Minimize">—</span>
+                <span class="win-btn win-max" title="Maximize">□</span>
+                <span class="win-btn win-close" title="Close">✕</span>
+            </div>
         </div>
     </div>
 
-    <!-- Footer -->
-    <div class="footer">
-        NEIRO-NQ-QUANT TERMINAL &bull; 100% Cloud-Native &bull; Zero-Touch Automation &bull; Zero-Waste (&lt; 15MB)
+    <!-- Sub-bar: Clean Watermark & Greeks Radar -->
+    <div class="atas-win-subbar">
+        <div class="atas-subbar-left">
+            <span class="atas-watermark-text">NEIRO-NQ-QUANT TERMINAL &bull; TradingPattern by Rithmic &bull; Powered by OMNE™</span>
+        </div>
+        <div class="atas-subbar-right">
+            <span style="color:#38BDF8; font-weight:700;">⚡ LIVE BLACK-76 REALTIME GREEKS RADAR:</span>
+            <span id="live-greeks-radar" style="margin-left: 6px; color: #E2E8F0;">
+                Delta &Delta;: <b>0.505</b> | Gamma &Gamma;: <b>0.00042</b> | Vega &nu;: <b>$18.5M</b> | Theta &theta;: <b>-$28.5k/d</b> | Vanna: <b>+$2.8M</b> | Charm: <b>-$1.4M/d</b>
+            </span>
+            <span style="color:#64748B; margin-left: 8px;">| ATM: <b id="top-ticker-atm">28,514 pts</b> | IV: <b id="top-ticker-iv">35.8%</b> | r: <b>3.97%</b></span>
+        </div>
+    </div>
+
+    <!-- Main ATAS Body: Left Toolbar + Full-Height Chart -->
+    <div class="atas-body-container">
+        <!-- Authentic ATAS Left Drawing Toolbar -->
+        <div class="atas-left-tools">
+            <span class="tool-btn active" title="Con trỏ">✛</span>
+            <span class="tool-btn" title="Đường xu hướng">╱</span>
+            <span class="tool-btn" title="Tia ngang">━</span>
+            <span class="tool-btn" title="Mũi tên">↗</span>
+            <span class="tool-btn" title="Vẽ tự do">✎</span>
+            <span class="tool-btn" title="Văn bản">T</span>
+            <span class="tool-btn" title="Hộp vùng cản">▭</span>
+            <span class="tool-btn" title="Thước đo">📏</span>
+            <div style="flex: 1;"></div>
+            <span class="tool-btn" title="Cài đặt">⚙</span>
+        </div>
+
+        <div id="tv-chart-wrapper">
+            <div class="atas-floating-hud">
+                <div class="hud-item"><span class="hud-label">NET GEX:</span> <b id="hud-gex-val" style="color: #F87171;">-474.0M</b></div>
+                <div class="hud-item"><span class="hud-label">CHARM:</span> <b id="hud-charm-val" style="color:#C084FC;">$+34.6M/d</b></div>
+                <div class="hud-item"><span class="hud-label">VANNA:</span> <b id="hud-vanna-val" style="color:#22D3EE;">$-4.5M</b></div>
+                <div class="hud-item"><span class="hud-label">1-SIGMA:</span> <b id="hud-sigma-val" style="color:#FACC15;">&plusmn;534.2p</b></div>
+            </div>
+            <div id="atas-tv-chart"></div>
+            <canvas id="atas-canvas"></canvas>
+        </div>
+    </div>
+
+    <!-- Bottom Status Bar -->
+    <div class="atas-bottom-status">
+        <div style="display:flex; align-items:center; gap:8px;">
+            <span style="color: #38BDF8; font-weight:700;">TrueVision Levels</span> &bull; 11h [+]
+            <span style="color: #475569; font-size:10px;">| Cập nhật: 01/11/2026 11:01:07 (VN)</span>
+        </div>
+        <div style="display:flex; align-items:center; gap:12px;">
+            <span style="color: #64748B;">CME GLOBEX E-MINI</span>
+            <span class="vol-pill">Vol Total: <b style="color: #E2E8F0;" id="bottom-vol-count">32,793,639</b></span>
+        </div>
     </div>
 </div>
 
@@ -602,7 +514,7 @@ function initAtasChart() {
 
     chart = LightweightCharts.createChart(container, {
         width: container.clientWidth,
-        height: container.clientHeight || 750,
+        height: container.clientHeight || (window.innerHeight - 62),
         layout: {
             background: { type: 'solid', color: '#000000' },
             textColor: '#94A3B8',
@@ -653,14 +565,14 @@ function initAtasChart() {
         title: 'F0 LIVE',
     });
 
-    const initialH = container.clientHeight || 750;
+    const initialH = container.clientHeight || (window.innerHeight - 62);
     if (canvas) {
         canvas.width = container.clientWidth;
         canvas.height = initialH;
     }
 
     window.addEventListener('resize', () => {
-        const newH = container.clientHeight || 750;
+        const newH = container.clientHeight || (window.innerHeight - 62);
         chart.applyOptions({ width: container.clientWidth, height: newH });
         if (canvas) {
             canvas.width = container.clientWidth;
@@ -708,72 +620,94 @@ function drawAtasOverlay() {
             const y = candleSeries.priceToCoordinate(bin.price);
             if (y !== null && y >= 0 && y <= h) {
                 const barW = Math.min(65, bin.volume * 0.45);
-                ctx.fillStyle = 'rgba(99, 102, 241, 0.18)';
-                ctx.fillRect(8, y - 2, barW, 4);
+                ctx.fillStyle = 'rgba(99, 102, 241, 0.20)';
+                ctx.fillRect(6, y - 2, barW, 4);
                 ctx.fillStyle = 'rgba(129, 140, 248, 0.45)';
-                ctx.fillRect(8, y - 2, barW * 0.4, 4);
+                ctx.fillRect(6, y - 2, barW * 0.4, 4);
             }
         });
     }
 
-    // 2. ATAS Horizontal Shaded Execution Stack Zones
-    const zones = [
-        {
-            name: 'deep ef stack',
-            priceTop: m.deep_ef + 4.5,
-            priceBottom: m.deep_ef - 4.5,
-            fill: 'rgba(71, 85, 105, 0.32)',
-            border: '#94A3B8',
-            textColor: '#E2E8F0',
-            label: 'deep ef stack'
-        },
-        {
-            name: 'seller offer',
-            priceTop: m.seller_offer + 3.5,
-            priceBottom: m.seller_offer - 3.5,
-            fill: 'rgba(225, 29, 72, 0.28)',
-            border: '#F43F5E',
-            textColor: '#FDA4AF',
-            label: 'seller offer'
-        },
-        {
-            name: 'buyer abs',
-            priceTop: m.buyer_abs + 4.0,
-            priceBottom: m.buyer_abs - 4.0,
-            fill: 'rgba(14, 116, 144, 0.28)',
-            border: '#38BDF8',
-            textColor: '#7DD3FC',
-            label: 'buyer abs'
-        }
-    ];
+    // 2. ATAS Horizontal Orderflow Shaded Zones (buyer abs, seller offer, deep ef stack)
+    const startX = Math.max(80, Math.floor(w * 0.35));
+    const boxW = Math.max(100, (w - 85) - startX);
 
-    zones.forEach(z => {
-        const yTop = candleSeries.priceToCoordinate(z.priceTop);
-        const yBot = candleSeries.priceToCoordinate(z.priceBottom);
-        if (yTop !== null && yBot !== null) {
-            const top = Math.min(yTop, yBot);
-            const boxH = Math.max(14, Math.abs(yBot - yTop));
+    // A. deep ef stack (Two stacked horizontal grey bars)
+    const yDeepTop = candleSeries.priceToCoordinate(m.deep_ef + 4.0);
+    const yDeepMid = candleSeries.priceToCoordinate(m.deep_ef);
+    const yDeepBot = candleSeries.priceToCoordinate(m.deep_ef - 4.0);
+    if (yDeepTop !== null && yDeepBot !== null && boxW > 40) {
+        // Stack Bar 1 (Upper)
+        ctx.fillStyle = 'rgba(75, 85, 99, 0.42)';
+        ctx.fillRect(startX + 30, Math.min(yDeepTop, yDeepMid), boxW - 30, Math.max(8, Math.abs(yDeepMid - yDeepTop)));
+        ctx.strokeStyle = '#64748B';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(startX + 30, Math.min(yDeepTop, yDeepMid), boxW - 30, Math.max(8, Math.abs(yDeepMid - yDeepTop)));
 
-            ctx.fillStyle = z.fill;
-            ctx.fillRect(80, top, w - 165, boxH);
-            ctx.strokeStyle = z.border;
-            ctx.lineWidth = 1;
-            ctx.strokeRect(80, top, w - 165, boxH);
+        // Stack Bar 2 (Lower)
+        ctx.fillStyle = 'rgba(75, 85, 99, 0.42)';
+        ctx.fillRect(startX, Math.min(yDeepMid, yDeepBot), boxW, Math.max(8, Math.abs(yDeepBot - yDeepMid)));
+        ctx.strokeStyle = '#64748B';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(startX, Math.min(yDeepMid, yDeepBot), boxW, Math.max(8, Math.abs(yDeepBot - yDeepMid)));
 
-            ctx.fillStyle = z.textColor;
-            ctx.font = 'bold 11px "JetBrains Mono", monospace';
-            ctx.textAlign = 'right';
-            ctx.fillText(z.label, w - 180, top + (boxH / 2) + 4);
+        // Label: deep ef stack
+        ctx.fillStyle = '#E2E8F0';
+        ctx.font = 'bold 11px "JetBrains Mono", monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('deep ef stack', startX + (boxW / 2), Math.min(yDeepTop, yDeepBot) + Math.abs(yDeepBot - yDeepTop) + 14);
 
-            if (z.name === 'seller offer') {
-                ctx.fillStyle = '#FFFFFF';
-                ctx.font = 'bold 10px "JetBrains Mono", monospace';
-                ctx.fillText('+1R', w - 280, top + (boxH / 2) + 4);
-            }
-        }
-    });
+        // Highlight red oval indicator (as drawn by trader in ATAS)
+        ctx.strokeStyle = 'rgba(239, 68, 68, 0.85)';
+        ctx.lineWidth = 1.6;
+        ctx.beginPath();
+        ctx.ellipse(startX + 65, yDeepMid || 100, 45, 12, 0, 0, Math.PI * 2);
+        ctx.stroke();
+    }
 
-    // 3. GEX Reaction / Gamma Flip Dotted Line
+    // B. buyer abs (Solid absorption rectangle)
+    const yBuyerTop = candleSeries.priceToCoordinate(m.buyer_abs + 3.5);
+    const yBuyerBot = candleSeries.priceToCoordinate(m.buyer_abs - 3.5);
+    if (yBuyerTop !== null && yBuyerBot !== null && boxW > 40) {
+        const topB = Math.min(yBuyerTop, yBuyerBot);
+        const hB = Math.max(12, Math.abs(yBuyerBot - yBuyerTop));
+        ctx.fillStyle = 'rgba(71, 85, 105, 0.45)';
+        ctx.fillRect(startX + 40, topB, boxW - 40, hB);
+        ctx.strokeStyle = '#64748B';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(startX + 40, topB, boxW - 40, hB);
+
+        ctx.fillStyle = '#F1F5F9';
+        ctx.font = 'bold 11px "JetBrains Mono", monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('buyer abs', startX + 40 + ((boxW - 40) / 2), topB + (hB / 2) + 4);
+    }
+
+    // C. seller offer (Offer zone with +1R marker)
+    const ySellerTop = candleSeries.priceToCoordinate(m.seller_offer + 3.5);
+    const ySellerBot = candleSeries.priceToCoordinate(m.seller_offer - 3.5);
+    if (ySellerTop !== null && ySellerBot !== null && boxW > 40) {
+        const topS = Math.min(ySellerTop, ySellerBot);
+        const hS = Math.max(12, Math.abs(ySellerBot - ySellerTop));
+        ctx.fillStyle = 'rgba(71, 85, 105, 0.45)';
+        ctx.fillRect(startX + 10, topS, boxW - 10, hS);
+        ctx.strokeStyle = '#64748B';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(startX + 10, topS, boxW - 10, hS);
+
+        ctx.fillStyle = '#F1F5F9';
+        ctx.font = 'bold 11px "JetBrains Mono", monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('seller offer', startX + 10 + ((boxW - 10) / 2), topS + (hS / 2) + 4);
+
+        // +1R Marker
+        ctx.fillStyle = '#FFFFFF';
+        ctx.font = 'bold 11px "JetBrains Mono", monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('+1R', startX + 10 + ((boxW - 10) / 2) + 75, topS - 10);
+    }
+
+    // 3. GEX Reaction    // 3. GEX Reaction / Gamma Flip Dotted Line
     const yGex = candleSeries.priceToCoordinate(m.gex_react);
     if (yGex !== null && yGex >= 0 && yGex <= h) {
         ctx.strokeStyle = '#FACC15';
@@ -860,6 +794,17 @@ function drawAtasOverlay() {
         ctx.font = 'bold 10.5px "JetBrains Mono", monospace';
         ctx.textAlign = 'right';
         ctx.fillText('..... CALL WALL · GEX +$142M · OI ' + m.call_wall_oi.toLocaleString() + ' · THÀNH TRÌ CẢN TRÊN', w - 180, yCw - 4);
+    }
+
+    // 4b. Right Axis Small Volume Blocks (authentic ATAS lower right ladder)
+    const bottomY = h - 60;
+    for (let sIdx = 0; sIdx < 8; sIdx++) {
+        const bY = bottomY + (sIdx * 6);
+        if (bY <= h - 10) {
+            const bWidth = 14 + ((sIdx * 7) % 24);
+            ctx.fillStyle = 'rgba(56, 189, 248, 0.38)';
+            ctx.fillRect(w - 80, bY, bWidth, 4);
+        }
     }
 
     // 5. ATAS / TrueVision Cluster Imbalance Bubbles on Candles
