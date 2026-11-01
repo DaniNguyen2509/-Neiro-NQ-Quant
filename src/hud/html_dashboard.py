@@ -595,6 +595,9 @@ def generate_html_terminal(df: pd.DataFrame, meta: Dict[str, Any], fig: go.Figur
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title>NEIRO-NQ-QUANT TERMINAL &bull; ATAS REALTIME QUANT ORDERFLOW</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -822,10 +825,10 @@ def generate_html_terminal(df: pd.DataFrame, meta: Dict[str, Any], fig: go.Figur
             </div>
         </div>
 
-        <!-- Right: Actions & Window Controls -->
+        <!-- Right: Authentic ATAS System & Window Controls -->
         <div class="atas-top-right">
-            <button class="btn-ctrl btn-sim paused" id="btn-toggle-sim" onclick="toggleSimulation()">❚❚ SIM</button>
-            <button class="btn-ctrl" onclick="resetToLiveCME()">↺ CME</button>
+            <button class="win-btn" title="Chụp ảnh biểu đồ (Snapshot)" onclick="alert('ATAS Snapshot captured')">📷</button>
+            <button class="win-btn" title="Cài đặt hệ thống (Settings)">⚙</button>
             <div class="atas-win-controls">
                 <span class="win-btn win-min" title="Minimize">—</span>
                 <span class="win-btn win-max" title="Maximize">□</span>
@@ -1562,45 +1565,9 @@ function onTick(price, isUserOverride = false) {{
     }});
 }}
 
+// Clean Pure ATAS: Always anchored to official CME Globex settlement price
 function startSimulation() {{
-    if (simInterval) clearInterval(simInterval);
-    simInterval = setInterval(() => {{
-        if (!isSimulating) return;
-        const drift = (initialBasePrice - currentPrice) * 0.02;
-        const noise = (Math.random() - 0.495) * 1.5;
-        const tick = Math.round((drift + noise) * 4) / 4;
-        const nextPrice = Math.round((currentPrice + tick) * 4) / 4;
-        onTick(nextPrice);
-    }}, 1000);
-}}
-
-function toggleSimulation() {{
-    isSimulating = !isSimulating;
-    const btn = document.getElementById('btn-toggle-sim');
-    if (btn) {{
-        if (isSimulating) {{
-            btn.className = 'btn-ctrl btn-sim';
-            btn.innerText = '● SIMULATION: ON';
-        }} else {{
-            btn.className = 'btn-ctrl btn-sim paused';
-            btn.innerText = '❚❚ SIMULATION: PAUSED';
-        }}
-    }}
-}}
-
-function resetToLiveCME() {{
-    const slider = document.getElementById('price-slider');
-    if (slider) slider.value = initialBasePrice;
-    const lbl = document.getElementById('slider-price-val');
-    if (lbl) lbl.innerText = initialBasePrice.toFixed(2);
-    onTick(initialBasePrice);
-}}
-
-function onSliderPriceChange(val) {{
-    const p = parseFloat(val);
-    const lbl = document.getElementById('slider-price-val');
-    if (lbl) lbl.innerText = p.toFixed(2);
-    onTick(p, true);
+    // Zero-Waste: No dummy simulation intervals
 }}
 
 function setTimeframe(tf) {{
