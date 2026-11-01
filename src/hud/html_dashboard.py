@@ -504,38 +504,6 @@ def generate_html_terminal(df: pd.DataFrame, meta: Dict[str, Any], fig: go.Figur
         micro_header = "📊 BẢNG DỮ LIỆU ĐỊNH LƯỢNG MICROSTRUCTURE TỪNG STRIKE (E-MINI NASDAQ & MT5 SPOT)"
 
     table_rows_html = ""
-    atm_strike = meta["atm_strike"]
-    df_sorted = df[(df["strike"] >= atm_strike - 8 * step) & (df["strike"] <= atm_strike + 8 * step)].sort_values("strike", ascending=False)
-    for _, row in df_sorted.iterrows():
-        stk = row["strike"]
-        stk_mt5 = stk - basis
-        gex = float(row.get("netGEX", 0.0))
-        c_oi = int(row.get("callOpenInterest", 0))
-        p_oi = int(row.get("putOpenInterest", 0))
-        c_vol = int(row.get("callVolume", 0))
-        p_vol = int(row.get("putVolume", 0))
-        vex = float(row.get("netVEX", 0.0))
-        chex = float(row.get("netCHEX", 0.0))
-
-        gex_style = "color: #4ADE80; font-weight: 600;" if gex >= 0 else "color: #F87171; font-weight: 600;"
-        is_spot_near = abs(stk - spot) <= (step * 0.5)
-        row_class = 'class="row-spot"' if is_spot_near else ""
-
-        mt5_td = f'<td style="color: #38BDF8;">~{stk_mt5:,.1f}</td>' if not is_unified else ""
-
-        table_rows_html += f"""
-        <tr {row_class} id="row-strike-{int(stk)}">
-            <td><b>{stk:,.0f} pts</b></td>
-            {mt5_td}
-            <td style="{gex_style}" id="cell-gex-{int(stk)}">${gex:+.2f}M</td>
-            <td>{c_oi:,}</td>
-            <td>{p_oi:,}</td>
-            <td>{c_vol:,}</td>
-            <td>{p_vol:,}</td>
-            <td style="color: #FB923C;" id="cell-vex-{int(stk)}">${vex:+.2f}M</td>
-            <td style="color: #22D3EE;" id="cell-chex-{int(stk)}">${chex:+.2f}M</td>
-        </tr>
-        """
 
     js_options_data = []
     for _, r in df.sort_values("strike").iterrows():
@@ -756,7 +724,7 @@ def generate_html_terminal(df: pd.DataFrame, meta: Dict[str, Any], fig: go.Figur
         .timeframe-pill.active, .timeframe-pill:hover {{ background: #131E31; color: #38BDF8; border-color: #243550; }}
 
         #tv-chart-wrapper {{
-            position: relative; width: 100%; height: 560px; background-color: #000000;
+            position: relative; width: 100%; height: 620px; background-color: #000000;
         }}
         #atas-tv-chart {{ width: 100%; height: 100%; }}
         #atas-canvas {{
@@ -893,17 +861,7 @@ def generate_html_terminal(df: pd.DataFrame, meta: Dict[str, Any], fig: go.Figur
         </div>
     </div>
 
-    <!-- Unified Quick-Jump Navigation Bar -->
-    <div class="quick-nav-bar">
-        <span style="font-family:'JetBrains Mono', monospace; font-size:11px; color:#38BDF8; font-weight:700; margin-right:4px;">🧭 CHUYỂN NHANH:</span>
-        <a href="#sec-atas" class="nav-tab active">⚡ 1. Nến & Footprint ATAS</a>
-        <a href="#sec-insights" class="nav-tab">📐 2. Thống Kê 1-Sigma</a>
-        <a href="#sec-scalping" class="nav-tab">🎯 3. Lướt Sóng Trong Ngày</a>
-        <a href="#sec-swing" class="nav-tab">🏰 4. Phục Kích Thành Trì</a>
-        <a href="#sec-charts" class="nav-tab">📊 5. Biểu Đồ 3-Panel Strike</a>
-        <a href="#sec-microstructure" class="nav-tab">📋 6. Bảng Chi Tiết Strike</a>
-        <a href="#sec-glossary" class="nav-tab">📖 7. Từ Điển Thuật Ngữ ATAS</a>
-    </div>
+
 
     <!-- True ATAS Realtime Orderflow Footprint Candlestick Terminal -->
     <div class="atas-terminal-box" id="sec-atas">
@@ -942,215 +900,6 @@ def generate_html_terminal(df: pd.DataFrame, meta: Dict[str, Any], fig: go.Figur
             <button class="btn-ctrl" onclick="resetToLiveCME()">MẶC ĐỊNH</button>
         </div>
     </div>
-
-    <!-- Collapsible Quant Insights & Strategy Drawer (Zero-Scroll Default) -->
-    <details class="quant-details-drawer">
-        <summary class="drawer-summary">
-            <span>📊 MỞ RỘNG: BẢNG SỐ LIỆU CHI TIẾT & KỊCH BẢN ĐỊNH LƯỢNG (TÙY CHỌN TRA CỨU)</span>
-            <span style="font-size: 11px; color: #38BDF8;">[Nhấp để xem bảng]</span>
-        </summary>
-        <div class="drawer-content">
-    <!-- 1-Sigma & Greeks Insights -->
-    <div class="insight-box" id="sec-insights" style="border-left-color: #38BDF8;">
-        <b style="color: #93C5FD; font-size: 13px;">📐 [ĐỘ LỆCH CHUẨN & BIÊN ĐỘ 1-SIGMA NASDAQ]:</b><br>
-        • <b>ATM Straddle (Call + Put ATM):</b> {meta['atm_straddle']:,.1f} pts | Implied Volatility (IV ATM): <b>{meta['sigma_atm']*100:.1f}%</b><br>
-        • <b>Expected Move 1-Sigma (Brenner-Subrahmanyam):</b> ±{expected_move:,.1f} pts (Biên độ kỳ: NQ {meta['lower_band_1s']:,.0f} &mdash; {meta['upper_band_1s']:,.0f})<br>
-        • <b>Intraday Move (Rule of 16):</b> ±{intraday_move:,.1f} pts (Vùng dao động trong ngày: NQ {spot-intraday_move:,.0f} &mdash; {spot+intraday_move:,.0f})
-    </div>
-
-    <div class="insight-box" style="border-left-color: #FB923C;">
-        <b style="color: #FDBA74; font-size: 13px;">⚡ [Ý NGHĨA & HƯỚNG DẪN HÀNH ĐỘNG GREEKS BẬC 2 - VANNA & CHARM]:</b><br>
-        • <b>ĐỈNH VANNA (${total_vex:+.1f}M):</b> <b>LỰC ĐẨY V-REBOUND</b> &rarr; Canh BUY lướt sóng khi IV hạ nhiệt sau tin tức hoặc đầu phiên Mỹ.<br>
-        • <b>ĐỈNH CHARM (${total_chex:+.1f}M/ngày):</b> <b>NAM CHÂM GHÌM GIÁ ĐÊM</b> &rarr; Canh CHỐT LỜI hoặc đánh hồi quy về trục này khi về đêm muộn (sau 01:30 sáng VN).
-    </div>
-
-    <!-- Tactical Scalping Table -->
-    <div class="table-box" id="sec-scalping">
-        <div class="section-header">
-            <span>🎯 PHẦN 1: BẢNG TÁC CHIẾN LƯỚT SÓNG TRONG NGÀY (INTRADAY SCALPING - ĂN 30-50 ĐIỂM NQ)</span>
-        </div>
-        <table>
-            <thead>
-                <tr>
-                    <th>Chiến Lược</th>
-                    <th>{col_cme_act}</th>
-                    <th>{col_cme_ent}</th>
-                    {th_mt5}
-                    <th>{col_cme_sl}</th>
-                    <th>Take Profit (TP)</th>
-                    <th>Ghi Chú Hành Vi Market Maker</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td class="tag-buy">1. BUY MUA ĐUỔI (Squeeze {strike_above:,.0f})</td>
-                    <td>Vượt > {strike_above + buffer_val:,.1f}</td>
-                    <td>{strike_above + buffer_val + 2.0:,.1f}</td>
-                    {td_mt5_1}
-                    <td style="color:#F87171;">{strike_above - hard_sl_pts:,.1f} ({hard_sl_pts:.0f}p)</td>
-                    <td style="color:#4ADE80;">{next_above - front_run_tp:,.1f}</td>
-                    <td style="font-family: sans-serif; color: var(--text-secondary);">MM vỡ trận Short -> Gamma Squeeze đẩy giá bốc đầu lên nấc {next_above:,.0f}</td>
-                </tr>
-                <tr>
-                    <td class="tag-sell">2. SELL CHẶN TIỀN TUYẾN (Fade {strike_above:,.0f})</td>
-                    <td>{strike_above - 10.0:,.1f} - {strike_above:,.1f}</td>
-                    <td>{strike_above - 2.0:,.1f}</td>
-                    {td_mt5_2}
-                    <td style="color:#F87171;">{strike_above + fade_sl_pts:,.1f} ({fade_sl_pts:.0f}p)</td>
-                    <td style="color:#4ADE80;">{spot:,.1f}</td>
-                    <td style="font-family: sans-serif; color: var(--text-secondary);">Call Vol cực đại -> MM bán Futures chặn đầu ghìm giá hồi về Spot</td>
-                </tr>
-                <tr>
-                    <td class="tag-buy">3. BUY BẮT SÀN ATM (Rebound {strike_below:,.0f})</td>
-                    <td>{strike_below:,.1f} - {strike_below + 10.0:,.1f}</td>
-                    <td>{strike_below + 3.0:,.1f}</td>
-                    {td_mt5_3}
-                    <td style="color:#F87171;">{strike_below - hard_sl_pts:,.1f} ({hard_sl_pts:.0f}p)</td>
-                    <td style="color:#4ADE80;">{strike_above - front_run_tp:,.1f}</td>
-                    <td style="font-family: sans-serif; color: var(--text-secondary);">Đệm Put hỗ trợ kỹ thuật trong phiên đẩy giá hồi phục cân bằng</td>
-                </tr>
-                <tr>
-                    <td class="tag-sell">4. SELL THỦNG SÀN ATM (Breakdown {strike_below:,.0f})</td>
-                    <td>Thủng &lt; {strike_below - buffer_val:,.1f}</td>
-                    <td>{strike_below - buffer_val - 2.0:,.1f}</td>
-                    {td_mt5_4}
-                    <td style="color:#F87171;">{strike_below + fade_sl_pts:,.1f} ({fade_sl_pts:.0f}p)</td>
-                    <td style="color:#4ADE80;">{secondary_support + front_run_tp:,.1f}</td>
-                    <td style="font-family: sans-serif; color: var(--text-secondary);">Mất mốc ATM Pivot -> Rơi tự do về trạm nghỉ {secondary_support:,.0f} (Đệm nấc 2)</td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
-
-    <!-- Structural Swing Walls Table -->
-    <div class="table-box" id="sec-swing">
-        <div class="section-header">
-            <span>🏰 PHẦN 2: BẢNG PHỤC KÍCH THÀNH TRÌ CẤU TRÚC (STRUCTURAL SWING WALLS - ĂN 100-250 ĐIỂM NQ)</span>
-        </div>
-        <table>
-            <thead>
-                <tr>
-                    <th>Thành Trì</th>
-                    <th>{col_cme_act}</th>
-                    <th>{col_cme_ent}</th>
-                    {th_mt5}
-                    <th>{col_cme_sl}</th>
-                    <th>Take Profit (TP)</th>
-                    <th>Bản Chất Dòng Tiền Lớn</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td class="tag-buy">THÀNH TRÌ PUT WALL ({put_wall:,.0f})</td>
-                    <td>{put_wall:,.1f} - {put_wall + 15.0:,.1f}</td>
-                    <td>{put_wall + 3.0:,.1f}</td>
-                    {td_mt5_6}
-                    <td style="color:#F87171;">{put_wall - 25.0:,.1f} (25p)</td>
-                    <td style="color:#4ADE80;">{spot:,.1f} &rarr; {strike_above:,.0f}</td>
-                    <td style="font-family: sans-serif; color: var(--text-secondary);">{put_wall_oi:,} HĐ bảo hiểm bảo vệ. MM buộc phải gom Long đỡ thị trường.</td>
-                </tr>
-                <tr>
-                    <td class="tag-sell">THÀNH TRÌ CALL WALL ({call_wall:,.0f})</td>
-                    <td>{call_wall - 15.0:,.1f} - {call_wall:,.1f}</td>
-                    <td>{call_wall - 3.0:,.1f}</td>
-                    {td_mt5_5}
-                    <td style="color:#F87171;">{call_wall + 25.0:,.1f} (25p)</td>
-                    <td style="color:#4ADE80;">{spot:,.1f} &rarr; {strike_below:,.0f}</td>
-                    <td style="font-family: sans-serif; color: var(--text-secondary);">{call_wall_oi:,} HĐ chặn trần. Tường thành bất khả xâm phạm nếu không có tin Black Swan.</td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
-
-    <!-- 3-Panel Plotly Interactive Chart -->
-    <div class="chart-box" id="sec-charts">
-        <div class="section-header" style="padding: 6px 10px;">
-            <span>📈 BIỂU ĐỒ ĐỊNH LƯỢNG 3 PANEL CHUYÊN SÂU (NET GEX &bull; VOLUME/OI &bull; VANNA/CHARM)</span>
-        </div>
-        {plotly_div}
-    </div>
-
-    <!-- Microstructure Strike Table -->
-    <div class="table-box" id="sec-microstructure">
-        <div class="section-header">
-            <span>{micro_header}</span>
-        </div>
-        <table>
-            <thead>
-                <tr>
-                    <th>Strike NQ</th>
-                    {th_mt5}
-                    <th>Net GEX ($M)</th>
-                    <th>Call OI</th>
-                    <th>Put OI</th>
-                    <th>Call Vol</th>
-                    <th>Put Vol</th>
-                    <th>Net VEX ($M)</th>
-                    <th>Net CHEX ($M)</th>
-                </tr>
-            </thead>
-            <tbody>
-                {table_rows_html}
-            </tbody>
-        </table>
-    </div>
-
-    <!-- ATAS Orderflow & Quant Terminology Glossary -->
-    <div class="table-box" id="sec-glossary" style="margin-top: 20px; border-left: 4px solid #38BDF8;">
-        <div class="section-header">
-            <span>📖 BẢNG CHÚ THÍCH Ý NGHĨA & HƯỚNG DẪN TÁC CHIẾN CÁC DẢI CẢN ORDERFLOW (CHUẨN ATAS)</span>
-        </div>
-        <table>
-            <thead>
-                <tr>
-                    <th style="width: 160px;">Nhãn Dải Cản (ATAS)</th>
-                    <th style="width: 140px;">Màu Sắc & Trực Quan</th>
-                    <th style="width: 320px;">Bản Chất Vi Cấu Trúc (Market Microstructure)</th>
-                    <th>Hành Động Tác Chiến Khuyến Nghị (Trading Playbook)</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td style="color: #4ADE80; font-weight: 700; font-size: 13px;">put wall</td>
-                    <td><span class="badge badge-pos">Xanh Lá (Dashed Line)</span></td>
-                    <td><b>Thành trì Put Wall</b>: Vùng tập trung Open Interest Put cao nhất thị trường. Khi giá lùi về đây, Market Maker ôm Short Gamma buộc phải mua vào NQ Futures với khối lượng cực lớn để phòng hộ (Delta-hedging).</td>
-                    <td><b>CANH MUA (BUY REBOUND)</b>: Hỗ trợ đáy phiên cực mạnh. Đặt lệnh Buy Limit quanh vùng giá này hoặc Buy khi nến 1M rút chân, Stop Loss ngắn 20-25 điểm phía dưới.</td>
-                </tr>
-                <tr>
-                    <td style="color: #F87171; font-weight: 700; font-size: 13px;">call wall</td>
-                    <td><span class="badge badge-neg">Đỏ (Dashed Line)</span></td>
-                    <td><b>Trần nhà Call Wall</b>: Vùng tập trung Open Interest Call dày đặc nhất. Tại đây Market Maker xả bán hợp đồng tương lai để ghìm giá không cho vượt kỳ hạn đáo hạn.</td>
-                    <td><b>CANH BÁN (SELL FADE)</b>: Kháng cự đỉnh phiên bất khả xâm phạm. Canh Sell chặn đầu hoặc chốt lời toàn bộ các vị thế Long khi giá tiệm cận.</td>
-                </tr>
-                <tr>
-                    <td style="color: #E2E8F0; font-weight: 700; font-size: 13px;">deep ef stack</td>
-                    <td><span class="badge" style="background: rgba(148,163,184,0.25); color:#E2E8F0;">Bạc / Xám Tro</span></td>
-                    <td><b>Deep Execution Flow Stack</b>: Chồng lệnh tổ chức nén sâu. Là vùng tập trung các khối lệnh thụ động lớn (Iceberg / Absorption) của các thuật toán HFT và quỹ định lượng.</td>
-                    <td><b>VÙNG TÍCH LŨY / NÉN BIÊN ĐỘ</b>: Giá chạm vào đây thường di chuyển giằng co (sideway). Tuyệt đối không trade breakout đuổi giá ở lưng chừng vùng này.</td>
-                </tr>
-                <tr>
-                    <td style="color: #38BDF8; font-weight: 700; font-size: 13px;">buyer abs</td>
-                    <td><span class="badge" style="background: rgba(56,189,248,0.25); color:#38BDF8;">Xanh Cyan</span></td>
-                    <td><b>Buyer Absorption</b>: Phe Mua hấp thụ chủ động. Dù có lực xả hàng quyết liệt từ phe Gấu nhưng toàn bộ lệnh bán thị trường đều bị các tay to kê lệnh Limit Buy hấp thụ sạch sẽ.</td>
-                    <td><b>BUY THUẬN CHIỀU THEO TỔ CHỨC</b>: Xác nhận phe bán đã kiệt sức. Vào lệnh Buy ngay khi nến 1M đóng cửa xác nhận giữ vững bên trên vùng Buyer Abs.</td>
-                </tr>
-                <tr>
-                    <td style="color: #FDA4AF; font-weight: 700; font-size: 13px;">seller offer</td>
-                    <td><span class="badge" style="background: rgba(244,63,94,0.25); color:#FDA4AF;">Hồng Đỏ (+1R)</span></td>
-                    <td><b>Seller Offer Supply Zone</b>: Vùng cung hàng chủ động của phe Bán sẵn sàng xả hợp đồng để bảo vệ vị thế giá cao.</td>
-                    <td><b>MỐC CHỐT LỜI (+1R) HOẶC CANH SHORT</b>: Là mục tiêu chốt lời tối ưu (+1R đến +2R) cho các lệnh Long từ Buyer Abs, hoặc vị trí mở lệnh Short lướt sóng ăn nhịp hồi.</td>
-                </tr>
-                <tr>
-                    <td style="color: #FACC15; font-weight: 700; font-size: 13px;">gex 5 reaction</td>
-                    <td><span class="badge" style="background: rgba(250,204,21,0.25); color:#FACC15;">Vàng (Dotted Line)</span></td>
-                    <td><b>GEX Reaction Zone</b>: Trục phản ứng biến động nhạy cảm bậc 5 (Pivot phân định giữa chế độ Positive Gamma ghìm giá và Negative Gamma khuếch đại).</td>
-                    <td><b>ĐIỂM XOAY QUYẾT ĐỊNH (PIVOT)</b>: Nếu giá nằm trên &rarr; Ưu tiên đánh hồi quy (Mean Reversion / Fade). Nếu giá gãy xuống dưới &rarr; Kích hoạt đà bán tháo khuếch đại (Trend Following / Breakdown).</td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
-        </div>
-    </details>
 
     <!-- Footer -->
     <div class="footer">
