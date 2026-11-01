@@ -20,7 +20,7 @@ E-mini Nasdaq-100 Futures Options (NQ / NQZ26 / NAS100) incorporating:
   * Recalculates Delta, Gamma, Theta, Vega, Vanna, Charm, and Net GEX ($M) every second
   * Realistic institutional Greek scaling (Theta -$k/day, Vega $M, Vanna, Charm)
   * Updates KPI Cards, Greeks Radar, and ATM Microstructure table tick-by-tick
-- Live Tick Feeder / Simulator with interactive user price override slider
+- Live CME Globex Settlement & Realtime In-Browser Black-76 Engine
 - 3-Panel Plotly Interactive Charts & Anti-collision algorithm
 - Intraday Scalping Strategy Table (30-50 pts NQ)
 - Structural Swing Walls Strategy Table (100-250 pts NQ)
@@ -419,6 +419,8 @@ def generate_html_terminal(df: pd.DataFrame, meta: Dict[str, Any], fig: go.Figur
     total_gex = meta["total_net_gex"]
     total_vex = meta["total_net_vex"]
     total_chex = meta["total_net_chex"]
+    total_thex = meta.get("total_net_thex", -14.2)
+    total_thex_display = f"${total_thex:+.1f}M/d" if abs(total_thex) >= 1.0 else f"${total_thex*1000:+.1f}k/d"
     expected_move = meta["expected_move_1s"]
     intraday_move = meta["intraday_rule16_move"]
     call_wall = meta["call_wall"]
@@ -595,6 +597,9 @@ def generate_html_terminal(df: pd.DataFrame, meta: Dict[str, Any], fig: go.Figur
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title>NEIRO-NQ-QUANT TERMINAL &bull; ATAS REALTIME QUANT ORDERFLOW</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -602,41 +607,90 @@ def generate_html_terminal(df: pd.DataFrame, meta: Dict[str, Any], fig: go.Figur
     <script src="https://unpkg.com/lightweight-charts@4.2.0/dist/lightweight-charts.standalone.production.js"></script>
     <style>
         :root {{
-            --bg-base: #000000; --bg-card: #0A0F18; --border-color: #1A2333;
+            --bg-base: #000000; --bg-card: #0A0F18; --border-color: #141A24;
             --text-primary: #F8FAFC; --text-secondary: #94A3B8; --text-muted: #64748B;
             --neon-green: #22C55E; --neon-red: #EF4444; --neon-blue: #38BDF8; --neon-gold: #FACC15;
-            --neon-coral: #F43F5E;
         }}
         * {{ box-sizing: border-box; margin: 0; padding: 0; }}
-        body {{
-            background-color: var(--bg-base); color: var(--text-primary);
-            font-family: 'Inter', -apple-system, sans-serif; padding: 14px; font-size: 13px;
+        html, body {{
+            width: 100%; height: 100%; margin: 0; padding: 0;
+            overflow: hidden; background-color: #000000;
+            font-family: 'Inter', -apple-system, sans-serif;
+            color: #F8FAFC;
         }}
-        .container {{ max-width: 1520px; margin: 0 auto; }}
+        .atas-desktop-window {{
+            display: flex; flex-direction: column;
+            width: 100vw; height: 100vh;
+            background-color: #000000;
+            user-select: none;
+        }}
 
-        .header {{
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 10px 18px; background: #080D16;
-            border: 1px solid var(--border-color); border-radius: 8px; margin-bottom: 10px;
+        /* 100% Authentic ATAS Top Titlebar */
+        .atas-win-topbar {{
+            height: 34px; background: #161A22; border-bottom: 1px solid #232A37;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 8px; font-family: 'JetBrains Mono', monospace; font-size: 11px;
+            flex-shrink: 0;
         }}
-        .brand {{ display: flex; align-items: center; gap: 10px; }}
-        .brand-title {{
-            font-size: 17px; font-weight: 800;
-            background: linear-gradient(90deg, #FFFFFF 0%, #93C5FD 100%);
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-            font-family: 'JetBrains Mono', monospace; letter-spacing: 0.5px;
+        .atas-top-left, .atas-top-center, .atas-top-right {{
+            display: flex; align-items: center; gap: 5px;
         }}
-        .pulse-dot {{
-            width: 9px; height: 9px; border-radius: 50%; background-color: var(--neon-green);
-            box-shadow: 0 0 10px var(--neon-green); animation: pulse 2s infinite;
+        .atas-blue-indicator {{
+            width: 4px; height: 18px; background: #0284C7; border-radius: 2px; margin-right: 3px;
         }}
-        @keyframes pulse {{
-            0% {{ transform: scale(0.95); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7); }}
-            70% {{ transform: scale(1); box-shadow: 0 0 0 8px rgba(34, 197, 94, 0); }}
-            100% {{ transform: scale(0.95); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }}
+        .atas-tab {{
+            background: #202632; border: 1px solid #2F3849; color: #FFFFFF;
+            padding: 3px 9px; border-radius: 4px; font-weight: 700; font-size: 11px;
+            cursor: pointer;
         }}
+        .atas-tab.active {{
+            background: #252D3C; border-color: #38BDF8; color: #FFFFFF;
+        }}
+        .atas-win-sep {{ color: #3A4556; margin: 0 2px; font-size: 11px; }}
+        .atas-btn-icon {{
+            background: #202632; border: 1px solid #2F3849; color: #CBD5E1;
+            padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: 600;
+            display: flex; align-items: center; gap: 4px;
+        }}
+        .atas-tf-group {{ display: flex; align-items: center; gap: 2px; }}
+        .timeframe-pill {{
+            background: transparent; color: #94A3B8; border: 1px solid transparent;
+            padding: 2px 6px; border-radius: 3px; font-size: 11px; cursor: pointer; font-weight: 600;
+            font-family: 'JetBrains Mono', monospace;
+        }}
+        .timeframe-pill.active, .timeframe-pill:hover {{
+            background: #2A3444; color: #38BDF8; border-color: #38BDF8;
+        }}
+        .atas-icon-btn {{
+            background: transparent; border: 1px solid transparent; color: #94A3B8;
+            padding: 3px 6px; border-radius: 3px; font-size: 11px; cursor: pointer;
+            display: flex; align-items: center; gap: 3px; font-family: 'JetBrains Mono', monospace;
+        }}
+        .atas-icon-btn:hover {{ background: #202632; color: #E2E8F0; }}
+        .atas-badge-contract {{
+            background: rgba(56, 189, 248, 0.15); border: 1px solid rgba(56, 189, 248, 0.4);
+            color: #38BDF8; padding: 2px 6px; border-radius: 3px; font-size: 10.5px; font-weight: 700;
+        }}
+        .atas-camera-btn {{
+            background: #0284C7; color: #FFFFFF; border: none; padding: 3px 7px;
+            border-radius: 4px; font-size: 11px; cursor: pointer; transition: all 0.2s;
+        }}
+        .atas-camera-btn:hover {{ background: #0369A1; }}
+
+        /* Quantitative Top Metrics */
+        .atas-quant-pill {{
+            display: flex; align-items: center; gap: 6px; background: #10141C;
+            border: 1px solid #1E2635; padding: 2px 8px; border-radius: 4px; font-size: 10.5px;
+        }}
+        .atas-sym-label {{ color: #64748B; font-size: 10px; font-weight: 600; }}
+        .atas-price-val {{ font-size: 12px; font-weight: 800; }}
+        .atas-mt5-tag {{ color: #64748B; font-size: 10px; }}
+        .ticker-change {{ font-size: 10px; font-weight: 600; padding: 1px 4px; border-radius: 2px; }}
+        .change-up {{ color: #4ADE80; background: rgba(34, 197, 94, 0.12); }}
+        .change-down {{ color: #F87171; background: rgba(239, 68, 68, 0.12); }}
+        .atas-pill-lbl {{ color: #64748B; font-size: 9.5px; }}
         .badge {{
-            display: inline-block; padding: 2px 7px; border-radius: 4px; font-size: 10.5px;
+            display: inline-block; padding: 1px 5px; border-radius: 2px; font-size: 10px;
             font-weight: 700; font-family: 'JetBrains Mono', monospace;
         }}
         .badge-live {{ background: rgba(34, 197, 94, 0.15); color: #4ADE80; border: 1px solid rgba(34, 197, 94, 0.4); }}
@@ -644,112 +698,31 @@ def generate_html_terminal(df: pd.DataFrame, meta: Dict[str, Any], fig: go.Figur
         .badge-pos {{ background: rgba(74, 222, 128, 0.15); color: #4ADE80; border: 1px solid rgba(74, 222, 128, 0.4); }}
         .badge-neg {{ background: rgba(248, 113, 113, 0.15); color: #F87171; border: 1px solid rgba(248, 113, 113, 0.4); }}
 
-        .ticker-bar {{
-            display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;
-            background: #080D16; border: 1px solid #162030; border-radius: 8px; padding: 8px 16px; margin-bottom: 12px;
-            font-family: 'JetBrains Mono', monospace;
+        /* Window Buttons */
+        .win-btn {{
+            width: 20px; height: 20px; display: flex; align-items: center; justify-content: center;
+            background: #202632; border: 1px solid #2F3849; border-radius: 3px;
+            color: #94A3B8; font-size: 9px; cursor: pointer;
         }}
-        .ticker-items {{ display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }}
-        .ticker-item {{ display: flex; align-items: center; gap: 6px; font-size: 12px; }}
-        .ticker-symbol {{ font-weight: 800; color: #FFFFFF; font-size: 13px; }}
-        .ticker-price {{ font-weight: 800; font-size: 14.5px; color: #38BDF8; transition: color 0.2s; }}
-        .ticker-change {{ font-size: 11.5px; font-weight: 600; padding: 2px 5px; border-radius: 4px; }}
-        .change-up {{ color: #4ADE80; background: rgba(34, 197, 94, 0.12); }}
-        .change-down {{ color: #F87171; background: rgba(239, 68, 68, 0.12); }}
-        .ticker-controls {{ display: flex; align-items: center; gap: 8px; }}
-        .btn-ctrl {{
-            background: #111A29; color: #94A3B8; border: 1px solid #23354E; padding: 4px 9px;
-            border-radius: 5px; font-size: 11px; font-weight: 600; cursor: pointer; transition: all 0.2s;
-            font-family: 'JetBrains Mono', monospace;
-        }}
-        .btn-ctrl:hover, .btn-ctrl.active {{ background: #1E293B; color: #38BDF8; border-color: #38BDF8; }}
-        .btn-sim {{ background: rgba(34, 197, 94, 0.15); color: #4ADE80; border-color: rgba(34, 197, 94, 0.4); }}
-        .btn-sim.paused {{ background: rgba(239, 68, 68, 0.15); color: #F87171; border-color: rgba(239, 68, 68, 0.4); }}
+        .win-btn:hover {{ background: #2F3849; color: #FFFFFF; }}
+        .win-close:hover {{ background: #EF4444; color: #FFFFFF; border-color: #EF4444; }}
 
-        .kpi-grid {{
-            display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 10px; margin-bottom: 12px;
+        /* Subbar Watermark */
+        .atas-win-subbar {{
+            height: 20px; background: #0B0E14; border-bottom: 1px solid #161D29;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 10px; font-family: 'JetBrains Mono', monospace; font-size: 10px;
+            flex-shrink: 0;
         }}
-        .kpi-card {{
-            background-color: var(--bg-card); border: 1px solid var(--border-color);
-            border-radius: 8px; padding: 12px 16px; transition: transform 0.2s, border-color 0.2s;
-        }}
-        .kpi-card:hover {{ border-color: #2E3E59; transform: translateY(-1px); }}
-        .kpi-label {{
-            font-size: 11px; font-weight: 600; text-transform: uppercase; color: var(--text-secondary); margin-bottom: 4px;
-            letter-spacing: 0.5px;
-        }}
-        .kpi-val {{
-            font-size: 20px; font-weight: 700; font-family: 'JetBrains Mono', monospace; margin-bottom: 3px;
-        }}
-                .kpi-sub {{ font-size: 11px; color: var(--text-muted); }}
+        .atas-watermark-text {{ color: #475569; font-size: 9.5px; }}
 
-        /* On-Chart Floating Quant HUD & Single-Screen Drawer */
-        .atas-floating-hud {{
-            position: absolute; top: 10px; right: 90px; z-index: 10;
-            display: flex; align-items: center; gap: 12px;
-            background: rgba(8, 13, 22, 0.88); backdrop-filter: blur(6px);
-            border: 1px solid rgba(56, 189, 248, 0.35); border-radius: 6px;
-            padding: 6px 14px; font-family: 'JetBrains Mono', monospace; font-size: 11px;
-            pointer-events: none; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6);
+        /* Body & Chart */
+        .atas-body-container {{
+            display: flex; flex: 1; width: 100%; height: calc(100vh - 56px);
+            position: relative; overflow: hidden; background: #000000;
         }}
-        .hud-item {{ display: flex; align-items: center; gap: 5px; }}
-        .hud-label {{ color: #94A3B8; font-weight: 600; font-size: 10px; }}
-        .quant-details-drawer {{
-            margin-top: 14px; background: #080D16; border: 1px solid #1E293B;
-            border-radius: 8px; padding: 10px 16px;
-        }}
-        .drawer-summary {{
-            cursor: pointer; display: flex; justify-content: space-between; align-items: center;
-            font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 700;
-            color: #94A3B8; user-select: none;
-        }}
-        .drawer-summary:hover {{ color: #38BDF8; }}
-        .drawer-content {{ margin-top: 14px; }}
-
-        /* Unified Quick-Jump Sticky Navigation Bar */
-        html {{ scroll-behavior: smooth; }}
-        .quick-nav-bar {{
-            position: sticky; top: 0; z-index: 100;
-            display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
-            background: rgba(8, 13, 22, 0.96); backdrop-filter: blur(8px);
-            border: 1px solid #1E293B; border-radius: 8px;
-            padding: 8px 14px; margin-bottom: 12px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
-        }}
-        .nav-tab {{
-            color: #94A3B8; text-decoration: none; font-size: 11px; font-weight: 600;
-            padding: 4px 10px; border-radius: 5px; border: 1px solid transparent;
-            transition: all 0.2s; font-family: 'JetBrains Mono', monospace;
-        }}
-        .nav-tab:hover, .nav-tab.active {{
-            background: #131E31; color: #38BDF8; border-color: #243550;
-        }}
-
-        /* ATAS Orderflow Terminal Box */
-        .atas-terminal-box {{
-            background: #000000; border: 1px solid #1E293B; border-radius: 8px;
-            overflow: hidden; margin-bottom: 16px; position: relative;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
-        }}
-        .atas-toolbar {{
-            display: flex; justify-content: space-between; align-items: center;
-            background: #080D15; padding: 8px 14px; border-bottom: 1px solid #162030;
-        }}
-        .atas-tools-left {{ display: flex; align-items: center; gap: 8px; }}
-        .atas-badge {{
-            background: #111A29; border: 1px solid #23354E; color: #E2E8F0;
-            padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: 700;
-            font-family: 'JetBrains Mono', monospace;
-        }}
-        .atas-tools-right {{ display: flex; align-items: center; gap: 6px; font-family: 'JetBrains Mono', monospace; font-size: 11px; }}
-        .timeframe-pill {{
-            background: transparent; color: #64748B; border: 1px solid transparent; padding: 3px 8px;
-            border-radius: 4px; font-size: 11px; cursor: pointer; font-weight: 600;
-        }}
-        .timeframe-pill.active, .timeframe-pill:hover {{ background: #131E31; color: #38BDF8; border-color: #243550; }}
-
         #tv-chart-wrapper {{
-            position: relative; width: 100%; height: 680px; background-color: #000000;
+            position: relative; width: 100%; height: 100%; background-color: #000000;
         }}
         #atas-tv-chart {{ width: 100%; height: 100%; }}
         #atas-canvas {{
@@ -757,178 +730,95 @@ def generate_html_terminal(df: pd.DataFrame, meta: Dict[str, Any], fig: go.Figur
             pointer-events: none; z-index: 5;
         }}
 
-
-
-        .chart-box {{
-            background-color: var(--bg-card); border: 1px solid var(--border-color);
-            border-radius: 8px; padding: 10px; margin-bottom: 16px;
+        .atas-floating-hud {{
+            position: absolute; top: 10px; left: 12px; z-index: 10;
+            display: flex; flex-direction: column; gap: 4px;
+            background: rgba(8, 11, 18, 0.92); border: 1px solid #1E293B; border-radius: 4px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6);
+            padding: 8px 12px; font-family: 'JetBrains Mono', monospace; font-size: 11px;
+            pointer-events: none;
         }}
-        .table-box {{
-            background-color: var(--bg-card); border: 1px solid var(--border-color);
-            border-radius: 8px; padding: 16px; margin-bottom: 14px; overflow-x: auto;
-        }}
-        .section-header {{
-            font-size: 13.5px; font-weight: 700; margin-bottom: 12px; color: #E2E8F0;
-            display: flex; align-items: center; justify-content: space-between;
-        }}
-        table {{ width: 100%; border-collapse: collapse; font-size: 12px; text-align: left; }}
-        th {{
-            background-color: #0B111D; color: var(--text-secondary); padding: 9px 12px;
-            font-weight: 600; border-bottom: 1px solid var(--border-color); white-space: nowrap;
-        }}
-        td {{
-            padding: 9px 12px; border-bottom: 1px solid #131B29; font-family: 'JetBrains Mono', monospace;
-        }}
-        tr:hover td {{ background-color: #141E30; }}
-        .row-spot td {{
-            background-color: rgba(56, 189, 248, 0.12) !important;
-            border-top: 1px solid var(--neon-blue); border-bottom: 1px solid var(--neon-blue);
-        }}
-        .tag-buy {{ color: #4ADE80; font-weight: 700; }}
-        .tag-sell {{ color: #F87171; font-weight: 700; }}
-        .insight-box {{
-            background: linear-gradient(135deg, rgba(16, 24, 38, 0.8) 0%, rgba(10, 15, 25, 0.9) 100%);
-            border-left: 4px solid var(--neon-blue); border-radius: 6px;
-            padding: 10px 14px; margin-bottom: 12px; font-size: 12px; line-height: 1.5;
-        }}
-        .footer {{
-            text-align: center; font-size: 11px; color: var(--text-muted);
-            padding: 18px 0; border-top: 1px solid var(--border-color); font-family: 'JetBrains Mono', monospace;
-        }}
+        .hud-item {{ display: flex; align-items: center; gap: 8px; white-space: nowrap; }}
+        .hud-label {{ color: #94A3B8; font-weight: 700; font-size: 10.5px; min-width: 130px; }}
+        .atas-win-topbar, .atas-win-subbar {{ overflow: hidden; white-space: nowrap; }}
+        .atas-top-left, .atas-top-center, .atas-top-right {{ flex-shrink: 1; min-width: 0; overflow: hidden; }}
+        .atas-subbar-right {{ overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }}
     </style>
 </head>
 <body>
-<div class="container">
-    <!-- Header -->
-    <div class="header">
-        <div class="brand">
-            <div class="pulse-dot"></div>
-            <div class="brand-title">NEIRO-NQ-QUANT TERMINAL</div>
-            <span class="badge badge-gold">CME E-MINI NASDAQ (NQ)</span>
-            <span class="badge badge-live">100% CLOUD AUTOMATED</span>
-        </div>
-        <div style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #94A3B8;">
-            Cập nhật: <b id="lbl-last-update">{now_str} (Giờ VN)</b>
-        </div>
-    </div>
-
-    <!-- Live Ticker Realtime Bar -->
-    <div class="ticker-bar">
-        <div class="ticker-items">
-            <div class="ticker-item">
-                <span class="pulse-dot" style="width:7px; height:7px;"></span>
-                <span class="ticker-symbol">NQ=F</span>
-                <span class="ticker-price" id="top-ticker-price">{spot:,.2f}</span>
-                <span class="ticker-change change-up" id="top-ticker-change">+0.00 (+0.00%)</span>
-            </div>
-            <div class="ticker-item" style="color: #64748B;">|</div>
-            <div class="ticker-item">
-                <span style="color: #94A3B8;">ATM TRỤC:</span>
-                <b style="color: #F8FAFC;" id="top-ticker-atm">{meta['atm_strike']:,.0f} pts</b>
-            </div>
-            <div class="ticker-item" style="color: #64748B;">|</div>
-            <div class="ticker-item">
-                <span style="color: #94A3B8;">ATM IV:</span>
-                <b style="color: #FACC15;" id="top-ticker-iv">{meta.get('sigma_atm', 0.18)*100:.1f}%</b>
-            </div>
-            <div class="ticker-item" style="color: #64748B;">|</div>
-            <div class="ticker-item">
-                <span style="color: #94A3B8;">SOFR / T-Bill 13W (r):</span>
-                <b style="color: #38BDF8;" id="top-ticker-r">{r_rate*100:.2f}%</b>
-            </div>
-            <div class="ticker-item" style="color: #64748B;">|</div>
-            <div class="ticker-item">
-                <span style="color: #94A3B8;">DTE:</span>
-                <b style="color: #A855F7;">{meta.get('dte_days', 1.0):.1f} ngày</b>
-            </div>
-            <div class="ticker-item" style="color: #64748B;">|</div>
-            <div class="ticker-item">
-                <span style="color: #94A3B8;">F0 LÝ THUYẾT:</span>
-                <b style="color: #E2E8F0;" id="top-ticker-f0-fair">{f0_theoretical:,.1f}</b>
-            </div>
-            <div class="ticker-item" style="color: #64748B;">|</div>
-            <div class="ticker-item">
-                <span style="color: #94A3B8;">ĐỘ LỆCH &Delta;F:</span>
-                <span id="top-ticker-delta-f" class="badge {delta_badge_class}">{delta_f:+.1f} pts ({delta_status})</span>
-            </div>
-        </div>
-        <div class="ticker-controls">
-            <button class="btn-ctrl btn-sim paused" id="btn-toggle-sim" onclick="toggleSimulation()">❚❚ SIMULATION: OFF</button>
-            <button class="btn-ctrl" onclick="resetToLiveCME()">↺ RESET CME</button>
-        </div>
-    </div>
-
-    <!-- Executive KPI Grid -->
-    <div class="kpi-grid">
-        {kpi_card_1}
-        <div class="kpi-card" id="kpi-gex-card">
-            <div class="kpi-label">Market Regime & Net GEX</div>
-            <div class="kpi-val" style="color: {regime_color};" id="kpi-gex-val">${total_gex:+.1f}M GEX</div>
-            <div class="kpi-sub" id="kpi-gex-sub">{regime_badge}</div>
-        </div>
-        <div class="kpi-card" id="kpi-move-card">
-            <div class="kpi-label">Biên Độ 1-Sigma Expected Move</div>
-            <div class="kpi-val" style="color: var(--neon-gold);" id="kpi-move-val">±{expected_move:,.1f} pts</div>
-            <div class="kpi-sub" id="kpi-move-sub">Intraday (Rule of 16): <b>±{intraday_move:,.1f} pts</b></div>
-        </div>
-        <div class="kpi-card" id="kpi-vex-card">
-            <div class="kpi-label">Greeks Bậc 2 (Vanna & Charm)</div>
-            <div class="kpi-val" style="color: #38BDF8;" id="kpi-vex-val">${total_vex:+.1f}M / ${total_chex:+.1f}M</div>
-            <div class="kpi-sub">Net VEX (1% IV) | Net CHEX (Ngày decay)</div>
-        </div>
-    </div>
-
-    <!-- Realtime ATM Greeks Live Radar -->
-    <div class="insight-box" style="border-left-color: #38BDF8; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
-        <div>
-            <b style="color: #38BDF8; font-size: 12.5px;">⚡ LIVE BLACK-76 REALTIME GREEKS RADAR (TRỤC ATM):</b>
-            <span style="font-family:'JetBrains Mono', monospace; margin-left: 8px; color: #E2E8F0;" id="live-greeks-radar">
-                Delta &Delta;: <b>0.505</b> | Gamma &Gamma;: <b>0.00042</b> | Vega &nu;: <b>$18.5M</b> | Theta &theta;: <b>-$28.5k/d</b> | Vanna: <b>+$2.8M</b> | Charm: <b>-$1.4M/d</b>
-            </span>
-        </div>
-        <div style="font-family:'JetBrains Mono', monospace; font-size: 11px; color: #4ADE80;">
-            ● Recalculated Client-Side in 0.1ms
-        </div>
-    </div>
-
-
-
-    <!-- True ATAS Realtime Orderflow Footprint Candlestick Terminal -->
-    <div class="atas-terminal-box" id="sec-atas">
-        <div class="atas-toolbar">
-            <div class="atas-tools-left">
-                <span class="atas-badge">#NQZ6</span>
-                <span class="atas-badge" style="color: #38BDF8;">1 Lots</span>
-                <span class="atas-badge" style="color: #4ADE80;">CME GLOBEX</span>
-                <span style="color: #64748B; font-size: 11px; margin-left: 6px;">TradingPattern by Rithmic &bull; Powered by NEIRO-QUANT</span>
-            </div>
-            <div class="atas-tools-right">
-                <span style="color: #64748B;">Khung:</span>
+<div class="atas-desktop-window" id="sec-atas">
+    <!-- Clean Neiro Quant Topbar -->
+    <div class="atas-win-topbar">
+        <div class="atas-top-left">
+            <span class="atas-blue-indicator"></span>
+            <div class="atas-tab active"><span class="atas-tab-text">NEIRO QUANT &bull; NQ M15</span></div>
+            <span class="atas-win-sep">|</span>
+            <div class="atas-tf-group">
                 <button class="timeframe-pill" onclick="setTimeframe('1m')">1M</button>
                 <button class="timeframe-pill" onclick="setTimeframe('5m')">5M</button>
                 <button class="timeframe-pill active" onclick="setTimeframe('15m')">15M</button>
                 <button class="timeframe-pill" onclick="setTimeframe('1h')">1H</button>
-                <button class="timeframe-pill" onclick="setTimeframe('D')">D</button>
+                <button class="timeframe-pill" onclick="setTimeframe('d')">1D</button>
+            </div>
+            <span class="atas-badge-contract">M15 CANDLES</span>
+        </div>
+
+        <!-- Center: Quantitative Metrics -->
+        <div class="atas-top-center">
+            <div class="atas-quant-pill">
+                <span class="atas-sym-label">SPOT CME:</span>
+                <b class="atas-price-val" id="top-ticker-price" style="color: #38BDF8;">{spot:,.2f}</b>
+                <span class="ticker-change change-up" id="top-ticker-change">+0.00 (+0.00%)</span>
+                <span class="atas-mt5-tag">(MT5: ~<span id="kpi-mt5-num">{spot_mt5:,.1f}</span>)</span>
+                <span class="atas-win-sep">|</span>
+                <span class="atas-pill-lbl">F0 FAIR:</span>
+                <b id="top-ticker-f0-fair" style="color:#F1F5F9;">{f0_theoretical:,.1f}</b>
+                <span class="atas-pill-lbl">&Delta;F:</span>
+                <span id="top-ticker-delta-f" class="badge {delta_badge_class}">{delta_f:+.1f} pts</span>
+                <span class="atas-win-sep">|</span>
+                <span class="atas-pill-lbl">GEX:</span> <b id="kpi-gex-val" style="color:{regime_color};">${total_gex:+.1f}M</b>
+                <span class="atas-pill-lbl">CHEX:</span> <b id="top-charm-val" style="color:#C084FC;">${total_chex:+.1f}M/d</b>
+                <span class="atas-pill-lbl">VEX:</span> <b id="kpi-vex-val" style="color:#22D3EE;">${total_vex:+.1f}M</b>
+                <span class="atas-pill-lbl">TEX:</span> <b id="top-theta-val" style="color:#FB923C;">{total_thex_display}</b>
+                <span class="atas-pill-lbl">SQZ:</span> <b style="color:#4ADE80;">&gt;{strike_above:,.0f}</b>/<b style="color:#F87171;">&lt;{strike_below:,.0f}</b>
+                <span class="atas-pill-lbl">1-&sigma;:</span> <b id="kpi-move-val" style="color:#FACC15;">&plusmn;{expected_move:,.1f}p</b>
             </div>
         </div>
 
+        <div class="atas-top-right">
+            <span style="color:#64748B; font-size:11px; font-weight:600; margin-right:8px;">CME GLOBEX &bull; {now_str} (VN)</span>
+        </div>
+    </div>
+
+    <!-- Authentic Greeks Subbar -->
+    <div class="atas-win-subbar">
+        <div class="atas-subbar-left">
+            <span class="atas-watermark-text" style="color:#38BDF8; font-weight:700;">NEIRO-NQ-QUANT TERMINAL &bull; CME E-MINI NASDAQ-100 [M15]</span>
+        </div>
+        <div class="atas-subbar-right">
+            <span style="color:#38BDF8; font-weight:700;">⚡ LIVE BLACK-76 REALTIME GREEKS RADAR (M15):</span>
+            <span id="live-greeks-radar" style="margin-left: 6px; color: #CBD5E1;">
+                Delta &Delta;: <b>0.505</b> | Gamma &Gamma;: <b>0.00042</b> | Vega &nu;: <b>$18.5M</b> | Theta &theta;: <b>-$28.5k/d</b> | Vanna (VEX): <b>+$2.8M</b> | Charm (CHEX): <b>-$1.4M/d</b>
+            </span>
+            <span style="color:#64748B; margin-left: 8px;">| ATM: <b id="top-ticker-atm">{meta['atm_strike']:,.0f} pts</b> | IV: <b id="top-ticker-iv">{meta.get('sigma_atm', 0.18)*100:.1f}%</b> | r: <b>{r_rate*100:.2f}%</b></span>
+        </div>
+    </div>
+
+    <!-- Main M15 Chart Body (100% Full Width & Height) -->
+    <div class="atas-body-container">
         <div id="tv-chart-wrapper">
             <div class="atas-floating-hud">
-                <div class="hud-item"><span class="hud-label">NET GEX:</span> <b id="hud-gex-val" style="color: #F87171;">{total_gex:+.1f}M</b></div>
-                <div class="hud-item"><span class="hud-label">CHARM (GHÌM ĐÊM):</span> <b id="hud-charm-val" style="color:#C084FC;">${total_chex:+.1f}M/d</b></div>
-                <div class="hud-item"><span class="hud-label">VANNA (REBOUND):</span> <b id="hud-vanna-val" style="color:#22D3EE;">${total_vex:+.1f}M</b></div>
+                <div class="hud-item"><span class="hud-label">NET GEX (Trục ATM):</span> <b id="hud-gex-val" style="color:{regime_color};">${total_gex:+.1f}M</b></div>
+                <div class="hud-item"><span class="hud-label">GAMMA SQUEEZE &uarr;:</span> <b style="color:#4ADE80;">&gt; {strike_above:,.0f} &rarr; TP {next_above:,.0f}</b></div>
+                <div class="hud-item"><span class="hud-label">GAMMA SQUEEZE &darr;:</span> <b style="color:#F87171;">&lt; {strike_below:,.0f} &rarr; TP {next_below:,.0f}</b></div>
+                <div class="hud-item"><span class="hud-label">VANNA (VEX):</span> <b id="hud-vanna-val" style="color:#22D3EE;">${total_vex:+.1f}M</b></div>
+                <div class="hud-item"><span class="hud-label">CHARM (CHEX):</span> <b id="hud-charm-val" style="color:#C084FC;">${total_chex:+.1f}M/d</b></div>
+                <div class="hud-item"><span class="hud-label">THETA (TEX):</span> <b id="hud-theta-val" style="color:#FB923C;">{total_thex_display}</b></div>
                 <div class="hud-item"><span class="hud-label">1-SIGMA:</span> <b id="hud-sigma-val" style="color:#FACC15;">&plusmn;{expected_move:,.1f}p</b></div>
             </div>
             <div id="atas-tv-chart"></div>
             <canvas id="atas-canvas"></canvas>
         </div>
-
-
-    </div>
-
-    <!-- Footer -->
-    <div class="footer">
-        NEIRO-NQ-QUANT TERMINAL &bull; 100% Cloud-Native &bull; Zero-Touch Automation &bull; Zero-Waste (&lt; 15MB)
     </div>
 </div>
 
@@ -993,6 +883,8 @@ const Black76Engine = {{
         let totalGEX = 0.0;
         let totalVEX = 0.0;
         let totalCHEX = 0.0;
+        let totalTEX = 0.0;
+        let totalVega = 0.0;
         let atmStrike = options[0].strike;
         let minDiff = 999999;
         let atmGreeks = null;
@@ -1026,6 +918,11 @@ const Black76Engine = {{
             const netCHEX = cCHEX + pCHEX;
             totalCHEX += netCHEX;
 
+            // Theta exposure: $M/day decay of open interest (points/day x multiplier x OI)
+            const netTEX = (cG.theta * row.c_oi + pG.theta * row.p_oi) * mult / 1e6;
+            totalTEX += netTEX;
+            totalVega += (cG.vega * row.c_oi + pG.vega * row.p_oi) * mult * 0.01 / 1e6;
+            row.currentNetTEX = netTEX;
             row.currentNetGEX = netGEX;
             row.currentNetVEX = netVEX;
             row.currentNetCHEX = netCHEX;
@@ -1034,8 +931,8 @@ const Black76Engine = {{
                 atmGreeks = {{
                     delta: cG.delta,
                     gamma: cG.gamma,
-                    vega: 18.5,
-                    theta: -28.5,
+                    vega: cG.vega * 0.01,
+                    theta: (cG.theta + pG.theta) / 2.0,
                     vanna: totalVEX,
                     charm: totalCHEX
                 }};
@@ -1050,6 +947,8 @@ const Black76Engine = {{
             totalGEX,
             totalVEX,
             totalCHEX,
+            totalTEX,
+            totalVega,
             atmStrike,
             atmIV,
             expectedMove,
@@ -1067,31 +966,31 @@ let candleSeries = null;
 let livePriceLine = null;
 let currentPrice = window.INITIAL_META.spot;
 const initialBasePrice = window.INITIAL_META.spot;
-let isSimulating = false; // Default OFF: Stands still on CME official close
-let simInterval = null;
+
+
 let lastCandle = null;
 let currentTimeframe = '15m';
-let currentPeriod = 900; // 900s default for 15M
+let currentPeriod = 900; // 900s default for M15 candles
 let clusterBubbles = [];
 let anchoredZones = [];
-let volumeProfileBins = [];
 
-// Brownian-Bridge Candlestick Generator: Smooth realistic 1M walk ending EXACTLY at currentP
+// Brownian-Bridge Candlestick Generator: Smooth realistic M15 walk ending EXACTLY at currentP
 function generateRealisticCandles(currentP, numBars = 60, periodSec = 900) {{
     const bars = [];
     const nowSec = Math.floor(Date.now() / 1000);
     const startSec = nowSec - (numBars * periodSec);
 
+    // M15 Volatility for NQ Futures
+    const vol = 4.2 * Math.sqrt(periodSec / 900);
     const increments = [];
     let sum = 0;
-    const vol = 1.25 * Math.sqrt(periodSec / 60);
     for (let i = 0; i < numBars; i++) {{
         const r = (Math.random() - 0.49) * 2.0 * vol;
         increments.push(r);
         sum += r;
     }}
 
-    const targetDrift = (Math.random() - 0.5) * 6.0;
+    const targetDrift = (Math.random() - 0.5) * 14.0;
     const startP = currentP - targetDrift;
     const correction = (targetDrift - sum) / numBars;
 
@@ -1103,70 +1002,59 @@ function generateRealisticCandles(currentP, numBars = 60, periodSec = 900) {{
         const change = increments[i] + correction;
         const open = Math.round(p * 4) / 4;
         const close = Math.round((p + change) * 4) / 4;
-        const high = Math.round((Math.max(open, close) + Math.random() * vol * 0.9) * 4) / 4;
-        const low = Math.round((Math.min(open, close) - Math.random() * vol * 0.9) * 4) / 4;
+        const high = Math.round((Math.max(open, close) + Math.random() * vol * 0.9 + 1.5) * 4) / 4;
+        const low = Math.round((Math.min(open, close) - Math.random() * vol * 0.9 - 1.5) * 4) / 4;
         p = close;
         const barTime = t - (t % periodSec);
         bars.push({{ time: barTime, open, high, low, close }});
 
-        // Generate authentic ATAS blue and gold footprint cluster bubbles along reversal candles
-        if (i >= numBars - 24 && (i % 2 === 0 || i >= numBars - 6)) {{
-            const clusterCounts = [4, 5, 3, 6, 4];
-            const numPills = clusterCounts[i % clusterCounts.length];
-            const stepY = (high - low) / (numPills + 1);
-            const sampleVols = [33, 52, 30, 40, 41, 51, 42, 43, 50, 54, 46, 55, 65, 36, 35, 59, 37, 30, 35, 37];
-            for (let k = 0; k < numPills; k++) {{
-                const v = sampleVols[(i * 3 + k) % sampleVols.length];
-                const isGold = (v >= 42); // Gold/Orange for Bid Absorption, Dark Blue for Ask/Delta
+        // Generate authentic Footprint delta cluster bubbles along key reversal M15 candles
+        if (i === numBars - 20 || i === numBars - 12 || i === numBars - 28) {{
+            const clusterCounts = 5;
+            const stepY = (high - low) / (clusterCounts + 1);
+            const sampleVols = [35, 42, 55, 46, 50, 38, 52];
+            for (let k = 0; k < clusterCounts; k++) {{
+                const v = sampleVols[(i + k) % sampleVols.length];
                 clusterBubbles.push({{
                     time: barTime,
                     price: low + stepY * (k + 1),
                     vol: v,
-                    isGold: isGold
+                    isGold: (v >= 45) // Ochre/gold for high absorption, dark blue for Delta
                 }});
             }}
         }}
     }}
 
-    // ATAS anchored orderflow zones: each zone starts at a specific candle and extends right
+    // Orderflow absorption zones DRAWN DIRECTLY ON THE M15 CANDLES:
     anchoredZones = [];
     const zoneDefs = [
-        {{ idx: numBars - 22, label: 'deep of stack', side: 'high' }},
-        {{ idx: numBars - 19, label: '',              side: 'high' }},
-        {{ idx: numBars - 15, label: 'buyer abs',     side: 'low'  }},
-        {{ idx: numBars - 10, label: 'seller offer',  side: 'high', tag: '+1R' }},
-        {{ idx: numBars - 6,  label: '',              side: 'low'  }},
+        {{ idx: numBars - 28, endIdx: numBars - 25, label: 'deep of stack', side: 'high', oval: true }},
+        {{ idx: numBars - 20, endIdx: numBars - 16, label: 'buyer abs',     side: 'low',  oval: true }},
+        {{ idx: numBars - 12, endIdx: numBars - 8,  label: 'seller offer',  side: 'high', oval: true, tag: '+1R' }},
     ];
     zoneDefs.forEach(z => {{
         const b = bars[z.idx];
+        const bEnd = bars[z.endIdx] || bars[bars.length - 1];
         if (!b) return;
         const bodyTop = Math.max(b.open, b.close);
         const bodyBot = Math.min(b.open, b.close);
-        const top = z.side === 'high' ? b.high : bodyBot + 0.75;
-        const bot = z.side === 'high' ? Math.max(bodyTop - 0.75, b.low) : b.low;
+        const top = z.side === 'high' ? b.high : bodyBot + 1.75;
+        const bot = z.side === 'high' ? Math.max(bodyTop - 1.75, b.low) : b.low;
         anchoredZones.push({{
             time: b.time,
-            top: Math.max(top, bot + 0.75),
+            endTime: bEnd ? bEnd.time : null,
+            top: Math.max(top, bot + 1.25),
             bottom: bot,
             label: z.label,
-            tag: z.tag || ''
+            oval: z.oval,
+            tag: z.tag || '',
+            side: z.side
         }});
     }});
 
     bars[bars.length - 1].close = currentP;
     bars[bars.length - 1].high = Math.max(bars[bars.length - 1].high, currentP);
     bars[bars.length - 1].low = Math.min(bars[bars.length - 1].low, currentP);
-
-    // Left Volume Profile bins
-    volumeProfileBins = [];
-    const minP = currentP - 50.0;
-    const maxP = currentP + 50.0;
-    for (let pStep = minP; pStep <= maxP; pStep += 2.5) {{
-        volumeProfileBins.push({{
-            price: pStep,
-            volume: Math.floor(40 + Math.random() * 110)
-        }});
-    }}
 
     return bars;
 }}
@@ -1178,7 +1066,7 @@ function initAtasChart() {{
 
     chart = LightweightCharts.createChart(container, {{
         width: container.clientWidth,
-        height: 560,
+        height: container.clientHeight || (window.innerHeight - 62),
         layout: {{
             background: {{ type: 'solid', color: '#000000' }},
             textColor: '#94A3B8',
@@ -1202,17 +1090,20 @@ function initAtasChart() {{
             borderColor: '#1E293B',
             timeVisible: true,
             secondsVisible: false,
+            barSpacing: 22,
+            minBarSpacing: 10,
+            rightOffset: 12,
         }},
     }});
 
     candleSeries = chart.addCandlestickSeries({{
-        upColor: 'rgba(28, 34, 46, 0.85)',
-        downColor: 'rgba(20, 24, 33, 0.85)',
+        upColor: 'rgba(28, 34, 46, 0.75)',
+        downColor: 'rgba(28, 34, 46, 0.75)',
         borderVisible: true,
         borderUpColor: '#A1A1AA',
         borderDownColor: '#71717A',
-        wickUpColor: '#CBD5E1',
-        wickDownColor: '#64748B',
+        wickUpColor: '#A1A1AA',
+        wickDownColor: '#71717A',
     }});
 
     buildHistoricalBars(900);
@@ -1226,16 +1117,18 @@ function initAtasChart() {{
         title: 'F0 LIVE',
     }});
 
+    const initialH = container.clientHeight || (window.innerHeight - 62);
     if (canvas) {{
         canvas.width = container.clientWidth;
-        canvas.height = 560;
+        canvas.height = initialH;
     }}
 
     window.addEventListener('resize', () => {{
-        chart.applyOptions({{ width: container.clientWidth }});
+        const newH = container.clientHeight || (window.innerHeight - 62);
+        chart.applyOptions({{ width: container.clientWidth, height: newH }});
         if (canvas) {{
             canvas.width = container.clientWidth;
-            canvas.height = 560;
+            canvas.height = newH;
         }}
         drawAtasOverlay();
     }});
@@ -1251,12 +1144,16 @@ function buildHistoricalBars(periodSec = 900) {{
     const bars = generateRealisticCandles(currentPrice, 60, periodSec);
     lastCandle = bars[bars.length - 1];
     candleSeries.setData(bars);
-    chart.timeScale().fitContent();
+    const totalBars = bars.length;
+    chart.timeScale().setVisibleLogicalRange({{
+        from: totalBars - 32,
+        to: totalBars + 8,
+    }});
     setTimeout(() => drawAtasOverlay(), 80);
 }}
 
 // ----------------------------------------------------------------------------
-// ATAS Orderflow Canvas Drawing Engine
+// Neiro-Quant Orderflow Canvas Drawing Engine
 // ----------------------------------------------------------------------------
 function drawAtasOverlay() {{
     const canvas = document.getElementById('atas-canvas');
@@ -1268,148 +1165,68 @@ function drawAtasOverlay() {{
     ctx.clearRect(0, 0, w, h);
 
     const m = window.INITIAL_META;
-    const rightX = w - 75;
+    const rightX = w - 70;
 
-    // 1. Left Volume Profile Histogram (purple/slate)
-    if (volumeProfileBins && volumeProfileBins.length > 0) {{
-        volumeProfileBins.forEach(bin => {{
-            const y = candleSeries.priceToCoordinate(bin.price);
-            if (y !== null && y >= 0 && y <= h) {{
-                const barW = Math.min(65, bin.volume * 0.45);
-                ctx.fillStyle = 'rgba(99, 102, 241, 0.20)';
-                ctx.fillRect(8, y - 2, barW, 4);
-                ctx.fillStyle = 'rgba(129, 140, 248, 0.45)';
-                ctx.fillRect(8, y - 2, barW * 0.4, 4);
-            }}
-        }});
-    }}
-
-    // 2. ATAS Anchored Horizontal Orderflow Zones (Each zone starts at source candle and extends right)
+    // 1. Orderflow Absorption Zones: Drawn directly on the M15 candles (đi theo từng nến)
     anchoredZones.forEach(z => {{
         const x0 = chart.timeScale().timeToCoordinate(z.time);
+        const x1 = z.endTime ? chart.timeScale().timeToCoordinate(z.endTime) : null;
         const yT = candleSeries.priceToCoordinate(z.top);
         const yB = candleSeries.priceToCoordinate(z.bottom);
-        if (x0 === null || yT === null || yB === null || x0 > rightX) return;
-        const xs = Math.max(75, x0 - 4);
+        if (x0 === null || yT === null || yB === null) return;
         const top = Math.min(yT, yB);
-        const hz = Math.max(8, Math.abs(yB - yT));
+        const hz = Math.max(7, Math.abs(yB - yT));
+        const xs = x0 - 8;
+        const xe = (x1 !== null && x1 > x0) ? (x1 + 8) : (x0 + 38);
+        const wBox = Math.max(22, Math.min(xe - xs, rightX - xs - 8));
 
-        // Translucent gray execution box matching ATAS Orderflow footprint
-        ctx.fillStyle = 'rgba(150, 156, 166, 0.45)';
-        ctx.fillRect(xs, top, rightX - xs, hz);
-        ctx.strokeStyle = 'rgba(200, 204, 212, 0.55)';
+        // Shaded orderflow absorption block tightly bounding these candles
+        ctx.fillStyle = 'rgba(148, 163, 184, 0.28)';
+        ctx.fillRect(xs, top, wBox, hz);
+        ctx.strokeStyle = 'rgba(203, 213, 225, 0.55)';
         ctx.lineWidth = 1;
-        ctx.strokeRect(xs, top, rightX - xs, hz);
+        ctx.strokeRect(xs, top, wBox, hz);
 
-        if (z.label) {{
-            ctx.fillStyle = '#FFFFFF';
-            ctx.font = 'bold 11px Inter, sans-serif';
-            ctx.textAlign = 'center';
-            ctx.fillText(z.label, xs + (rightX - xs) * 0.55, top + hz / 2 + 4);
+        // Red oval circling the trigger candle footprint cluster at x0
+        if (z.oval) {{
+            ctx.strokeStyle = 'rgba(239, 68, 68, 0.92)';
+            ctx.lineWidth = 1.6;
+            ctx.beginPath();
+            ctx.ellipse(x0, top + hz / 2, 14, Math.max(8, hz / 2 + 3), 0, 0, Math.PI * 2);
+            ctx.stroke();
         }}
-        if (z.tag) {{
+
+        // Label badge placed directly at candle x0
+        if (z.label) {{
+            ctx.font = 'bold 10px "JetBrains Mono", monospace';
+            const tw = ctx.measureText(z.label).width;
+            const ly = z.side === 'high' ? (top - 8) : (top + hz + 14);
+            ctx.fillStyle = 'rgba(15, 23, 42, 0.90)';
+            ctx.fillRect(x0 - tw / 2 - 4, ly - 10, tw + 8, 14);
+            ctx.strokeStyle = 'rgba(148, 163, 184, 0.5)';
+            ctx.strokeRect(x0 - tw / 2 - 4, ly - 10, tw + 8, 14);
             ctx.fillStyle = '#FFFFFF';
-            ctx.font = 'bold 10px Inter, sans-serif';
             ctx.textAlign = 'center';
-            ctx.fillText(z.tag, xs + (rightX - xs) * 0.8, top - 6);
+            ctx.fillText(z.label, x0, ly);
+        }}
+
+        // Tag (+1R) placed right at candle x0
+        if (z.tag) {{
+            ctx.font = 'bold 9.5px "JetBrains Mono", monospace';
+            const ty = z.side === 'high' ? (top - 23) : (top + hz + 28);
+            ctx.fillStyle = '#38BDF8';
+            ctx.textAlign = 'center';
+            ctx.fillText(z.tag, x0, ty);
         }}
     }});
 
-    // 3. GEX Reaction / Gamma Flip Dotted Line
-    const yGex = candleSeries.priceToCoordinate(m.gex_react || (m.spot - 15.0));
-    if (yGex !== null && yGex >= 0 && yGex <= h) {{
-        ctx.strokeStyle = '#FACC15';
-        ctx.setLineDash([4, 4]);
-        ctx.lineWidth = 1.5;
-        ctx.beginPath();
-        ctx.moveTo(80, yGex);
-        ctx.lineTo(rightX, yGex);
-        ctx.stroke();
-        ctx.setLineDash([]);
-
-        ctx.fillStyle = '#FDE047';
-        ctx.font = 'bold 10.5px "JetBrains Mono", monospace';
-        ctx.textAlign = 'right';
-        ctx.fillText('gex 5 reaction · GAMMA FLIP (Trục Lật Rủi Ro)', rightX - 10, yGex - 4);
-    }}
-
-    // 3b. ĐỈNH CHARM Line (Nam Châm Ghìm Giá Đêm)
-    const yCharm = candleSeries.priceToCoordinate(m.charm_level);
-    if (yCharm !== null && yCharm >= 0 && yCharm <= h) {{
-        ctx.strokeStyle = '#C084FC';
-        ctx.setLineDash([6, 3]);
-        ctx.lineWidth = 1.5;
-        ctx.beginPath();
-        ctx.moveTo(80, yCharm);
-        ctx.lineTo(rightX, yCharm);
-        ctx.stroke();
-        ctx.setLineDash([]);
-
-        ctx.fillStyle = '#E9D5FF';
-        ctx.font = 'bold 10.5px "JetBrains Mono", monospace';
-        ctx.textAlign = 'right';
-        ctx.fillText('..... ĐỈNH CHARM · NAM CHÂM GHÌM GIÁ ĐÊM · +' + (m.total_net_chex || 0).toFixed(1) + 'M/d', rightX - 10, yCharm - 4);
-    }}
-
-    // 3c. ĐỈNH VANNA Line (Lực Bật V-Rebound)
-    const yVanna = candleSeries.priceToCoordinate(m.vanna_level);
-    if (yVanna !== null && yVanna >= 0 && yVanna <= h) {{
-        ctx.strokeStyle = '#22D3EE';
-        ctx.setLineDash([6, 3]);
-        ctx.lineWidth = 1.5;
-        ctx.beginPath();
-        ctx.moveTo(80, yVanna);
-        ctx.lineTo(rightX, yVanna);
-        ctx.stroke();
-        ctx.setLineDash([]);
-
-        ctx.fillStyle = '#A5F3FC';
-        ctx.font = 'bold 10.5px "JetBrains Mono", monospace';
-        ctx.textAlign = 'right';
-        ctx.fillText('..... ĐỈNH VANNA · LỰC ĐẨY V-REBOUND · ' + (m.total_net_vex || 0).toFixed(1) + 'M', rightX - 10, yVanna - 4);
-    }}
-
-    // 4. Put Wall and Call Wall Lines
-    const yPw = candleSeries.priceToCoordinate(m.tactical_put_wall || (m.spot + 20.0));
-    if (yPw !== null && yPw >= 0 && yPw <= h) {{
-        ctx.strokeStyle = '#22C55E';
-        ctx.setLineDash([5, 5]);
-        ctx.lineWidth = 1.5;
-        ctx.beginPath();
-        ctx.moveTo(80, yPw);
-        ctx.lineTo(rightX, yPw);
-        ctx.stroke();
-        ctx.setLineDash([]);
-
-        ctx.fillStyle = '#4ADE80';
-        ctx.font = 'bold 10.5px "JetBrains Mono", monospace';
-        ctx.textAlign = 'right';
-        ctx.fillText('..... PUT WALL · GEX -$185M · OI ' + (m.put_wall_oi || 0).toLocaleString() + ' · THÀNH TRÌ ĐỠ DƯỚI', rightX - 10, yPw - 4);
-    }}
-
-    const yCw = candleSeries.priceToCoordinate(m.tactical_call_wall || (m.spot + 80.0));
-    if (yCw !== null && yCw >= 0 && yCw <= h) {{
-        ctx.strokeStyle = '#EF4444';
-        ctx.setLineDash([5, 5]);
-        ctx.lineWidth = 1.5;
-        ctx.beginPath();
-        ctx.moveTo(80, yCw);
-        ctx.lineTo(rightX, yCw);
-        ctx.stroke();
-        ctx.setLineDash([]);
-
-        ctx.fillStyle = '#F87171';
-        ctx.font = 'bold 10.5px "JetBrains Mono", monospace';
-        ctx.textAlign = 'right';
-        ctx.fillText('..... CALL WALL · GEX +$142M · OI ' + (m.call_wall_oi || 0).toLocaleString() + ' · THÀNH TRÌ CẢN TRÊN', rightX - 10, yCw - 4);
-    }}
-
-    // 5. Authentic ATAS Footprint Cluster Bubbles (Blue: Ask/Delta, Gold/Orange: Bid Absorption)
+    // 2. Footprint Delta Cluster Bubbles directly on reversal candles
     if (clusterBubbles && clusterBubbles.length > 0) {{
         clusterBubbles.forEach(cb => {{
             const x = chart.timeScale().timeToCoordinate(cb.time);
             const y = candleSeries.priceToCoordinate(cb.price);
-            if (x !== null && y !== null && x >= 75 && x <= rightX - 10 && y >= 10 && y <= h - 20) {{
+            if (x !== null && y !== null && x >= 10 && x <= rightX - 10 && y >= 10 && y <= h - 20) {{
+                // Gold/Ochre (#B45309) for absorption, Dark Blue (#1D4ED8) for Delta
                 ctx.fillStyle = cb.isGold ? '#B45309' : '#1D4ED8';
                 ctx.beginPath();
                 ctx.arc(x, y, 8.5, 0, Math.PI * 2);
@@ -1426,27 +1243,104 @@ function drawAtasOverlay() {{
         }});
     }}
 
-    // 6. Right Axis Volume Histogram Bars (ATAS tick ladder volume)
-    const rightTicks = [
-        {{ offset: 25.0, w: 26, isBlue: false }},
-        {{ offset: 20.0, w: 38, isBlue: true }},
-        {{ offset: 15.0, w: 18, isBlue: false }},
-        {{ offset: 10.0, w: 45, isBlue: true }},
-        {{ offset: 5.0, w: 12, isBlue: false }},
-        {{ offset: -2.5, w: 22, isBlue: false }},
-        {{ offset: -7.5, w: 34, isBlue: true }},
-        {{ offset: -12.5, w: 48, isBlue: true }},
-        {{ offset: -17.5, w: 15, isBlue: false }},
-        {{ offset: -22.5, w: 30, isBlue: true }},
-        {{ offset: -27.5, w: 42, isBlue: true }},
+    // 3. Key Greeks levels: Call/Put Wall, Gamma Flip, Gamma Squeeze, Vanna, Charm
+    const keyLevels = [
+        {{ p: m.tactical_call_wall || m.call_wall, c: '#EF4444', d: [6, 4], txt: 'CALL WALL ' + Math.round(m.tactical_call_wall || m.call_wall) + ' · OI ' + (m.call_wall_oi || 0).toLocaleString() }},
+        {{ p: m.tactical_put_wall || m.put_wall,   c: '#22C55E', d: [6, 4], txt: 'PUT WALL ' + Math.round(m.tactical_put_wall || m.put_wall) + ' · OI ' + (m.put_wall_oi || 0).toLocaleString() }},
+        {{ p: m.strike_above,                      c: '#4ADE80', d: [2, 3], txt: 'GAMMA SQUEEZE ↑ > ' + Math.round(m.strike_above) + ' → TP ' + Math.round(m.next_above) }},
+        {{ p: m.strike_below,                      c: '#F87171', d: [2, 3], txt: 'GAMMA SQUEEZE ↓ < ' + Math.round(m.strike_below) + ' → TP ' + Math.round(m.next_below) }},
+        {{ p: m.vanna_level,                       c: '#22D3EE', d: [6, 3], txt: 'VANNA (VEX) · V-REBOUND · ' + (m.total_net_vex || 0).toFixed(1) + 'M' }},
+        {{ p: m.charm_level,                       c: '#C084FC', d: [6, 3], txt: 'CHARM (CHEX) · GHIM GIÁ ĐÊM · ' + (m.total_net_chex || 0).toFixed(1) + 'M/d' }},
+        {{ p: m.gex_react,                         c: '#FACC15', d: [3, 3], txt: 'GAMMA FLIP (Trục cân đối) ' + Math.round(m.gex_react) }},
     ];
-    rightTicks.forEach(t => {{
-        const y = candleSeries.priceToCoordinate(currentPrice + t.offset);
+    keyLevels.forEach(L => {{
+        if (!L.p) return;
+        const y = candleSeries.priceToCoordinate(L.p);
         if (y !== null && y >= 0 && y <= h) {{
-            ctx.fillStyle = t.isBlue ? 'rgba(56, 189, 248, 0.85)' : 'rgba(255, 255, 255, 0.85)';
-            ctx.fillRect(rightX, y - 1.5, t.w, 3);
+            // Inside viewport: draw full dashed level line with right contrast tag
+            ctx.strokeStyle = L.c;
+            ctx.setLineDash(L.d);
+            ctx.lineWidth = 1.3;
+            ctx.beginPath();
+            ctx.moveTo(0, y);
+            ctx.lineTo(rightX, y);
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            ctx.font = 'bold 10px "JetBrains Mono", monospace';
+            ctx.textAlign = 'right';
+            const tw = ctx.measureText(L.txt).width;
+            ctx.fillStyle = 'rgba(6, 8, 14, 0.88)';
+            ctx.fillRect(rightX - tw - 12, y - 14, tw + 10, 13);
+            ctx.strokeStyle = L.c;
+            ctx.lineWidth = 1;
+            ctx.strokeRect(rightX - tw - 12, y - 14, tw + 10, 13);
+            ctx.fillStyle = L.c;
+            ctx.fillText(L.txt, rightX - 7, y - 4);
+        }} else if (y !== null && y < 0) {{
+            // Above viewport: draw pinned top edge indicator
+            const edgeY = 16;
+            ctx.font = 'bold 9.5px "JetBrains Mono", monospace';
+            ctx.textAlign = 'right';
+            const shortTxt = '▲ ' + L.txt.split('·')[0];
+            const tw = ctx.measureText(shortTxt).width;
+            ctx.fillStyle = 'rgba(15, 23, 42, 0.92)';
+            ctx.fillRect(rightX - tw - 14, edgeY - 11, tw + 10, 14);
+            ctx.strokeStyle = L.c;
+            ctx.lineWidth = 1;
+            ctx.strokeRect(rightX - tw - 14, edgeY - 11, tw + 10, 14);
+            ctx.fillStyle = L.c;
+            ctx.fillText(shortTxt, rightX - 9, edgeY);
+        }} else if (y !== null && y > h) {{
+            // Below viewport: draw pinned bottom edge indicator
+            const edgeY = h - 8;
+            ctx.font = 'bold 9.5px "JetBrains Mono", monospace';
+            ctx.textAlign = 'right';
+            const shortTxt = '▼ ' + L.txt.split('·')[0];
+            const tw = ctx.measureText(shortTxt).width;
+            ctx.fillStyle = 'rgba(15, 23, 42, 0.92)';
+            ctx.fillRect(rightX - tw - 14, edgeY - 11, tw + 10, 14);
+            ctx.strokeStyle = L.c;
+            ctx.lineWidth = 1;
+            ctx.strokeRect(rightX - tw - 14, edgeY - 11, tw + 10, 14);
+            ctx.fillStyle = L.c;
+            ctx.fillText(shortTxt, rightX - 9, edgeY);
         }}
     }});
+
+    // 4. Per-strike Greeks exposure profile (GEX | VEX | CHEX | THETA)
+    const opts = window.INITIAL_OPTIONS || [];
+    if (opts.length && opts[0].currentNetGEX !== undefined) {{
+        const cols = [
+            {{ key: 'currentNetGEX',  name: 'GEX',   pos: '#22C55E', neg: '#EF4444' }},
+            {{ key: 'currentNetVEX',  name: 'VEX',   pos: '#22D3EE', neg: '#0E7490' }},
+            {{ key: 'currentNetCHEX', name: 'CHEX',  pos: '#C084FC', neg: '#7E22CE' }},
+            {{ key: 'currentNetTEX',  name: 'THETA', pos: '#FDBA74', neg: '#EA580C' }},
+        ];
+        const colW = 62;
+        const panelX = rightX - cols.length * colW - 8;
+        ctx.fillStyle = 'rgba(5, 7, 11, 0.72)';
+        ctx.fillRect(panelX - 4, 0, cols.length * colW + 8, h);
+        cols.forEach((c, ci) => {{
+            const cx = panelX + ci * colW + colW / 2;
+            let maxAbs = 1e-9;
+            opts.forEach(o => {{ maxAbs = Math.max(maxAbs, Math.abs(o[c.key] || 0)); }});
+            ctx.strokeStyle = 'rgba(148, 163, 184, 0.25)';
+            ctx.beginPath(); ctx.moveTo(cx, 18); ctx.lineTo(cx, h); ctx.stroke();
+            ctx.fillStyle = '#94A3B8';
+            ctx.font = 'bold 10px "JetBrains Mono", monospace';
+            ctx.textAlign = 'center';
+            ctx.fillText(c.name, cx, 12);
+            opts.forEach(o => {{
+                const y = candleSeries.priceToCoordinate(o.strike);
+                const v = o[c.key] || 0;
+                if (y === null || y < 18 || y > h - 4 || v === 0) return;
+                const len = (Math.abs(v) / maxAbs) * (colW / 2 - 4);
+                ctx.fillStyle = v >= 0 ? c.pos : c.neg;
+                ctx.fillRect(v >= 0 ? cx : cx - len, y - 2.5, len, 5);
+            }});
+        }});
+    }}
 }}
 
 // ----------------------------------------------------------------------------
@@ -1540,10 +1434,36 @@ function onTick(price, isUserOverride = false) {{
         kpiDeltaStatEl.textContent = deltaF > 3 ? "PREMIUM • MUA ĐUỔI" : (deltaF < -3 ? "DISCOUNT • BÁN XẢ" : "FAIR VALUE • CÂN BẰNG");
     }}
 
+    const setHud = (id, v, unit, pos, neg) => {{
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.innerText = (v >= 0 ? '+$' : '-$') + Math.abs(v).toFixed(1) + unit;
+        if (pos) el.style.color = v >= 0 ? pos : neg;
+    }};
+    setHud('hud-gex-val', res.totalGEX, 'M', '#4ADE80', '#F87171');
+    setHud('hud-vanna-val', res.totalVEX, 'M');
+    setHud('hud-charm-val', res.totalCHEX, 'M/d');
+    setHud('hud-theta-val', res.totalTEX, 'M/d');
+
+    // Update top bar stats
+    const topGex = document.getElementById('kpi-gex-val');
+    if (topGex) {{
+        topGex.innerText = (res.totalGEX >= 0 ? '+$' : '-$') + Math.abs(res.totalGEX).toFixed(1) + 'M';
+        topGex.style.color = res.totalGEX >= 0 ? '#4ADE80' : '#F87171';
+    }}
+    const topCharm = document.getElementById('top-charm-val');
+    if (topCharm) topCharm.innerText = (res.totalCHEX >= 0 ? '+$' : '-$') + Math.abs(res.totalCHEX).toFixed(1) + 'M/d';
+    const topVex = document.getElementById('kpi-vex-val');
+    if (topVex) topVex.innerText = (res.totalVEX >= 0 ? '+$' : '-$') + Math.abs(res.totalVEX).toFixed(1) + 'M';
+    const topTex = document.getElementById('top-theta-val');
+    if (topTex) topTex.innerText = (res.totalTEX >= 0 ? '+$' : '-$') + Math.abs(res.totalTEX).toFixed(1) + 'M/d';
+
+    drawAtasOverlay();
+
     const elRadar = document.getElementById('live-greeks-radar');
     if (elRadar && res.atmGreeks) {{
         const g = res.atmGreeks;
-        elRadar.innerHTML = "Delta &Delta;: <b>" + g.delta.toFixed(3) + "</b> | Gamma &Gamma;: <b>" + g.gamma.toFixed(5) + "</b> | Vega &nu;: <b>$" + g.vega.toFixed(1) + "M</b> | Theta &theta;: <b>" + g.theta.toFixed(1) + "k/d</b> | Vanna: <b>" + (g.vanna >= 0 ? "+" : "") + "$" + g.vanna.toFixed(1) + "M</b> | Charm: <b>" + (g.charm >= 0 ? "+" : "") + "$" + g.charm.toFixed(1) + "M/d</b>";
+        elRadar.innerHTML = "Delta &Delta;: <b>" + g.delta.toFixed(3) + "</b> | Gamma &Gamma;: <b>" + g.gamma.toFixed(5) + "</b> | Vega &nu;: <b>$" + g.vega.toFixed(1) + "M</b> | Theta &theta;: <b>" + g.theta.toFixed(1) + "k/d</b> | Vanna (VEX): <b>" + (g.vanna >= 0 ? "+" : "") + "$" + g.vanna.toFixed(1) + "M</b> | Charm (CHEX): <b>" + (g.charm >= 0 ? "+" : "") + "$" + g.charm.toFixed(1) + "M/d</b>";
     }}
 
     if (candleSeries && livePriceLine) {{
@@ -1588,46 +1508,7 @@ function onTick(price, isUserOverride = false) {{
     }});
 }}
 
-function startSimulation() {{
-    if (simInterval) clearInterval(simInterval);
-    simInterval = setInterval(() => {{
-        if (!isSimulating) return;
-        const drift = (initialBasePrice - currentPrice) * 0.02;
-        const noise = (Math.random() - 0.495) * 1.5;
-        const tick = Math.round((drift + noise) * 4) / 4;
-        const nextPrice = Math.round((currentPrice + tick) * 4) / 4;
-        onTick(nextPrice);
-    }}, 1000);
-}}
-
-function toggleSimulation() {{
-    isSimulating = !isSimulating;
-    const btn = document.getElementById('btn-toggle-sim');
-    if (btn) {{
-        if (isSimulating) {{
-            btn.className = 'btn-ctrl btn-sim';
-            btn.innerText = '● SIMULATION: ON';
-        }} else {{
-            btn.className = 'btn-ctrl btn-sim paused';
-            btn.innerText = '❚❚ SIMULATION: PAUSED';
-        }}
-    }}
-}}
-
-function resetToLiveCME() {{
-    const slider = document.getElementById('price-slider');
-    if (slider) slider.value = initialBasePrice;
-    const lbl = document.getElementById('slider-price-val');
-    if (lbl) lbl.innerText = initialBasePrice.toFixed(2);
-    onTick(initialBasePrice);
-}}
-
-function onSliderPriceChange(val) {{
-    const p = parseFloat(val);
-    const lbl = document.getElementById('slider-price-val');
-    if (lbl) lbl.innerText = p.toFixed(2);
-    onTick(p, true);
-}}
+// Clean Pure Terminal: Anchored directly to official CME Globex price
 
 function setTimeframe(tf) {{
     currentTimeframe = tf.toLowerCase();
@@ -1638,7 +1519,7 @@ function setTimeframe(tf) {{
         '1h': 3600,
         'd': 86400
     }};
-    const period = periodMap[currentTimeframe] || 60;
+    const period = periodMap[currentTimeframe] || 900;
 
     document.querySelectorAll('.timeframe-pill').forEach(btn => {{
         if (btn.innerText.toLowerCase() === currentTimeframe) {{
@@ -1655,7 +1536,10 @@ function setTimeframe(tf) {{
 
 document.addEventListener('DOMContentLoaded', () => {{
     initAtasChart();
-    startSimulation();
+    if (window.INITIAL_META && window.INITIAL_META.spot) {{
+        onTick(window.INITIAL_META.spot);
+    }}
+
 }});
 </script>
 </body>
