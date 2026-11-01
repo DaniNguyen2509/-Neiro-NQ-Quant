@@ -290,6 +290,47 @@ class NasdaqCollector(BaseCollector):
             "institutional": df_inst
         }
 
+    def fetch_real_candles(
+        self,
+        timeframes: Optional[List[str]] = None,
+        limit: int = 120
+    ) -> Dict[str, List[Dict[str, Any]]]:
+        """Fetch real historical OHLCV data for NQ=F across timeframes."""
+        if timeframes is None:
+            timeframes = ["1m", "5m", "15m", "1h", "1d"]
+        import yfinance as yf
+        result = {}
+        tk = yf.Ticker(self.futures_symbol)
+        period_map = {
+            "1m": "2d",
+            "5m": "5d",
+            "15m": "5d",
+            "1h": "1mo",
+            "1d": "3mo"
+        }
+        for tf in timeframes:
+            try:
+                per = period_map.get(tf, "5d")
+                hist = tk.history(period=per, interval=tf)
+                if not hist.empty:
+                    bars = []
+                    tail_df = hist.tail(limit)
+                    for idx, row in tail_df.iterrows():
+                        t_sec = int(idx.timestamp())
+                        bars.append({
+                            "time": t_sec,
+                            "open": round(float(row["Open"]), 2),
+                            "high": round(float(row["High"]), 2),
+                            "low": round(float(row["Low"]), 2),
+                            "close": round(float(row["Close"]), 2),
+                            "volume": int(row["Volume"]) if ("Volume" in row and not pd.isna(row["Volume"])) else 0
+                        })
+                    if bars:
+                        result[tf] = bars
+            except Exception as e:
+                print(f"[NasdaqCollector] Warning: Could not fetch real candles for {tf}: {e}")
+        return result
+
     def _enrich_quant_metrics(self, df: pd.DataFrame, spot: float, dte_days: float = 1.0) -> pd.DataFrame:
         """Vectorized enrichment: calculates Greeks (Delta, Gamma, Vega, Vanna, Charm), GEX, DEX, VEX, CHEX."""
         t_years = max(float(dte_days) / 365.0, 1.0 / (365.0 * 1440.0))
