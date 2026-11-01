@@ -7,37 +7,35 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <!-- TradingView Lightweight Charts v4.2 CDN -->
     <script src="https://unpkg.com/lightweight-charts@4.2.0/dist/lightweight-charts.standalone.production.js"></script>
     <style>
         :root {
-            --bg-base: #06090E; --bg-card: #0D131F; --border-color: #1A2333;
+            --bg-base: #000000; --bg-card: #0A0F18; --border-color: #1A2333;
             --text-primary: #F8FAFC; --text-secondary: #94A3B8; --text-muted: #64748B;
             --neon-green: #22C55E; --neon-red: #EF4444; --neon-blue: #38BDF8; --neon-gold: #FACC15;
-            --neon-purple: #A855F7; --neon-coral: #F43F5E;
+            --neon-coral: #F43F5E;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
             background-color: var(--bg-base); color: var(--text-primary);
-            font-family: 'Inter', -apple-system, sans-serif; padding: 16px; font-size: 13px;
+            font-family: 'Inter', -apple-system, sans-serif; padding: 14px; font-size: 13px;
         }
-        .container { max-width: 1480px; margin: 0 auto; }
+        .container { max-width: 1520px; margin: 0 auto; }
 
-        /* Top Nav & Branding Bar */
         .header {
             display: flex; justify-content: space-between; align-items: center;
-            padding: 12px 20px; background: linear-gradient(135deg, #0B111D 0%, #111A2B 100%);
-            border: 1px solid var(--border-color); border-radius: 10px; margin-bottom: 12px;
+            padding: 10px 18px; background: #080D16;
+            border: 1px solid var(--border-color); border-radius: 8px; margin-bottom: 10px;
         }
         .brand { display: flex; align-items: center; gap: 10px; }
         .brand-title {
-            font-size: 18px; font-weight: 800;
+            font-size: 17px; font-weight: 800;
             background: linear-gradient(90deg, #FFFFFF 0%, #93C5FD 100%);
             -webkit-background-clip: text; -webkit-text-fill-color: transparent;
             font-family: 'JetBrains Mono', monospace; letter-spacing: 0.5px;
         }
         .pulse-dot {
-            width: 10px; height: 10px; border-radius: 50%; background-color: var(--neon-green);
+            width: 9px; height: 9px; border-radius: 50%; background-color: var(--neon-green);
             box-shadow: 0 0 10px var(--neon-green); animation: pulse 2s infinite;
         }
         @keyframes pulse {
@@ -46,7 +44,7 @@
             100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
         }
         .badge {
-            display: inline-block; padding: 3px 8px; border-radius: 6px; font-size: 11px;
+            display: inline-block; padding: 2px 7px; border-radius: 4px; font-size: 10.5px;
             font-weight: 700; font-family: 'JetBrains Mono', monospace;
         }
         .badge-live { background: rgba(34, 197, 94, 0.15); color: #4ADE80; border: 1px solid rgba(34, 197, 94, 0.4); }
@@ -54,36 +52,34 @@
         .badge-pos { background: rgba(74, 222, 128, 0.15); color: #4ADE80; border: 1px solid rgba(74, 222, 128, 0.4); }
         .badge-neg { background: rgba(248, 113, 113, 0.15); color: #F87171; border: 1px solid rgba(248, 113, 113, 0.4); }
 
-        /* Live Ticker Bar */
         .ticker-bar {
-            display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;
-            background: #0A0F19; border: 1px solid #1E293B; border-radius: 8px; padding: 10px 18px; margin-bottom: 14px;
+            display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;
+            background: #080D16; border: 1px solid #162030; border-radius: 8px; padding: 8px 16px; margin-bottom: 12px;
             font-family: 'JetBrains Mono', monospace;
         }
-        .ticker-items { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
-        .ticker-item { display: flex; align-items: center; gap: 6px; font-size: 12.5px; }
-        .ticker-symbol { font-weight: 800; color: #FFFFFF; font-size: 13.5px; }
-        .ticker-price { font-weight: 800; font-size: 15px; color: #38BDF8; transition: color 0.2s; }
-        .ticker-change { font-size: 12px; font-weight: 600; padding: 2px 6px; border-radius: 4px; }
+        .ticker-items { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
+        .ticker-item { display: flex; align-items: center; gap: 6px; font-size: 12px; }
+        .ticker-symbol { font-weight: 800; color: #FFFFFF; font-size: 13px; }
+        .ticker-price { font-weight: 800; font-size: 14.5px; color: #38BDF8; transition: color 0.2s; }
+        .ticker-change { font-size: 11.5px; font-weight: 600; padding: 2px 5px; border-radius: 4px; }
         .change-up { color: #4ADE80; background: rgba(34, 197, 94, 0.12); }
         .change-down { color: #F87171; background: rgba(239, 68, 68, 0.12); }
-        .ticker-controls { display: flex; align-items: center; gap: 10px; }
+        .ticker-controls { display: flex; align-items: center; gap: 8px; }
         .btn-ctrl {
-            background: #131E31; color: #94A3B8; border: 1px solid #243550; padding: 5px 10px;
-            border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer; transition: all 0.2s;
+            background: #111A29; color: #94A3B8; border: 1px solid #23354E; padding: 4px 9px;
+            border-radius: 5px; font-size: 11px; font-weight: 600; cursor: pointer; transition: all 0.2s;
             font-family: 'JetBrains Mono', monospace;
         }
         .btn-ctrl:hover, .btn-ctrl.active { background: #1E293B; color: #38BDF8; border-color: #38BDF8; }
         .btn-sim { background: rgba(34, 197, 94, 0.15); color: #4ADE80; border-color: rgba(34, 197, 94, 0.4); }
         .btn-sim.paused { background: rgba(239, 68, 68, 0.15); color: #F87171; border-color: rgba(239, 68, 68, 0.4); }
 
-        /* KPI Cards Grid */
         .kpi-grid {
-            display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; margin-bottom: 14px;
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 10px; margin-bottom: 12px;
         }
         .kpi-card {
             background-color: var(--bg-card); border: 1px solid var(--border-color);
-            border-radius: 10px; padding: 12px 16px; transition: transform 0.2s, border-color 0.2s;
+            border-radius: 8px; padding: 12px 16px; transition: transform 0.2s, border-color 0.2s;
         }
         .kpi-card:hover { border-color: #2E3E59; transform: translateY(-1px); }
         .kpi-label {
@@ -91,107 +87,70 @@
             letter-spacing: 0.5px;
         }
         .kpi-val {
-            font-size: 21px; font-weight: 700; font-family: 'JetBrains Mono', monospace; margin-bottom: 4px;
-            transition: color 0.3s;
+            font-size: 20px; font-weight: 700; font-family: 'JetBrains Mono', monospace; margin-bottom: 3px;
         }
         .kpi-sub { font-size: 11px; color: var(--text-muted); }
 
-        /* ATAS Candlestick Orderflow Terminal Container */
+        /* ATAS Orderflow Terminal Box */
         .atas-terminal-box {
-            background: #000000; border: 1px solid #1E293B; border-radius: 10px;
-            overflow: hidden; margin-bottom: 18px; position: relative;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
+            background: #000000; border: 1px solid #1E293B; border-radius: 8px;
+            overflow: hidden; margin-bottom: 16px; position: relative;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
         }
         .atas-toolbar {
             display: flex; justify-content: space-between; align-items: center;
-            background: #080D15; padding: 8px 14px; border-bottom: 1px solid #182234;
+            background: #080D15; padding: 8px 14px; border-bottom: 1px solid #162030;
         }
         .atas-tools-left { display: flex; align-items: center; gap: 8px; }
         .atas-badge {
-            background: #111B2B; border: 1px solid #23354E; color: #E2E8F0;
+            background: #111A29; border: 1px solid #23354E; color: #E2E8F0;
             padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: 700;
             font-family: 'JetBrains Mono', monospace;
         }
-        .atas-tools-right { display: flex; align-items: center; gap: 8px; font-family: 'JetBrains Mono', monospace; font-size: 11px; }
+        .atas-tools-right { display: flex; align-items: center; gap: 6px; font-family: 'JetBrains Mono', monospace; font-size: 11px; }
         .timeframe-pill {
-            background: transparent; color: #64748B; border: 1px solid transparent; padding: 3px 7px;
+            background: transparent; color: #64748B; border: 1px solid transparent; padding: 3px 8px;
             border-radius: 4px; font-size: 11px; cursor: pointer; font-weight: 600;
         }
         .timeframe-pill.active, .timeframe-pill:hover { background: #131E31; color: #38BDF8; border-color: #243550; }
 
         #tv-chart-wrapper {
-            position: relative; width: 100%; height: 540px; background-color: #000000;
+            position: relative; width: 100%; height: 560px; background-color: #000000;
         }
         #atas-tv-chart { width: 100%; height: 100%; }
-
-        /* ATAS Orderflow Shaded Level Overlays */
-        .atas-overlay-container {
+        #atas-canvas {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             pointer-events: none; z-index: 5;
         }
-        .atas-band {
-            position: absolute; left: 60px; right: 75px; height: 18px;
-            border-radius: 2px; display: flex; align-items: center; justify-content: flex-end;
-            padding-right: 12px; font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 700;
-            letter-spacing: 0.5px; opacity: 0.88; transition: top 0.3s ease;
-        }
-        .band-put-wall {
-            background: rgba(34, 197, 94, 0.12); border-top: 1px solid #22C55E; border-bottom: 1px solid #22C55E;
-            color: #4ADE80;
-        }
-        .band-call-wall {
-            background: rgba(239, 68, 68, 0.12); border-top: 1px solid #EF4444; border-bottom: 1px solid #EF4444;
-            color: #F87171;
-        }
-        .band-deep-ef {
-            background: rgba(148, 163, 184, 0.16); border-top: 1px solid #94A3B8; border-bottom: 1px solid #94A3B8;
-            color: #E2E8F0;
-        }
-        .band-buyer-abs {
-            background: rgba(56, 189, 248, 0.14); border-top: 1px solid #38BDF8; border-bottom: 1px solid #38BDF8;
-            color: #7DD3FC;
-        }
-        .band-seller-offer {
-            background: rgba(244, 63, 94, 0.14); border-top: 1px solid #F43F5E; border-bottom: 1px solid #F43F5E;
-            color: #FDA4AF;
-        }
-        .band-gex-reaction {
-            background: rgba(250, 204, 21, 0.12); border-top: 1px dashed #FACC15; border-bottom: 1px dashed #FACC15;
-            color: #FDE047;
-        }
 
-        /* Live Slider Interactive Testing Box */
         .slider-box {
             display: flex; align-items: center; justify-content: space-between; gap: 14px;
-            background: #0B111D; border-top: 1px solid #182234; padding: 8px 16px;
+            background: #080D15; border-top: 1px solid #162030; padding: 7px 16px;
             font-family: 'JetBrains Mono', monospace; font-size: 11px;
         }
-        .slider-box input[type=range] {
-            flex: 1; accent-color: #38BDF8; cursor: pointer;
-        }
+        .slider-box input[type=range] { flex: 1; accent-color: #38BDF8; cursor: pointer; }
 
-        /* Table & Section Boxes */
         .chart-box {
             background-color: var(--bg-card); border: 1px solid var(--border-color);
-            border-radius: 10px; padding: 10px; margin-bottom: 18px;
+            border-radius: 8px; padding: 10px; margin-bottom: 16px;
         }
         .table-box {
             background-color: var(--bg-card); border: 1px solid var(--border-color);
-            border-radius: 10px; padding: 16px; margin-bottom: 16px; overflow-x: auto;
+            border-radius: 8px; padding: 16px; margin-bottom: 14px; overflow-x: auto;
         }
         .section-header {
             font-size: 13.5px; font-weight: 700; margin-bottom: 12px; color: #E2E8F0;
             display: flex; align-items: center; justify-content: space-between;
         }
-        table { width: 100%; border-collapse: collapse; font-size: 12.5px; text-align: left; }
+        table { width: 100%; border-collapse: collapse; font-size: 12px; text-align: left; }
         th {
-            background-color: #0F1728; color: var(--text-secondary); padding: 9px 12px;
+            background-color: #0B111D; color: var(--text-secondary); padding: 9px 12px;
             font-weight: 600; border-bottom: 1px solid var(--border-color); white-space: nowrap;
         }
         td {
-            padding: 9px 12px; border-bottom: 1px solid #141C2B; font-family: 'JetBrains Mono', monospace;
+            padding: 9px 12px; border-bottom: 1px solid #131B29; font-family: 'JetBrains Mono', monospace;
         }
-        tr:hover td { background-color: #172236; }
+        tr:hover td { background-color: #141E30; }
         .row-spot td {
             background-color: rgba(56, 189, 248, 0.12) !important;
             border-top: 1px solid var(--neon-blue); border-bottom: 1px solid var(--neon-blue);
@@ -199,18 +158,14 @@
         .tag-buy { color: #4ADE80; font-weight: 700; }
         .tag-sell { color: #F87171; font-weight: 700; }
         .insight-box {
-            background: linear-gradient(135deg, rgba(20, 29, 44, 0.7) 0%, rgba(11, 17, 28, 0.8) 100%);
+            background: linear-gradient(135deg, rgba(16, 24, 38, 0.8) 0%, rgba(10, 15, 25, 0.9) 100%);
             border-left: 4px solid var(--neon-blue); border-radius: 6px;
-            padding: 10px 14px; margin-bottom: 14px; font-size: 12px; line-height: 1.5;
+            padding: 10px 14px; margin-bottom: 12px; font-size: 12px; line-height: 1.5;
         }
         .footer {
             text-align: center; font-size: 11px; color: var(--text-muted);
             padding: 18px 0; border-top: 1px solid var(--border-color); font-family: 'JetBrains Mono', monospace;
         }
-        .flash-up { animation: flashGreen 0.6s ease; }
-        .flash-down { animation: flashRed 0.6s ease; }
-        @keyframes flashGreen { 0% { background-color: rgba(34, 197, 94, 0.4); } 100% { background-color: transparent; } }
-        @keyframes flashRed { 0% { background-color: rgba(239, 68, 68, 0.4); } 100% { background-color: transparent; } }
     </style>
 </head>
 <body>
@@ -223,8 +178,8 @@
             <span class="badge badge-gold">CME E-MINI NASDAQ (NQ)</span>
             <span class="badge badge-live">100% CLOUD AUTOMATED</span>
         </div>
-        <div style="font-family: 'JetBrains Mono', monospace; font-size: 11.5px; color: #94A3B8;">
-            Cập nhật: <b id="lbl-last-update">01/11/2026 08:51:39 (Giờ VN)</b>
+        <div style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #94A3B8;">
+            Cập nhật: <b id="lbl-last-update">01/11/2026 09:11:58 (Giờ VN)</b>
         </div>
     </div>
 
@@ -295,7 +250,7 @@
         <div>
             <b style="color: #38BDF8; font-size: 12.5px;">⚡ LIVE BLACK-76 REALTIME GREEKS RADAR (TRỤC ATM):</b>
             <span style="font-family:'JetBrains Mono', monospace; margin-left: 8px; color: #E2E8F0;" id="live-greeks-radar">
-                Delta &Delta;: <b>0.500</b> | Gamma &Gamma;: <b>0.00042</b> | Vega &nu;: <b>$24.2M</b> | Theta &theta;: <b>-$34.1k/d</b> | Vanna: <b>+$3.2M</b> | Charm: <b>-$1.8M/d</b>
+                Delta &Delta;: <b>0.505</b> | Gamma &Gamma;: <b>0.00042</b> | Vega &nu;: <b>$18.5M</b> | Theta &theta;: <b>-$28.5k/d</b> | Vanna: <b>+$2.8M</b> | Charm: <b>-$1.4M/d</b>
             </span>
         </div>
         <div style="font-family:'JetBrains Mono', monospace; font-size: 11px; color: #4ADE80;">
@@ -303,7 +258,7 @@
         </div>
     </div>
 
-    <!-- ATAS Realtime Orderflow Footprint Candlestick Chart -->
+    <!-- True ATAS Realtime Orderflow Footprint Candlestick Terminal -->
     <div class="atas-terminal-box">
         <div class="atas-toolbar">
             <div class="atas-tools-left">
@@ -322,34 +277,11 @@
             </div>
         </div>
 
-        <!-- TV Lightweight Chart Container -->
         <div id="tv-chart-wrapper">
             <div id="atas-tv-chart"></div>
-
-            <!-- Visual ATAS Quant Bands Overlay (Authentic English Labels) -->
-            <div class="atas-overlay-container" id="atas-overlay-layer">
-                <div class="atas-band band-put-wall" id="overlay-put-wall">
-                    <span>..... put wall &bull; Gamma C &bull; Gamma P &bull; DEX P &bull; #1 &bull; OI put 8,691</span>
-                </div>
-                <div class="atas-band band-call-wall" id="overlay-call-wall">
-                    <span>..... call wall &bull; Gamma C &bull; Gamma P &bull; DEX C &bull; #1 &bull; OI call 9,649</span>
-                </div>
-                <div class="atas-band band-deep-ef" id="overlay-deep-ef">
-                    <span>deep ef stack</span>
-                </div>
-                <div class="atas-band band-buyer-abs" id="overlay-buyer-abs">
-                    <span>buyer abs</span>
-                </div>
-                <div class="atas-band band-seller-offer" id="overlay-seller-offer">
-                    <span>seller offer &bull; +1R</span>
-                </div>
-                <div class="atas-band band-gex-reaction" id="overlay-gex-reaction">
-                    <span>gex 5 reaction</span>
-                </div>
-            </div>
+            <canvas id="atas-canvas"></canvas>
         </div>
 
-        <!-- Interactive Testing Price Slider -->
         <div class="slider-box">
             <span style="color: #94A3B8;">THỬ NGHIỆM GIÁ NQ (SIMULATE SPOT):</span>
             <input type="range" id="price-slider" min="28234" max="28834" step="0.25" value="28534.00" oninput="onSliderPriceChange(this.value)">
@@ -476,7 +408,7 @@
             <span>📈 BIỂU ĐỒ ĐỊNH LƯỢNG 3 PANEL CHUYÊN SÂU (NET GEX &bull; VOLUME/OI &bull; VANNA/CHARM)</span>
         </div>
         <div style="height:740px; width:100%;">                        <script>window.PlotlyConfig = {MathJaxConfig: 'local'};</script>
-        <script charset="utf-8" src="https://cdn.plot.ly/plotly-4.1.1.min.js" integrity="sha256-O24V1F27f8pb0glCkelh3cVHLNiHAJ5gCaVtq2aNch8=" crossorigin="anonymous"></script>                <div id="d00587cf-e042-48c9-906d-e8f933d97d70" class="plotly-graph-div" style="height:100%; width:100%;"></div>            <script>                window.PLOTLYENV=window.PLOTLYENV || {};                                if (document.getElementById("d00587cf-e042-48c9-906d-e8f933d97d70")) {                    Plotly.newPlot(                        "d00587cf-e042-48c9-906d-e8f933d97d70",                        [{"hovertemplate":"Strike: %{y:,.0f} pts\u003cbr\u003eNet GEX: $%{x:+.2f}M\u003cextra\u003e\u003c\u002fextra\u003e","marker":{"color":["#F87171","#F87171","#F87171","#F87171","#F87171","#F87171","#F87171","#F87171","#F87171","#F87171","#F87171","#F87171","#F87171","#F87171","#F87171","#F87171","#F87171","#4ADE80","#4ADE80","#4ADE80","#4ADE80"]},"name":"Net GEX ($M)","orientation":"h","x":{"dtype":"f8","bdata":"r8Mcc4Mbnr\u002ferzRhCNWhv\u002fhb\u002f1z6jqq\u002fJksKzfAYq7\u002fVTlA\u002fuoDQv\u002fjKS0ZeUgPAXB3JyYPVCcAy0h\u002fmLAY4wOeABpvDSkLAeBBT8Ht0VMCZ+X1RzGBOwMBEXYJKQmbAR7rI5KZYSsD3EUDSD9ETwBnYQmeyXRfAnzlyKFueNsBAZf7Ov8Oxv+9kwX9wL\u002f8\u002f8A2rL\u002fX5vj\u002f0S\u002f8utCH0PzAirmCZO\u002fo\u002f"},"y":{"dtype":"f8","bdata":"AAAAAADU2UAAAAAAgAfaQAAAAABAO9pAAAAAAMBu2kAAAAAAgKLaQAAAAABA1tpAAAAAAMAJ20AAAAAAgD3bQAAAAABAcdtAAAAAAMCk20AAAAAAgNjbQAAAAAAADNxAAAAAAMA\u002f3EAAAAAAAErcQAAAAACAVNxAAAAAAMBe3EAAAAAAAGncQAAAAACAc9xAAAAAAMB93EAAAAAAAIjcQAAAAACAktxA"},"type":"bar","xaxis":"x","yaxis":"y"},{"hovertemplate":"Strike: %{y:,.0f}\u003cbr\u003eCall OI: %{x:,}\u003cextra\u003e\u003c\u002fextra\u003e","marker":{"color":"#86EFAC"},"name":"Call OI (N\u1ec1n t\u00edch l\u0169y)","opacity":0.5,"orientation":"h","x":{"dtype":"i2","bdata":"AAAAAAoAAgASAAQAMwALABgAGAAhAIYAiwANADcAGAB2AAcCVACJAT4C"},"y":{"dtype":"f8","bdata":"AAAAAADU2UAAAAAAgAfaQAAAAABAO9pAAAAAAMBu2kAAAAAAgKLaQAAAAABA1tpAAAAAAMAJ20AAAAAAgD3bQAAAAABAcdtAAAAAAMCk20AAAAAAgNjbQAAAAAAADNxAAAAAAMA\u002f3EAAAAAAAErcQAAAAACAVNxAAAAAAMBe3EAAAAAAAGncQAAAAACAc9xAAAAAAMB93EAAAAAAAIjcQAAAAACAktxA"},"type":"bar","xaxis":"x2","yaxis":"y2"},{"customdata":{"dtype":"i2","bdata":"tQNVA+0DFgJgBa0PIgchE5ANWxKwCvMhRRNLAuMD9xSQAWkHTwLlAn0C"},"hovertemplate":"Strike: %{y:,.0f}\u003cbr\u003ePut OI: %{customdata:,}\u003cextra\u003e\u003c\u002fextra\u003e","marker":{"color":"#FCA5A5"},"name":"Put OI (N\u1ec1n t\u00edch l\u0169y)","opacity":0.5,"orientation":"h","x":{"dtype":"i2","bdata":"S\u002fyr\u002fBP86v2g+lPw3vjf7HDype1Q9Q3eu+y1\u002fR38Cetw\u002fpf4sf0b\u002fYP9"},"y":{"dtype":"f8","bdata":"AAAAAADU2UAAAAAAgAfaQAAAAABAO9pAAAAAAMBu2kAAAAAAgKLaQAAAAABA1tpAAAAAAMAJ20AAAAAAgD3bQAAAAABAcdtAAAAAAMCk20AAAAAAgNjbQAAAAAAADNxAAAAAAMA\u002f3EAAAAAAAErcQAAAAACAVNxAAAAAAMBe3EAAAAAAAGncQAAAAACAc9xAAAAAAMB93EAAAAAAAIjcQAAAAACAktxA"},"type":"bar","xaxis":"x2","yaxis":"y2"},{"hovertemplate":"Strike: %{y:,.0f}\u003cbr\u003eCall Vol: %{x:,}\u003cextra\u003e\u003c\u002fextra\u003e","marker":{"color":"#16A34A"},"name":"Call Volume (L\u1ef1c Mua)","orientation":"h","x":{"dtype":"i4","bdata":"AAAAAAAAAAAyAAAACAAAAEkBAABDAAAAiAMAANEAAAA2BQAAJH0AADazAAASyAAAiooBAAopAAAIKQAA6iUAALQoAABEaAAAuBYAAIkeAACeEQAA"},"y":{"dtype":"f8","bdata":"AAAAAADU2UAAAAAAgAfaQAAAAABAO9pAAAAAAMBu2kAAAAAAgKLaQAAAAABA1tpAAAAAAMAJ20AAAAAAgD3bQAAAAABAcdtAAAAAAMCk20AAAAAAgNjbQAAAAAAADNxAAAAAAMA\u002f3EAAAAAAAErcQAAAAACAVNxAAAAAAMBe3EAAAAAAAGncQAAAAACAc9xAAAAAAMB93EAAAAAAAIjcQAAAAACAktxA"},"type":"bar","xaxis":"x2","yaxis":"y2"},{"customdata":{"dtype":"i4","bdata":"UgsAAIAgAADNQgAAvi4AAGFGAAD0WQAA4XUAAJ+zAAAasAAAnaAAAAyPAAACUQAAeR4AAJoCAAD2BAAAMRIAAGwBAACDBgAAfAEAAE4BAABGAQAA"},"hovertemplate":"Strike: %{y:,.0f}\u003cbr\u003ePut Vol: %{customdata:,}\u003cextra\u003e\u003c\u002fextra\u003e","marker":{"color":"#DC2626"},"name":"Put Volume (L\u1ef1c B\u00e1n)","orientation":"h","x":{"dtype":"i4","bdata":"rvT\u002f\u002f4Df\u002f\u002f8zvf\u002f\u002fQtH\u002f\u002f5+5\u002f\u002f8Mpv\u002f\u002fH4r\u002f\u002f2FM\u002f\u002f\u002fmT\u002f\u002f\u002fY1\u002f\u002f\u002f\u002fRw\u002f\u002f\u002f+rv\u002f\u002fh+H\u002f\u002f2b9\u002f\u002f8K+\u002f\u002f\u002fz+3\u002f\u002f5T+\u002f\u002f99+f\u002f\u002fhP7\u002f\u002f7L+\u002f\u002f+6\u002fv\u002f\u002f"},"y":{"dtype":"f8","bdata":"AAAAAADU2UAAAAAAgAfaQAAAAABAO9pAAAAAAMBu2kAAAAAAgKLaQAAAAABA1tpAAAAAAMAJ20AAAAAAgD3bQAAAAABAcdtAAAAAAMCk20AAAAAAgNjbQAAAAAAADNxAAAAAAMA\u002f3EAAAAAAAErcQAAAAACAVNxAAAAAAMBe3EAAAAAAAGncQAAAAACAc9xAAAAAAMB93EAAAAAAAIjcQAAAAACAktxA"},"type":"bar","xaxis":"x2","yaxis":"y2"},{"hovertemplate":"Strike: %{y:,.0f}\u003cbr\u003eNet VEX: $%{x:.2f}M\u003cextra\u003e\u003c\u002fextra\u003e","marker":{"color":"#FB923C"},"name":"Net VEX ($M \u002f 1% IV)","orientation":"h","x":{"dtype":"f8","bdata":"4HraNtGzdT9fVK2j7FJ5P6+LGKdOd4Q\u002fqkwv4dWQgj\u002f1UsxrLsymP1YCfAUmNtU\u002fQxUP3ivC1z9g1wq469YAQMwwXCcXigFAYcofMD7hBEAB7WODtdfEP\u002f+4DWXqwhXA1usAJKcGDsC29T3Ecb7Zvx8b3ESSg+G\u002fMfHQkfTwAsDCRIplzVqmvyRc78CYsLg\u002fUM2RY9NGfL+i1ap9gja6P7I1JNwmo8M\u002f"},"y":{"dtype":"f8","bdata":"AAAAAADU2UAAAAAAgAfaQAAAAABAO9pAAAAAAMBu2kAAAAAAgKLaQAAAAABA1tpAAAAAAMAJ20AAAAAAgD3bQAAAAABAcdtAAAAAAMCk20AAAAAAgNjbQAAAAAAADNxAAAAAAMA\u002f3EAAAAAAAErcQAAAAACAVNxAAAAAAMBe3EAAAAAAAGncQAAAAACAc9xAAAAAAMB93EAAAAAAAIjcQAAAAACAktxA"},"type":"bar","xaxis":"x3","yaxis":"y3"},{"hovertemplate":"Strike: %{y:,.0f}\u003cbr\u003eNet CHEX: $%{x:.2f}M\u003cextra\u003e\u003c\u002fextra\u003e","marker":{"color":"#22D3EE"},"name":"Net CHEX ($M \u002f ng\u00e0y)","orientation":"h","x":{"dtype":"f8","bdata":"IlC7JaxlvL8ieG5anTK+v35ZfgFQ9MO\u002fdY6Df47Dwb9GKpIU8ofiv2Qpn4IlAhLAfkkO7alCE8BG+6w2beA6wEP+9J2JaDvAVThFhLZuP8BSAvavHbfzv+ceSoSfMk5Aj6oEUsVjQkDIBgzp1ngOQNiM3oUEqRNAbp4dR3qjNECQ3UIIsrKxP74iSTVyXQDAnFE\u002fL2P2wL8i+hQRJQD4vxOHJX6DmADA"},"y":{"dtype":"f8","bdata":"AAAAAADU2UAAAAAAgAfaQAAAAABAO9pAAAAAAMBu2kAAAAAAgKLaQAAAAABA1tpAAAAAAMAJ20AAAAAAgD3bQAAAAABAcdtAAAAAAMCk20AAAAAAgNjbQAAAAAAADNxAAAAAAMA\u002f3EAAAAAAAErcQAAAAACAVNxAAAAAAMBe3EAAAAAAAGncQAAAAACAc9xAAAAAAMB93EAAAAAAAIjcQAAAAACAktxA"},"type":"bar","xaxis":"x3","yaxis":"y3"}],                        {"template":{"data":{"barpolar":[{"marker":{"line":{"color":"rgb(17,17,17)","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"barpolar"}],"bar":[{"error_x":{"color":"#f2f5fa"},"error_y":{"color":"#f2f5fa"},"marker":{"line":{"color":"rgb(17,17,17)","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"bar"}],"carpet":[{"aaxis":{"endlinecolor":"#A2B1C6","gridcolor":"#506784","linecolor":"#506784","minorgridcolor":"#506784","startlinecolor":"#A2B1C6"},"baxis":{"endlinecolor":"#A2B1C6","gridcolor":"#506784","linecolor":"#506784","minorgridcolor":"#506784","startlinecolor":"#A2B1C6"},"type":"carpet"}],"choropleth":[{"colorbar":{"outlinewidth":0,"ticks":""},"type":"choropleth"}],"contourcarpet":[{"colorbar":{"outlinewidth":0,"ticks":""},"type":"contourcarpet"}],"contour":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"contour"}],"heatmap":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"heatmap"}],"histogram2dcontour":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"histogram2dcontour"}],"histogram2d":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"histogram2d"}],"histogram":[{"marker":{"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"histogram"}],"mesh3d":[{"colorbar":{"outlinewidth":0,"ticks":""},"type":"mesh3d"}],"parcoords":[{"line":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"parcoords"}],"pie":[{"automargin":true,"type":"pie"}],"scatter3d":[{"line":{"colorbar":{"outlinewidth":0,"ticks":""}},"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatter3d"}],"scattercarpet":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattercarpet"}],"scattergeo":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattergeo"}],"scattergl":[{"marker":{"line":{"color":"#283442"}},"type":"scattergl"}],"scattermap":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattermap"}],"scatterpolargl":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatterpolargl"}],"scatterpolar":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatterpolar"}],"scatter":[{"marker":{"line":{"color":"#283442"}},"type":"scatter"}],"scatterternary":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatterternary"}],"surface":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"surface"}],"table":[{"cells":{"fill":{"color":"#506784"},"line":{"color":"rgb(17,17,17)"}},"header":{"fill":{"color":"#2a3f5f"},"line":{"color":"rgb(17,17,17)"}},"type":"table"}]},"layout":{"annotationdefaults":{"arrowcolor":"#f2f5fa","arrowhead":0,"arrowwidth":1},"autotypenumbers":"strict","coloraxis":{"colorbar":{"outlinewidth":0,"ticks":""}},"colorscale":{"diverging":[[0,"#8e0152"],[0.1,"#c51b7d"],[0.2,"#de77ae"],[0.3,"#f1b6da"],[0.4,"#fde0ef"],[0.5,"#f7f7f7"],[0.6,"#e6f5d0"],[0.7,"#b8e186"],[0.8,"#7fbc41"],[0.9,"#4d9221"],[1,"#276419"]],"sequential":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"sequentialminus":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]},"colorway":["#636efa","#EF553B","#00cc96","#ab63fa","#FFA15A","#19d3f3","#FF6692","#B6E880","#FF97FF","#FECB52"],"font":{"color":"#f2f5fa"},"geo":{"bgcolor":"rgb(17,17,17)","lakecolor":"rgb(17,17,17)","landcolor":"rgb(17,17,17)","showlakes":true,"showland":true,"subunitcolor":"#506784"},"hoverlabel":{"align":"left"},"hovermode":"closest","paper_bgcolor":"rgb(17,17,17)","plot_bgcolor":"rgb(17,17,17)","polar":{"angularaxis":{"gridcolor":"#506784","linecolor":"#506784","ticks":""},"bgcolor":"rgb(17,17,17)","radialaxis":{"gridcolor":"#506784","linecolor":"#506784","ticks":""}},"scene":{"xaxis":{"backgroundcolor":"rgb(17,17,17)","gridcolor":"#506784","gridwidth":2,"linecolor":"#506784","showbackground":true,"ticks":"","zerolinecolor":"#C8D4E3"},"yaxis":{"backgroundcolor":"rgb(17,17,17)","gridcolor":"#506784","gridwidth":2,"linecolor":"#506784","showbackground":true,"ticks":"","zerolinecolor":"#C8D4E3"},"zaxis":{"backgroundcolor":"rgb(17,17,17)","gridcolor":"#506784","gridwidth":2,"linecolor":"#506784","showbackground":true,"ticks":"","zerolinecolor":"#C8D4E3"}},"shapedefaults":{"line":{"color":"#f2f5fa"}},"sliderdefaults":{"bgcolor":"#C8D4E3","bordercolor":"rgb(17,17,17)","borderwidth":1,"tickwidth":0},"ternary":{"aaxis":{"gridcolor":"#506784","linecolor":"#506784","ticks":""},"baxis":{"gridcolor":"#506784","linecolor":"#506784","ticks":""},"bgcolor":"rgb(17,17,17)","caxis":{"gridcolor":"#506784","linecolor":"#506784","ticks":""}},"title":{"x":0.05},"updatemenudefaults":{"bgcolor":"#506784","borderwidth":0},"xaxis":{"automargin":true,"gridcolor":"#283442","linecolor":"#506784","ticks":"","title":{"standoff":15},"zerolinecolor":"#283442","zerolinewidth":2},"yaxis":{"automargin":true,"gridcolor":"#283442","linecolor":"#506784","ticks":"","title":{"standoff":15},"zerolinecolor":"#283442","zerolinewidth":2}}},"xaxis":{"anchor":"y","domain":[0.0,0.3348],"title":{"font":{"size":10},"text":"Net GEX ($M \u002f 1% Move)"},"gridcolor":"#1E293B"},"yaxis":{"anchor":"x","domain":[0.0,1.0],"title":{"font":{"size":11},"text":"E-mini Nasdaq Strike Ladder (NQ pts)"},"tickmode":"array","tickvals":[26448.0,26654.0,26861.0,27067.0,27274.0,27481.0,27687.0,27894.0,28101.0,28307.0,28514.0,28720.0,28927.0,28968.0,29010.0,29051.0,29092.0,29134.0,29175.0,29216.0,29258.0],"ticktext":["26,448","26,654","26,861","27,067","27,274","27,481","27,687","27,894","28,101","28,307","28,514","28,720","28,927","28,968","29,010","29,051","29,092","29,134","29,175","29,216","29,258"],"gridcolor":"#1E293B"},"xaxis2":{"anchor":"y2","domain":[0.3698,0.7046],"title":{"font":{"size":10},"text":"Put OI\u002fVol (-) | Call OI\u002fVol (+)"},"gridcolor":"#1E293B"},"yaxis2":{"anchor":"x2","domain":[0.0,1.0],"matches":"y","showticklabels":false,"tickmode":"array","tickvals":[26448.0,26654.0,26861.0,27067.0,27274.0,27481.0,27687.0,27894.0,28101.0,28307.0,28514.0,28720.0,28927.0,28968.0,29010.0,29051.0,29092.0,29134.0,29175.0,29216.0,29258.0],"gridcolor":"#1E293B"},"xaxis3":{"anchor":"y3","domain":[0.7396,1.0],"title":{"font":{"size":10},"text":"Greeks B\u1eadc 2 ($M Exposure)"},"range":[-132.87008474313913,132.87008474313913],"gridcolor":"#1E293B"},"yaxis3":{"anchor":"x3","domain":[0.0,1.0],"matches":"y","showticklabels":false,"tickmode":"array","tickvals":[26448.0,26654.0,26861.0,27067.0,27274.0,27481.0,27687.0,27894.0,28101.0,28307.0,28514.0,28720.0,28927.0,28968.0,29010.0,29051.0,29092.0,29134.0,29175.0,29216.0,29258.0],"gridcolor":"#1E293B"},"annotations":[{"font":{"size":16},"showarrow":false,"text":"\u003cb\u003ePanel 1: Net GEX ($M) & M\u1ed1c Chi\u1ebfn Thu\u1eadt\u003c\u002fb\u003e","x":0.1674,"xanchor":"center","xref":"paper","y":1.0,"yanchor":"bottom","yref":"paper"},{"font":{"size":16},"showarrow":false,"text":"\u003cb\u003ePanel 2: D\u00f2ng Ti\u1ec1n Volume vs Open Interest N\u00e9n\u003c\u002fb\u003e","x":0.5372,"xanchor":"center","xref":"paper","y":1.0,"yanchor":"bottom","yref":"paper"},{"font":{"size":16},"showarrow":false,"text":"\u003cb\u003ePanel 3: Greeks B\u1eadc 2 (Vanna & Charm)\u003c\u002fb\u003e","x":0.8698,"xanchor":"center","xref":"paper","y":1.0,"yanchor":"bottom","yref":"paper"},{"bgcolor":"#0284C7","bordercolor":"#38BDF8","borderpad":3,"borderwidth":1,"font":{"color":"#FFFFFF","family":"JetBrains Mono","size":9.5},"showarrow":false,"text":"\u25c6 NQ FUTURES: 28,534.0","x":0.98,"xanchor":"right","xref":"x domain","y":28534.0,"yref":"y"},{"align":"left","arrowcolor":"#EF4444","arrowhead":2,"ax":0,"ay":18,"bgcolor":"rgba(127, 29, 29, 0.92)","bordercolor":"#EF4444","borderwidth":1,"font":{"color":"#FEE2E2","size":8.5},"showarrow":true,"text":"\u003cb\u003e[PUT WALL 28,720] (8,691 OI)\u003c\u002fb\u003e &bull; Mua Rebound: 28,720-28,735 (SL: 28,700)","x":0.03,"xref":"x domain","y":28713.85,"yref":"y"},{"arrowcolor":"#22C55E","arrowhead":2,"ax":0,"ay":-16,"bgcolor":"rgba(20, 83, 45, 0.92)","bordercolor":"#22C55E","borderwidth":1,"font":{"color":"#DCFCE7","size":8.5},"showarrow":true,"text":"\u003cb\u003eC\u1eecA \u1ea2I 28,720\u003c\u002fb\u003e (Squeeze \u003e 28,726.2 -\u003e TP 28,927)","x":0.03,"xref":"x domain","y":28726.15,"yref":"y"},{"arrowcolor":"#38BDF8","arrowhead":2,"ax":0,"ay":16,"bgcolor":"rgba(12, 74, 110, 0.92)","bordercolor":"#38BDF8","borderwidth":1,"font":{"color":"#E0F2FE","size":8.5},"showarrow":true,"text":"\u003cb\u003eS\u00c0N \u0110\u1ee0 28,514\u003c\u002fb\u003e (Rebound: 28,504-28,524)","x":0.03,"xref":"x domain","y":28507.85,"yref":"y"},{"arrowcolor":"#F59E0B","arrowhead":2,"ax":0,"ay":16,"bgcolor":"rgba(180, 83, 9, 0.92)","bordercolor":"#F59E0B","borderwidth":1,"font":{"color":"#FEF3C7","size":8.5},"showarrow":true,"text":"\u003cb\u003eTR\u1ea0M NGH\u1ec8 28,307\u003c\u002fb\u003e (TP Short \u002f \u0110\u1ec7m n\u1ea5c 2 tr\u01b0\u1edbc Put Wall 28,720)","x":0.03,"xref":"x domain","y":28300.85,"yref":"y"},{"bgcolor":"#1C1917","bordercolor":"#FB923C","borderpad":2,"borderwidth":1,"font":{"color":"#FDBA74","size":8.5},"showarrow":false,"text":"\u25c6 \u0110\u1ec8NH VANNA (-5.4M): V-Rebound","x":-5.4403472699762,"xanchor":"right","xref":"x3","y":28729.02,"yref":"y3"},{"bgcolor":"#1C1917","bordercolor":"#22D3EE","borderpad":2,"borderwidth":1,"font":{"color":"#67E8F9","size":8.5},"showarrow":false,"text":"\u0110\u1ec8NH CHARM (+60.4M): Gh\u00ecm gi\u00e1 \u0111\u00eam","x":60.39549306506324,"xanchor":"left","xref":"x3","y":28710.98,"yref":"y3"}],"shapes":[{"line":{"color":"#475569","dash":"solid"},"type":"line","x0":0,"x1":0,"xref":"x","y0":0,"y1":1,"yref":"y domain"},{"line":{"color":"#38BDF8","width":2.2},"type":"line","x0":0,"x1":1,"xref":"x domain","y0":28534.0,"y1":28534.0,"yref":"y"},{"line":{"color":"#34D399","dash":"dash","width":1.8},"type":"line","x0":0,"x1":1,"xref":"x domain","y0":28720.0,"y1":28720.0,"yref":"y"},{"line":{"color":"#475569","dash":"solid"},"type":"line","x0":0,"x1":0,"xref":"x2","y0":0,"y1":1,"yref":"y2 domain"},{"line":{"color":"#475569","dash":"solid"},"type":"line","x0":0,"x1":0,"xref":"x3","y0":0,"y1":1,"yref":"y3 domain"}],"font":{"family":"Inter, sans-serif","color":"#F8FAFC"},"margin":{"l":75,"r":30,"t":115,"b":45},"legend":{"font":{"size":10},"orientation":"h","yanchor":"bottom","y":1.07,"xanchor":"center","x":0.5},"paper_bgcolor":"#0A0E17","plot_bgcolor":"#111827","height":740,"barmode":"relative"},                        {"responsive": true, "displayModeBar": true}                    )                };            </script>        </div>
+        <script charset="utf-8" src="https://cdn.plot.ly/plotly-4.1.1.min.js" integrity="sha256-O24V1F27f8pb0glCkelh3cVHLNiHAJ5gCaVtq2aNch8=" crossorigin="anonymous"></script>                <div id="97e326e7-522e-4f2d-8fb3-b1f719535f74" class="plotly-graph-div" style="height:100%; width:100%;"></div>            <script>                window.PLOTLYENV=window.PLOTLYENV || {};                                if (document.getElementById("97e326e7-522e-4f2d-8fb3-b1f719535f74")) {                    Plotly.newPlot(                        "97e326e7-522e-4f2d-8fb3-b1f719535f74",                        [{"hovertemplate":"Strike: %{y:,.0f} pts\u003cbr\u003eNet GEX: $%{x:+.2f}M\u003cextra\u003e\u003c\u002fextra\u003e","marker":{"color":["#F87171","#F87171","#F87171","#F87171","#F87171","#F87171","#F87171","#F87171","#F87171","#F87171","#F87171","#F87171","#F87171","#F87171","#F87171","#F87171","#F87171","#4ADE80","#4ADE80","#4ADE80","#4ADE80"]},"name":"Net GEX ($M)","orientation":"h","x":{"dtype":"f8","bdata":"r8Mcc4Mbnr\u002ferzRhCNWhv\u002fhb\u002f1z6jqq\u002fJksKzfAYq7\u002fVTlA\u002fuoDQv\u002fjKS0ZeUgPAXB3JyYPVCcAy0h\u002fmLAY4wOeABpvDSkLAeBBT8Ht0VMCZ+X1RzGBOwMBEXYJKQmbAR7rI5KZYSsD3EUDSD9ETwBnYQmeyXRfAnzlyKFueNsBAZf7Ov8Oxv+9kwX9wL\u002f8\u002f8A2rL\u002fX5vj\u002f0S\u002f8utCH0PzAirmCZO\u002fo\u002f"},"y":{"dtype":"f8","bdata":"AAAAAADU2UAAAAAAgAfaQAAAAABAO9pAAAAAAMBu2kAAAAAAgKLaQAAAAABA1tpAAAAAAMAJ20AAAAAAgD3bQAAAAABAcdtAAAAAAMCk20AAAAAAgNjbQAAAAAAADNxAAAAAAMA\u002f3EAAAAAAAErcQAAAAACAVNxAAAAAAMBe3EAAAAAAAGncQAAAAACAc9xAAAAAAMB93EAAAAAAAIjcQAAAAACAktxA"},"type":"bar","xaxis":"x","yaxis":"y"},{"hovertemplate":"Strike: %{y:,.0f}\u003cbr\u003eCall OI: %{x:,}\u003cextra\u003e\u003c\u002fextra\u003e","marker":{"color":"#86EFAC"},"name":"Call OI (N\u1ec1n t\u00edch l\u0169y)","opacity":0.5,"orientation":"h","x":{"dtype":"i2","bdata":"AAAAAAoAAgASAAQAMwALABgAGAAhAIYAiwANADcAGAB2AAcCVACJAT4C"},"y":{"dtype":"f8","bdata":"AAAAAADU2UAAAAAAgAfaQAAAAABAO9pAAAAAAMBu2kAAAAAAgKLaQAAAAABA1tpAAAAAAMAJ20AAAAAAgD3bQAAAAABAcdtAAAAAAMCk20AAAAAAgNjbQAAAAAAADNxAAAAAAMA\u002f3EAAAAAAAErcQAAAAACAVNxAAAAAAMBe3EAAAAAAAGncQAAAAACAc9xAAAAAAMB93EAAAAAAAIjcQAAAAACAktxA"},"type":"bar","xaxis":"x2","yaxis":"y2"},{"customdata":{"dtype":"i2","bdata":"tQNVA+0DFgJgBa0PIgchE5ANWxKwCvMhRRNLAuMD9xSQAWkHTwLlAn0C"},"hovertemplate":"Strike: %{y:,.0f}\u003cbr\u003ePut OI: %{customdata:,}\u003cextra\u003e\u003c\u002fextra\u003e","marker":{"color":"#FCA5A5"},"name":"Put OI (N\u1ec1n t\u00edch l\u0169y)","opacity":0.5,"orientation":"h","x":{"dtype":"i2","bdata":"S\u002fyr\u002fBP86v2g+lPw3vjf7HDype1Q9Q3eu+y1\u002fR38Cetw\u002fpf4sf0b\u002fYP9"},"y":{"dtype":"f8","bdata":"AAAAAADU2UAAAAAAgAfaQAAAAABAO9pAAAAAAMBu2kAAAAAAgKLaQAAAAABA1tpAAAAAAMAJ20AAAAAAgD3bQAAAAABAcdtAAAAAAMCk20AAAAAAgNjbQAAAAAAADNxAAAAAAMA\u002f3EAAAAAAAErcQAAAAACAVNxAAAAAAMBe3EAAAAAAAGncQAAAAACAc9xAAAAAAMB93EAAAAAAAIjcQAAAAACAktxA"},"type":"bar","xaxis":"x2","yaxis":"y2"},{"hovertemplate":"Strike: %{y:,.0f}\u003cbr\u003eCall Vol: %{x:,}\u003cextra\u003e\u003c\u002fextra\u003e","marker":{"color":"#16A34A"},"name":"Call Volume (L\u1ef1c Mua)","orientation":"h","x":{"dtype":"i4","bdata":"AAAAAAAAAAAyAAAACAAAAEkBAABDAAAAiAMAANEAAAA2BQAAJH0AADazAAASyAAAiooBAAopAAAIKQAA6iUAALQoAABEaAAAuBYAAIkeAACeEQAA"},"y":{"dtype":"f8","bdata":"AAAAAADU2UAAAAAAgAfaQAAAAABAO9pAAAAAAMBu2kAAAAAAgKLaQAAAAABA1tpAAAAAAMAJ20AAAAAAgD3bQAAAAABAcdtAAAAAAMCk20AAAAAAgNjbQAAAAAAADNxAAAAAAMA\u002f3EAAAAAAAErcQAAAAACAVNxAAAAAAMBe3EAAAAAAAGncQAAAAACAc9xAAAAAAMB93EAAAAAAAIjcQAAAAACAktxA"},"type":"bar","xaxis":"x2","yaxis":"y2"},{"customdata":{"dtype":"i4","bdata":"UgsAAIAgAADNQgAAvi4AAGFGAAD0WQAA4XUAAJ+zAAAasAAAnaAAAAyPAAACUQAAeR4AAJoCAAD2BAAAMRIAAGwBAACDBgAAfAEAAE4BAABGAQAA"},"hovertemplate":"Strike: %{y:,.0f}\u003cbr\u003ePut Vol: %{customdata:,}\u003cextra\u003e\u003c\u002fextra\u003e","marker":{"color":"#DC2626"},"name":"Put Volume (L\u1ef1c B\u00e1n)","orientation":"h","x":{"dtype":"i4","bdata":"rvT\u002f\u002f4Df\u002f\u002f8zvf\u002f\u002fQtH\u002f\u002f5+5\u002f\u002f8Mpv\u002f\u002fH4r\u002f\u002f2FM\u002f\u002f\u002fmT\u002f\u002f\u002fY1\u002f\u002f\u002f\u002fRw\u002f\u002f\u002f+rv\u002f\u002fh+H\u002f\u002f2b9\u002f\u002f8K+\u002f\u002f\u002fz+3\u002f\u002f5T+\u002f\u002f99+f\u002f\u002fhP7\u002f\u002f7L+\u002f\u002f+6\u002fv\u002f\u002f"},"y":{"dtype":"f8","bdata":"AAAAAADU2UAAAAAAgAfaQAAAAABAO9pAAAAAAMBu2kAAAAAAgKLaQAAAAABA1tpAAAAAAMAJ20AAAAAAgD3bQAAAAABAcdtAAAAAAMCk20AAAAAAgNjbQAAAAAAADNxAAAAAAMA\u002f3EAAAAAAAErcQAAAAACAVNxAAAAAAMBe3EAAAAAAAGncQAAAAACAc9xAAAAAAMB93EAAAAAAAIjcQAAAAACAktxA"},"type":"bar","xaxis":"x2","yaxis":"y2"},{"hovertemplate":"Strike: %{y:,.0f}\u003cbr\u003eNet VEX: $%{x:.2f}M\u003cextra\u003e\u003c\u002fextra\u003e","marker":{"color":"#FB923C"},"name":"Net VEX ($M \u002f 1% IV)","orientation":"h","x":{"dtype":"f8","bdata":"4HraNtGzdT9fVK2j7FJ5P6+LGKdOd4Q\u002fqkwv4dWQgj\u002f1UsxrLsymP1YCfAUmNtU\u002fQxUP3ivC1z9g1wq469YAQMwwXCcXigFAYcofMD7hBEAB7WODtdfEP\u002f+4DWXqwhXA1usAJKcGDsC29T3Ecb7Zvx8b3ESSg+G\u002fMfHQkfTwAsDCRIplzVqmvyRc78CYsLg\u002fUM2RY9NGfL+i1ap9gja6P7I1JNwmo8M\u002f"},"y":{"dtype":"f8","bdata":"AAAAAADU2UAAAAAAgAfaQAAAAABAO9pAAAAAAMBu2kAAAAAAgKLaQAAAAABA1tpAAAAAAMAJ20AAAAAAgD3bQAAAAABAcdtAAAAAAMCk20AAAAAAgNjbQAAAAAAADNxAAAAAAMA\u002f3EAAAAAAAErcQAAAAACAVNxAAAAAAMBe3EAAAAAAAGncQAAAAACAc9xAAAAAAMB93EAAAAAAAIjcQAAAAACAktxA"},"type":"bar","xaxis":"x3","yaxis":"y3"},{"hovertemplate":"Strike: %{y:,.0f}\u003cbr\u003eNet CHEX: $%{x:.2f}M\u003cextra\u003e\u003c\u002fextra\u003e","marker":{"color":"#22D3EE"},"name":"Net CHEX ($M \u002f ng\u00e0y)","orientation":"h","x":{"dtype":"f8","bdata":"IlC7JaxlvL8ieG5anTK+v35ZfgFQ9MO\u002fdY6Df47Dwb9GKpIU8ofiv2Qpn4IlAhLAfkkO7alCE8BG+6w2beA6wEP+9J2JaDvAVThFhLZuP8BSAvavHbfzv+ceSoSfMk5Aj6oEUsVjQkDIBgzp1ngOQNiM3oUEqRNAbp4dR3qjNECQ3UIIsrKxP74iSTVyXQDAnFE\u002fL2P2wL8i+hQRJQD4vxOHJX6DmADA"},"y":{"dtype":"f8","bdata":"AAAAAADU2UAAAAAAgAfaQAAAAABAO9pAAAAAAMBu2kAAAAAAgKLaQAAAAABA1tpAAAAAAMAJ20AAAAAAgD3bQAAAAABAcdtAAAAAAMCk20AAAAAAgNjbQAAAAAAADNxAAAAAAMA\u002f3EAAAAAAAErcQAAAAACAVNxAAAAAAMBe3EAAAAAAAGncQAAAAACAc9xAAAAAAMB93EAAAAAAAIjcQAAAAACAktxA"},"type":"bar","xaxis":"x3","yaxis":"y3"}],                        {"template":{"data":{"barpolar":[{"marker":{"line":{"color":"rgb(17,17,17)","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"barpolar"}],"bar":[{"error_x":{"color":"#f2f5fa"},"error_y":{"color":"#f2f5fa"},"marker":{"line":{"color":"rgb(17,17,17)","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"bar"}],"carpet":[{"aaxis":{"endlinecolor":"#A2B1C6","gridcolor":"#506784","linecolor":"#506784","minorgridcolor":"#506784","startlinecolor":"#A2B1C6"},"baxis":{"endlinecolor":"#A2B1C6","gridcolor":"#506784","linecolor":"#506784","minorgridcolor":"#506784","startlinecolor":"#A2B1C6"},"type":"carpet"}],"choropleth":[{"colorbar":{"outlinewidth":0,"ticks":""},"type":"choropleth"}],"contourcarpet":[{"colorbar":{"outlinewidth":0,"ticks":""},"type":"contourcarpet"}],"contour":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"contour"}],"heatmap":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"heatmap"}],"histogram2dcontour":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"histogram2dcontour"}],"histogram2d":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"histogram2d"}],"histogram":[{"marker":{"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"histogram"}],"mesh3d":[{"colorbar":{"outlinewidth":0,"ticks":""},"type":"mesh3d"}],"parcoords":[{"line":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"parcoords"}],"pie":[{"automargin":true,"type":"pie"}],"scatter3d":[{"line":{"colorbar":{"outlinewidth":0,"ticks":""}},"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatter3d"}],"scattercarpet":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattercarpet"}],"scattergeo":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattergeo"}],"scattergl":[{"marker":{"line":{"color":"#283442"}},"type":"scattergl"}],"scattermap":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattermap"}],"scatterpolargl":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatterpolargl"}],"scatterpolar":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatterpolar"}],"scatter":[{"marker":{"line":{"color":"#283442"}},"type":"scatter"}],"scatterternary":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatterternary"}],"surface":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"surface"}],"table":[{"cells":{"fill":{"color":"#506784"},"line":{"color":"rgb(17,17,17)"}},"header":{"fill":{"color":"#2a3f5f"},"line":{"color":"rgb(17,17,17)"}},"type":"table"}]},"layout":{"annotationdefaults":{"arrowcolor":"#f2f5fa","arrowhead":0,"arrowwidth":1},"autotypenumbers":"strict","coloraxis":{"colorbar":{"outlinewidth":0,"ticks":""}},"colorscale":{"diverging":[[0,"#8e0152"],[0.1,"#c51b7d"],[0.2,"#de77ae"],[0.3,"#f1b6da"],[0.4,"#fde0ef"],[0.5,"#f7f7f7"],[0.6,"#e6f5d0"],[0.7,"#b8e186"],[0.8,"#7fbc41"],[0.9,"#4d9221"],[1,"#276419"]],"sequential":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"sequentialminus":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]},"colorway":["#636efa","#EF553B","#00cc96","#ab63fa","#FFA15A","#19d3f3","#FF6692","#B6E880","#FF97FF","#FECB52"],"font":{"color":"#f2f5fa"},"geo":{"bgcolor":"rgb(17,17,17)","lakecolor":"rgb(17,17,17)","landcolor":"rgb(17,17,17)","showlakes":true,"showland":true,"subunitcolor":"#506784"},"hoverlabel":{"align":"left"},"hovermode":"closest","paper_bgcolor":"rgb(17,17,17)","plot_bgcolor":"rgb(17,17,17)","polar":{"angularaxis":{"gridcolor":"#506784","linecolor":"#506784","ticks":""},"bgcolor":"rgb(17,17,17)","radialaxis":{"gridcolor":"#506784","linecolor":"#506784","ticks":""}},"scene":{"xaxis":{"backgroundcolor":"rgb(17,17,17)","gridcolor":"#506784","gridwidth":2,"linecolor":"#506784","showbackground":true,"ticks":"","zerolinecolor":"#C8D4E3"},"yaxis":{"backgroundcolor":"rgb(17,17,17)","gridcolor":"#506784","gridwidth":2,"linecolor":"#506784","showbackground":true,"ticks":"","zerolinecolor":"#C8D4E3"},"zaxis":{"backgroundcolor":"rgb(17,17,17)","gridcolor":"#506784","gridwidth":2,"linecolor":"#506784","showbackground":true,"ticks":"","zerolinecolor":"#C8D4E3"}},"shapedefaults":{"line":{"color":"#f2f5fa"}},"sliderdefaults":{"bgcolor":"#C8D4E3","bordercolor":"rgb(17,17,17)","borderwidth":1,"tickwidth":0},"ternary":{"aaxis":{"gridcolor":"#506784","linecolor":"#506784","ticks":""},"baxis":{"gridcolor":"#506784","linecolor":"#506784","ticks":""},"bgcolor":"rgb(17,17,17)","caxis":{"gridcolor":"#506784","linecolor":"#506784","ticks":""}},"title":{"x":0.05},"updatemenudefaults":{"bgcolor":"#506784","borderwidth":0},"xaxis":{"automargin":true,"gridcolor":"#283442","linecolor":"#506784","ticks":"","title":{"standoff":15},"zerolinecolor":"#283442","zerolinewidth":2},"yaxis":{"automargin":true,"gridcolor":"#283442","linecolor":"#506784","ticks":"","title":{"standoff":15},"zerolinecolor":"#283442","zerolinewidth":2}}},"xaxis":{"anchor":"y","domain":[0.0,0.3348],"title":{"font":{"size":10},"text":"Net GEX ($M \u002f 1% Move)"},"gridcolor":"#1E293B"},"yaxis":{"anchor":"x","domain":[0.0,1.0],"title":{"font":{"size":11},"text":"E-mini Nasdaq Strike Ladder (NQ pts)"},"tickmode":"array","tickvals":[26448.0,26654.0,26861.0,27067.0,27274.0,27481.0,27687.0,27894.0,28101.0,28307.0,28514.0,28720.0,28927.0,28968.0,29010.0,29051.0,29092.0,29134.0,29175.0,29216.0,29258.0],"ticktext":["26,448","26,654","26,861","27,067","27,274","27,481","27,687","27,894","28,101","28,307","28,514","28,720","28,927","28,968","29,010","29,051","29,092","29,134","29,175","29,216","29,258"],"gridcolor":"#1E293B"},"xaxis2":{"anchor":"y2","domain":[0.3698,0.7046],"title":{"font":{"size":10},"text":"Put OI\u002fVol (-) | Call OI\u002fVol (+)"},"gridcolor":"#1E293B"},"yaxis2":{"anchor":"x2","domain":[0.0,1.0],"matches":"y","showticklabels":false,"tickmode":"array","tickvals":[26448.0,26654.0,26861.0,27067.0,27274.0,27481.0,27687.0,27894.0,28101.0,28307.0,28514.0,28720.0,28927.0,28968.0,29010.0,29051.0,29092.0,29134.0,29175.0,29216.0,29258.0],"gridcolor":"#1E293B"},"xaxis3":{"anchor":"y3","domain":[0.7396,1.0],"title":{"font":{"size":10},"text":"Greeks B\u1eadc 2 ($M Exposure)"},"range":[-132.87008474313913,132.87008474313913],"gridcolor":"#1E293B"},"yaxis3":{"anchor":"x3","domain":[0.0,1.0],"matches":"y","showticklabels":false,"tickmode":"array","tickvals":[26448.0,26654.0,26861.0,27067.0,27274.0,27481.0,27687.0,27894.0,28101.0,28307.0,28514.0,28720.0,28927.0,28968.0,29010.0,29051.0,29092.0,29134.0,29175.0,29216.0,29258.0],"gridcolor":"#1E293B"},"annotations":[{"font":{"size":16},"showarrow":false,"text":"\u003cb\u003ePanel 1: Net GEX ($M) & M\u1ed1c Chi\u1ebfn Thu\u1eadt\u003c\u002fb\u003e","x":0.1674,"xanchor":"center","xref":"paper","y":1.0,"yanchor":"bottom","yref":"paper"},{"font":{"size":16},"showarrow":false,"text":"\u003cb\u003ePanel 2: D\u00f2ng Ti\u1ec1n Volume vs Open Interest N\u00e9n\u003c\u002fb\u003e","x":0.5372,"xanchor":"center","xref":"paper","y":1.0,"yanchor":"bottom","yref":"paper"},{"font":{"size":16},"showarrow":false,"text":"\u003cb\u003ePanel 3: Greeks B\u1eadc 2 (Vanna & Charm)\u003c\u002fb\u003e","x":0.8698,"xanchor":"center","xref":"paper","y":1.0,"yanchor":"bottom","yref":"paper"},{"bgcolor":"#0284C7","bordercolor":"#38BDF8","borderpad":3,"borderwidth":1,"font":{"color":"#FFFFFF","family":"JetBrains Mono","size":9.5},"showarrow":false,"text":"\u25c6 NQ FUTURES: 28,534.0","x":0.98,"xanchor":"right","xref":"x domain","y":28534.0,"yref":"y"},{"align":"left","arrowcolor":"#EF4444","arrowhead":2,"ax":0,"ay":18,"bgcolor":"rgba(127, 29, 29, 0.92)","bordercolor":"#EF4444","borderwidth":1,"font":{"color":"#FEE2E2","size":8.5},"showarrow":true,"text":"\u003cb\u003e[PUT WALL 28,720] (8,691 OI)\u003c\u002fb\u003e &bull; Mua Rebound: 28,720-28,735 (SL: 28,700)","x":0.03,"xref":"x domain","y":28713.85,"yref":"y"},{"arrowcolor":"#22C55E","arrowhead":2,"ax":0,"ay":-16,"bgcolor":"rgba(20, 83, 45, 0.92)","bordercolor":"#22C55E","borderwidth":1,"font":{"color":"#DCFCE7","size":8.5},"showarrow":true,"text":"\u003cb\u003eC\u1eecA \u1ea2I 28,720\u003c\u002fb\u003e (Squeeze \u003e 28,726.2 -\u003e TP 28,927)","x":0.03,"xref":"x domain","y":28726.15,"yref":"y"},{"arrowcolor":"#38BDF8","arrowhead":2,"ax":0,"ay":16,"bgcolor":"rgba(12, 74, 110, 0.92)","bordercolor":"#38BDF8","borderwidth":1,"font":{"color":"#E0F2FE","size":8.5},"showarrow":true,"text":"\u003cb\u003eS\u00c0N \u0110\u1ee0 28,514\u003c\u002fb\u003e (Rebound: 28,504-28,524)","x":0.03,"xref":"x domain","y":28507.85,"yref":"y"},{"arrowcolor":"#F59E0B","arrowhead":2,"ax":0,"ay":16,"bgcolor":"rgba(180, 83, 9, 0.92)","bordercolor":"#F59E0B","borderwidth":1,"font":{"color":"#FEF3C7","size":8.5},"showarrow":true,"text":"\u003cb\u003eTR\u1ea0M NGH\u1ec8 28,307\u003c\u002fb\u003e (TP Short \u002f \u0110\u1ec7m n\u1ea5c 2 tr\u01b0\u1edbc Put Wall 28,720)","x":0.03,"xref":"x domain","y":28300.85,"yref":"y"},{"bgcolor":"#1C1917","bordercolor":"#FB923C","borderpad":2,"borderwidth":1,"font":{"color":"#FDBA74","size":8.5},"showarrow":false,"text":"\u25c6 \u0110\u1ec8NH VANNA (-5.4M): V-Rebound","x":-5.4403472699762,"xanchor":"right","xref":"x3","y":28729.02,"yref":"y3"},{"bgcolor":"#1C1917","bordercolor":"#22D3EE","borderpad":2,"borderwidth":1,"font":{"color":"#67E8F9","size":8.5},"showarrow":false,"text":"\u0110\u1ec8NH CHARM (+60.4M): Gh\u00ecm gi\u00e1 \u0111\u00eam","x":60.39549306506324,"xanchor":"left","xref":"x3","y":28710.98,"yref":"y3"}],"shapes":[{"line":{"color":"#475569","dash":"solid"},"type":"line","x0":0,"x1":0,"xref":"x","y0":0,"y1":1,"yref":"y domain"},{"line":{"color":"#38BDF8","width":2.2},"type":"line","x0":0,"x1":1,"xref":"x domain","y0":28534.0,"y1":28534.0,"yref":"y"},{"line":{"color":"#34D399","dash":"dash","width":1.8},"type":"line","x0":0,"x1":1,"xref":"x domain","y0":28720.0,"y1":28720.0,"yref":"y"},{"line":{"color":"#475569","dash":"solid"},"type":"line","x0":0,"x1":0,"xref":"x2","y0":0,"y1":1,"yref":"y2 domain"},{"line":{"color":"#475569","dash":"solid"},"type":"line","x0":0,"x1":0,"xref":"x3","y0":0,"y1":1,"yref":"y3 domain"}],"font":{"family":"Inter, sans-serif","color":"#F8FAFC"},"margin":{"l":75,"r":30,"t":115,"b":45},"legend":{"font":{"size":10},"orientation":"h","yanchor":"bottom","y":1.07,"xanchor":"center","x":0.5},"paper_bgcolor":"#0A0E17","plot_bgcolor":"#111827","height":740,"barmode":"relative"},                        {"responsive": true, "displayModeBar": true}                    )                };            </script>        </div>
     </div>
 
     <!-- Microstructure Strike Table -->
@@ -540,7 +472,7 @@
         </table>
     </div>
 
-    <!-- ATAS Orderflow & Quant Terminology Glossary (Bảng chú thích & Hướng dẫn tác chiến) -->
+    <!-- ATAS Orderflow & Quant Terminology Glossary -->
     <div class="table-box" style="margin-top: 20px; border-left: 4px solid #38BDF8;">
         <div class="section-header">
             <span>📖 BẢNG CHÚ THÍCH Ý NGHĨA & HƯỚNG DẪN TÁC CHIẾN CÁC DẢI CẢN ORDERFLOW (CHUẨN ATAS)</span>
@@ -557,37 +489,37 @@
             <tbody>
                 <tr>
                     <td style="color: #4ADE80; font-weight: 700; font-size: 13px;">put wall</td>
-                    <td><span class="badge badge-pos">Xanh Lá (Solid Line)</span></td>
+                    <td><span class="badge badge-pos">Xanh Lá (Dashed Line)</span></td>
                     <td><b>Thành trì Put Wall</b>: Vùng tập trung Open Interest Put cao nhất thị trường. Khi giá lùi về đây, Market Maker ôm Short Gamma buộc phải mua vào NQ Futures với khối lượng cực lớn để phòng hộ (Delta-hedging).</td>
                     <td><b>CANH MUA (BUY REBOUND)</b>: Hỗ trợ đáy phiên cực mạnh. Đặt lệnh Buy Limit quanh vùng giá này hoặc Buy khi nến 1M rút chân, Stop Loss ngắn 20-25 điểm phía dưới.</td>
                 </tr>
                 <tr>
                     <td style="color: #F87171; font-weight: 700; font-size: 13px;">call wall</td>
-                    <td><span class="badge badge-neg">Đỏ (Solid Line)</span></td>
+                    <td><span class="badge badge-neg">Đỏ (Dashed Line)</span></td>
                     <td><b>Trần nhà Call Wall</b>: Vùng tập trung Open Interest Call dày đặc nhất. Tại đây Market Maker xả bán hợp đồng tương lai để ghìm giá không cho vượt kỳ hạn đáo hạn.</td>
                     <td><b>CANH BÁN (SELL FADE)</b>: Kháng cự đỉnh phiên bất khả xâm phạm. Canh Sell chặn đầu hoặc chốt lời toàn bộ các vị thế Long khi giá tiệm cận.</td>
                 </tr>
                 <tr>
                     <td style="color: #E2E8F0; font-weight: 700; font-size: 13px;">deep ef stack</td>
-                    <td><span class="badge" style="background: rgba(148,163,184,0.2); color:#E2E8F0;">Bạc / Xám Tro</span></td>
+                    <td><span class="badge" style="background: rgba(148,163,184,0.25); color:#E2E8F0;">Bạc / Xám Tro</span></td>
                     <td><b>Deep Execution Flow Stack</b>: Chồng lệnh tổ chức nén sâu. Là vùng tập trung các khối lệnh thụ động lớn (Iceberg / Absorption) của các thuật toán HFT và quỹ định lượng.</td>
                     <td><b>VÙNG TÍCH LŨY / NÉN BIÊN ĐỘ</b>: Giá chạm vào đây thường di chuyển giằng co (sideway). Tuyệt đối không trade breakout đuổi giá ở lưng chừng vùng này.</td>
                 </tr>
                 <tr>
                     <td style="color: #38BDF8; font-weight: 700; font-size: 13px;">buyer abs</td>
-                    <td><span class="badge" style="background: rgba(56,189,248,0.2); color:#38BDF8;">Xanh Cyan</span></td>
+                    <td><span class="badge" style="background: rgba(56,189,248,0.25); color:#38BDF8;">Xanh Cyan</span></td>
                     <td><b>Buyer Absorption</b>: Phe Mua hấp thụ chủ động. Dù có lực xả hàng quyết liệt từ phe Gấu nhưng toàn bộ lệnh bán thị trường đều bị các tay to kê lệnh Limit Buy hấp thụ sạch sẽ.</td>
                     <td><b>BUY THUẬN CHIỀU THEO TỔ CHỨC</b>: Xác nhận phe bán đã kiệt sức. Vào lệnh Buy ngay khi nến 1M đóng cửa xác nhận giữ vững bên trên vùng Buyer Abs.</td>
                 </tr>
                 <tr>
                     <td style="color: #FDA4AF; font-weight: 700; font-size: 13px;">seller offer</td>
-                    <td><span class="badge" style="background: rgba(244,63,94,0.2); color:#FDA4AF;">Hồng Đỏ (+1R)</span></td>
+                    <td><span class="badge" style="background: rgba(244,63,94,0.25); color:#FDA4AF;">Hồng Đỏ (+1R)</span></td>
                     <td><b>Seller Offer Supply Zone</b>: Vùng cung hàng chủ động của phe Bán sẵn sàng xả hợp đồng để bảo vệ vị thế giá cao.</td>
                     <td><b>MỐC CHỐT LỜI (+1R) HOẶC CANH SHORT</b>: Là mục tiêu chốt lời tối ưu (+1R đến +2R) cho các lệnh Long từ Buyer Abs, hoặc vị trí mở lệnh Short lướt sóng ăn nhịp hồi.</td>
                 </tr>
                 <tr>
                     <td style="color: #FACC15; font-weight: 700; font-size: 13px;">gex 5 reaction</td>
-                    <td><span class="badge" style="background: rgba(250,204,21,0.2); color:#FACC15;">Vàng (Dotted Line)</span></td>
+                    <td><span class="badge" style="background: rgba(250,204,21,0.25); color:#FACC15;">Vàng (Dotted Line)</span></td>
                     <td><b>GEX Reaction Zone</b>: Trục phản ứng biến động nhạy cảm bậc 5 (Pivot phân định giữa chế độ Positive Gamma ghìm giá và Negative Gamma khuếch đại).</td>
                     <td><b>ĐIỂM XOAY QUYẾT ĐỊNH (PIVOT)</b>: Nếu giá nằm trên &rarr; Ưu tiên đánh hồi quy (Mean Reversion / Fade). Nếu giá gãy xuống dưới &rarr; Kích hoạt đà bán tháo khuếch đại (Trend Following / Breakdown).</td>
                 </tr>
@@ -601,10 +533,9 @@
     </div>
 </div>
 
-<!-- Embedded Data & In-Browser Black-76 Engine -->
 <script>
 window.INITIAL_OPTIONS = [{"strike": 18596.0, "c_oi": 0, "p_oi": 582, "c_vol": 0, "p_vol": 2719, "c_iv": 0.18, "p_iv": 1.6875, "c_delta": 0.9999, "p_delta": -0.0, "c_gamma": 0.0, "p_gamma": 0.0, "c_vega": 0.0, "p_vega": 0.0, "c_vanna": -0.0, "p_vanna": -7e-06, "c_charm": 0.039696, "p_charm": 0.002228, "netGEX": -0.0, "netVEX": 0.0, "netCHEX": -0.0}, {"strike": 18803.0, "c_oi": 0, "p_oi": 595, "c_vol": 0, "p_vol": 6341, "c_iv": 0.18, "p_iv": 1.625, "c_delta": 0.9999, "p_delta": -0.0, "c_gamma": 0.0, "p_gamma": 0.0, "c_vega": 0.0, "p_vega": 0.0, "c_vanna": -0.0, "p_vanna": -6e-06, "c_charm": 0.039696, "p_charm": 0.001723, "netGEX": -0.0, "netVEX": 0.0, "netCHEX": -0.0}, {"strike": 19009.0, "c_oi": 0, "p_oi": 625, "c_vol": 0, "p_vol": 1573, "c_iv": 0.18, "p_iv": 1.5938, "c_delta": 0.9999, "p_delta": -0.0, "c_gamma": 0.0, "p_gamma": 0.0, "c_vega": 0.0, "p_vega": 0.0, "c_vanna": -0.0, "p_vanna": -7e-06, "c_charm": 0.039696, "p_charm": 0.002036, "netGEX": -0.0, "netVEX": 0.0, "netCHEX": -0.0}, {"strike": 19216.0, "c_oi": 0, "p_oi": 1173, "c_vol": 0, "p_vol": 79, "c_iv": 0.18, "p_iv": 1.5625, "c_delta": 0.9999, "p_delta": -0.0, "c_gamma": 0.0, "p_gamma": 0.0, "c_vega": 0.0, "p_vega": 0.0, "c_vanna": -0.0, "p_vanna": -8e-06, "c_charm": 0.039696, "p_charm": 0.00241, "netGEX": -0.0, "netVEX": 0.0, "netCHEX": -0.001}, {"strike": 19422.0, "c_oi": 0, "p_oi": 2344, "c_vol": 0, "p_vol": 3438, "c_iv": 0.18, "p_iv": 1.5, "c_delta": 0.9999, "p_delta": -0.0, "c_gamma": 0.0, "p_gamma": 0.0, "c_vega": 0.0, "p_vega": 0.0, "c_vanna": -0.0, "p_vanna": -7e-06, "c_charm": 0.039696, "p_charm": 0.001785, "netGEX": -0.0, "netVEX": 0.0, "netCHEX": -0.001}, {"strike": 19629.0, "c_oi": 0, "p_oi": 2879, "c_vol": 0, "p_vol": 3701, "c_iv": 0.18, "p_iv": 1.4688, "c_delta": 0.9999, "p_delta": -0.0, "c_gamma": 0.0, "p_gamma": 0.0, "c_vega": 0.0, "p_vega": 0.0, "c_vanna": -0.0, "p_vanna": -8e-06, "c_charm": 0.039696, "p_charm": 0.002101, "netGEX": -0.0, "netVEX": 0.0, "netCHEX": -0.001}, {"strike": 19836.0, "c_oi": 0, "p_oi": 3914, "c_vol": 0, "p_vol": 2598, "c_iv": 0.18, "p_iv": 1.4375, "c_delta": 0.9999, "p_delta": -0.0, "c_gamma": 0.0, "p_gamma": 0.0, "c_vega": 0.0, "p_vega": 0.0, "c_vanna": -0.0, "p_vanna": -9e-06, "c_charm": 0.039696, "p_charm": 0.00247, "netGEX": -0.0, "netVEX": 0.0, "netCHEX": -0.002}, {"strike": 20042.0, "c_oi": 0, "p_oi": 1984, "c_vol": 0, "p_vol": 744, "c_iv": 0.18, "p_iv": 1.4063, "c_delta": 0.9999, "p_delta": -0.0, "c_gamma": 0.0, "p_gamma": 0.0, "c_vega": 0.0, "p_vega": 0.0, "c_vanna": -0.0, "p_vanna": -1.1e-05, "c_charm": 0.039696, "p_charm": 0.00289, "netGEX": -0.0, "netVEX": 0.0, "netCHEX": -0.001}, {"strike": 20249.0, "c_oi": 0, "p_oi": 470, "c_vol": 0, "p_vol": 1022, "c_iv": 0.18, "p_iv": 1.375, "c_delta": 0.9999, "p_delta": -0.0, "c_gamma": 0.0, "p_gamma": 0.0, "c_vega": 0.0, "p_vega": 0.0001, "c_vanna": -0.0, "p_vanna": -1.4e-05, "c_charm": 0.039696, "p_charm": 0.003389, "netGEX": -0.0, "netVEX": 0.0, "netCHEX": -0.0}, {"strike": 20456.0, "c_oi": 0, "p_oi": 378, "c_vol": 0, "p_vol": 1238, "c_iv": 0.18, "p_iv": 1.3125, "c_delta": 0.9999, "p_delta": -0.0, "c_gamma": 0.0, "p_gamma": 0.0, "c_vega": 0.0, "p_vega": 0.0, "c_vanna": -0.0, "p_vanna": -1e-05, "c_charm": 0.039696, "p_charm": 0.002372, "netGEX": -0.0, "netVEX": 0.0, "netCHEX": -0.0}, {"strike": 20662.0, "c_oi": 0, "p_oi": 108, "c_vol": 0, "p_vol": 814, "c_iv": 0.18, "p_iv": 1.2813, "c_delta": 0.9999, "p_delta": -0.0, "c_gamma": 0.0, "p_gamma": 0.0, "c_vega": 0.0, "p_vega": 0.0, "c_vanna": -0.0, "p_vanna": -1.2e-05, "c_charm": 0.039696, "p_charm": 0.002754, "netGEX": -0.0, "netVEX": 0.0, "netCHEX": -0.0}, {"strike": 20869.0, "c_oi": 0, "p_oi": 2100, "c_vol": 0, "p_vol": 2854, "c_iv": 0.18, "p_iv": 1.25, "c_delta": 0.9999, "p_delta": -0.0, "c_gamma": 0.0, "p_gamma": 0.0, "c_vega": 0.0, "p_vega": 0.0001, "c_vanna": -0.0, "p_vanna": -1.4e-05, "c_charm": 0.039696, "p_charm": 0.003207, "netGEX": -0.0, "netVEX": 0.0, "netCHEX": -0.001}, {"strike": 21075.0, "c_oi": 0, "p_oi": 816, "c_vol": 0, "p_vol": 1419, "c_iv": 0.18, "p_iv": 1.2188, "c_delta": 0.9999, "p_delta": -0.0, "c_gamma": 0.0, "p_gamma": 0.0, "c_vega": 0.0, "p_vega": 0.0001, "c_vanna": -0.0, "p_vanna": -1.7e-05, "c_charm": 0.039696, "p_charm": 0.003718, "netGEX": -0.0, "netVEX": 0.0, "netCHEX": -0.001}, {"strike": 21282.0, "c_oi": 0, "p_oi": 734, "c_vol": 0, "p_vol": 466, "c_iv": 0.18, "p_iv": 1.1875, "c_delta": 0.9999, "p_delta": -0.0, "c_gamma": 0.0, "p_gamma": 0.0, "c_vega": 0.0, "p_vega": 0.0001, "c_vanna": -0.0, "p_vanna": -2e-05, "c_charm": 0.039696, "p_charm": 0.004324, "netGEX": -0.0, "netVEX": 0.0, "netCHEX": -0.001}, {"strike": 21489.0, "c_oi": 0, "p_oi": 273, "c_vol": 0, "p_vol": 2121, "c_iv": 0.18, "p_iv": 1.125, "c_delta": 0.9999, "p_delta": -0.0, "c_gamma": 0.0, "p_gamma": 0.0, "c_vega": 0.0, "p_vega": 0.0, "c_vanna": -0.0, "p_vanna": -1.4e-05, "c_charm": 0.039696, "p_charm": 0.002785, "netGEX": -0.0, "netVEX": 0.0, "netCHEX": -0.0}, {"strike": 21902.0, "c_oi": 0, "p_oi": 4269, "c_vol": 0, "p_vol": 21, "c_iv": 0.18, "p_iv": 1.1563, "c_delta": 0.9999, "p_delta": -0.0, "c_gamma": 0.0, "p_gamma": 0.0, "c_vega": 0.0, "p_vega": 0.0004, "c_vanna": -0.0, "p_vanna": -9.3e-05, "c_charm": 0.039696, "p_charm": 0.019657, "netGEX": -0.001, "netVEX": 0.0, "netCHEX": -0.016}, {"strike": 22108.0, "c_oi": 0, "p_oi": 138, "c_vol": 0, "p_vol": 389, "c_iv": 0.18, "p_iv": 1.125, "c_delta": 0.9999, "p_delta": -0.0, "c_gamma": 0.0, "p_gamma": 0.0, "c_vega": 0.0, "p_vega": 0.0004, "c_vanna": -0.0, "p_vanna": -0.000112, "c_charm": 0.039696, "p_charm": 0.023061, "netGEX": -0.0, "netVEX": 0.0, "netCHEX": -0.001}, {"strike": 22315.0, "c_oi": 0, "p_oi": 246, "c_vol": 0, "p_vol": 112, "c_iv": 0.18, "p_iv": 1.0859, "c_delta": 0.9999, "p_delta": -0.0, "c_gamma": 0.0, "p_gamma": 0.0, "c_vega": 0.0, "p_vega": 0.0005, "c_vanna": -0.0, "p_vanna": -0.000121, "c_charm": 0.039696, "p_charm": 0.023955, "netGEX": -0.0, "netVEX": 0.0, "netCHEX": -0.001}, {"strike": 22522.0, "c_oi": 0, "p_oi": 54, "c_vol": 0, "p_vol": 1, "c_iv": 0.18, "p_iv": 1.0469, "c_delta": 0.9999, "p_delta": -0.0, "c_gamma": 0.0, "p_gamma": 0.0, "c_vega": 0.0, "p_vega": 0.0005, "c_vanna": -0.0, "p_vanna": -0.00013, "c_charm": 0.039696, "p_charm": 0.024783, "netGEX": -0.0, "netVEX": 0.0, "netCHEX": -0.0}, {"strike": 22728.0, "c_oi": 0, "p_oi": 5184, "c_vol": 0, "p_vol": 46, "c_iv": 0.18, "p_iv": 1.0078, "c_delta": 0.9999, "p_delta": -0.0, "c_gamma": 0.0, "p_gamma": 0.0, "c_vega": 0.0, "p_vega": 0.0005, "c_vanna": -0.0, "p_vanna": -0.000138, "c_charm": 0.039696, "p_charm": 0.025441, "netGEX": -0.002, "netVEX": 0.0, "netCHEX": -0.025}, {"strike": 23142.0, "c_oi": 0, "p_oi": 16, "c_vol": 0, "p_vol": 196, "c_iv": 0.18, "p_iv": 0.9375, "c_delta": 0.9999, "p_delta": -0.0, "c_gamma": 0.0, "p_gamma": 0.0, "c_vega": 0.0, "p_vega": 0.0006, "c_vanna": -0.0, "p_vanna": -0.00018, "c_charm": 0.039696, "p_charm": 0.030749, "netGEX": -0.0, "netVEX": 0.0, "netCHEX": -0.0}, {"strike": 23348.0, "c_oi": 0, "p_oi": 1402, "c_vol": 0, "p_vol": 19, "c_iv": 0.18, "p_iv": 0.9219, "c_delta": 0.9999, "p_delta": -0.0, "c_gamma": 0.0, "p_gamma": 0.0, "c_vega": 0.0, "p_vega": 0.001, "c_vanna": -0.0, "p_vanna": -0.000286, "c_charm": 0.039696, "p_charm": 0.048072, "netGEX": -0.001, "netVEX": 0.0, "netCHEX": -0.013}, {"strike": 23555.0, "c_oi": 0, "p_oi": 81, "c_vol": 0, "p_vol": 172, "c_iv": 0.18, "p_iv": 0.8828, "c_delta": 0.9999, "p_delta": -0.0, "c_gamma": 0.0, "p_gamma": 0.0, "c_vega": 0.0, "p_vega": 0.001, "c_vanna": -0.0, "p_vanna": -0.000309, "c_charm": 0.039696, "p_charm": 0.049653, "netGEX": -0.0, "netVEX": 0.0, "netCHEX": -0.001}, {"strike": 23761.0, "c_oi": 0, "p_oi": 0, "c_vol": 2, "p_vol": 0, "c_iv": 1.3516, "p_iv": 0.18, "c_delta": 0.9955, "p_delta": 0.0, "c_gamma": 6e-06, "p_gamma": 0.0, "c_vega": 0.1911, "p_vega": 0.0, "c_vanna": -0.024159, "p_vanna": -0.0, "c_charm": 5.991297, "p_charm": 0.0, "netGEX": 0.0, "netVEX": 0.0, "netCHEX": 0.0}, {"strike": 23968.0, "c_oi": 0, "p_oi": 4565, "c_vol": 0, "p_vol": 325, "c_iv": 0.18, "p_iv": 0.8125, "c_delta": 0.9999, "p_delta": -0.0, "c_gamma": 0.0, "p_gamma": 0.0, "c_vega": 0.0, "p_vega": 0.0012, "c_vanna": -0.0, "p_vanna": -0.00041, "c_charm": 0.039696, "p_charm": 0.060739, "netGEX": -0.006, "netVEX": 0.001, "netCHEX": -0.052}, {"strike": 24175.0, "c_oi": 0, "p_oi": 345, "c_vol": 0, "p_vol": 61, "c_iv": 0.18, "p_iv": 0.7734, "c_delta": 0.9999, "p_delta": -0.0, "c_gamma": 0.0, "p_gamma": 0.0, "c_vega": 0.0, "p_vega": 0.0013, "c_vanna": -0.0, "p_vanna": -0.000442, "c_charm": 0.039696, "p_charm": 0.062281, "netGEX": -0.0, "netVEX": 0.0, "netCHEX": -0.004}, {"strike": 24381.0, "c_oi": 0, "p_oi": 1302, "c_vol": 0, "p_vol": 70, "c_iv": 0.18, "p_iv": 0.7344, "c_delta": 0.9999, "p_delta": -0.0, "c_gamma": 0.0, "p_gamma": 0.0, "c_vega": 0.0, "p_vega": 0.0013, "c_vanna": -0.0, "p_vanna": -0.000473, "c_charm": 0.039696, "p_charm": 0.063267, "netGEX": -0.002, "netVEX": 0.0, "netCHEX": -0.016}, {"strike": 24588.0, "c_oi": 0, "p_oi": 77, "c_vol": 0, "p_vol": 656, "c_iv": 0.18, "p_iv": 0.7148, "c_delta": 0.9999, "p_delta": -0.0, "c_gamma": 0.0, "p_gamma": 0.0, "c_vega": 0.0, "p_vega": 0.002, "c_vanna": -0.0, "p_vanna": -0.000751, "c_charm": 0.039696, "p_charm": 0.097887, "netGEX": -0.0, "netVEX": 0.0, "netCHEX": -0.001}, {"strike": 24795.0, "c_oi": 0, "p_oi": 823, "c_vol": 0, "p_vol": 593, "c_iv": 0.18, "p_iv": 0.6797, "c_delta": 0.9999, "p_delta": -0.0, "c_gamma": 0.0, "p_gamma": 0.0, "c_vega": 0.0, "p_vega": 0.0023, "c_vanna": -0.0, "p_vanna": -0.000887, "c_charm": 0.039696, "p_charm": 0.109846, "netGEX": -0.002, "netVEX": 0.001, "netCHEX": -0.017}, {"strike": 25001.0, "c_oi": 0, "p_oi": 665, "c_vol": 0, "p_vol": 1326, "c_iv": 0.18, "p_iv": 0.6406, "c_delta": 0.9999, "p_delta": -0.0, "c_gamma": 0.0, "p_gamma": 0.0, "c_vega": 0.0, "p_vega": 0.0024, "c_vanna": -0.0, "p_vanna": -0.000966, "c_charm": 0.039696, "p_charm": 0.112799, "netGEX": -0.002, "netVEX": 0.0, "netCHEX": -0.014}, {"strike": 25208.0, "c_oi": 0, "p_oi": 364, "c_vol": 0, "p_vol": 529, "c_iv": 0.18, "p_iv": 0.6172, "c_delta": 0.9999, "p_delta": -0.0001, "c_gamma": 0.0, "p_gamma": 0.0, "c_vega": 0.0, "p_vega": 0.0036, "c_vanna": -0.0, "p_vanna": -0.001478, "c_charm": 0.039696, "p_charm": 0.166172, "netGEX": -0.002, "netVEX": 0.0, "netCHEX": -0.011}, {"strike": 25414.0, "c_oi": 0, "p_oi": 417, "c_vol": 0, "p_vol": 860, "c_iv": 0.18, "p_iv": 0.5781, "c_delta": 0.9999, "p_delta": -0.0001, "c_gamma": 0.0, "p_gamma": 0.0, "c_vega": 0.0, "p_vega": 0.0037, "c_vanna": -0.0, "p_vanna": -0.001641, "c_charm": 0.039696, "p_charm": 0.172784, "netGEX": -0.002, "netVEX": 0.0, "netCHEX": -0.014}, {"strike": 25621.0, "c_oi": 0, "p_oi": 36, "c_vol": 0, "p_vol": 768, "c_iv": 0.18, "p_iv": 0.543, "c_delta": 0.9999, "p_delta": -0.0001, "c_gamma": 0.0, "p_gamma": 0.0, "c_vega": 0.0, "p_vega": 0.0043, "c_vanna": -0.0, "p_vanna": -0.002005, "c_charm": 0.039696, "p_charm": 0.198288, "netGEX": -0.0, "netVEX": 0.0, "netCHEX": -0.001}, {"strike": 25828.0, "c_oi": 0, "p_oi": 250, "c_vol": 0, "p_vol": 1131, "c_iv": 0.18, "p_iv": 0.5078, "c_delta": 0.9999, "p_delta": -0.0001, "c_gamma": 0.0, "p_gamma": 0.0, "c_vega": 0.0, "p_vega": 0.005, "c_vanna": -0.0, "p_vanna": -0.002481, "c_charm": 0.039696, "p_charm": 0.229393, "netGEX": -0.002, "netVEX": 0.0, "netCHEX": -0.011}, {"strike": 26034.0, "c_oi": 0, "p_oi": 353, "c_vol": 0, "p_vol": 863, "c_iv": 0.18, "p_iv": 0.4961, "c_delta": 0.9999, "p_delta": -0.0002, "c_gamma": 0.0, "p_gamma": 1e-06, "c_vega": 0.0, "p_vega": 0.0112, "c_vanna": -0.0, "p_vanna": -0.005297, "c_charm": 0.039696, "p_charm": 0.478475, "netGEX": -0.007, "netVEX": 0.001, "netCHEX": -0.032}, {"strike": 26241.0, "c_oi": 0, "p_oi": 786, "c_vol": 0, "p_vol": 3154, "c_iv": 0.18, "p_iv": 0.459, "c_delta": 0.9999, "p_delta": -0.0002, "c_gamma": 0.0, "p_gamma": 1e-06, "c_vega": 0.0, "p_vega": 0.0131, "c_vanna": -0.0, "p_vanna": -0.00663, "c_charm": 0.039696, "p_charm": 0.553885, "netGEX": -0.02, "netVEX": 0.004, "netCHEX": -0.082}, {"strike": 26448.0, "c_oi": 0, "p_oi": 949, "c_vol": 0, "p_vol": 2898, "c_iv": 0.18, "p_iv": 0.4199, "c_delta": 0.9999, "p_delta": -0.0003, "c_gamma": 0.0, "p_gamma": 2e-06, "c_vega": 0.0, "p_vega": 0.0147, "c_vanna": -0.0, "p_vanna": -0.008086, "c_charm": 0.039696, "p_charm": 0.617876, "netGEX": -0.029, "netVEX": 0.005, "netCHEX": -0.111}, {"strike": 26654.0, "c_oi": 0, "p_oi": 853, "c_vol": 0, "p_vol": 8320, "c_iv": 0.18, "p_iv": 0.3828, "c_delta": 0.9999, "p_delta": -0.0003, "c_gamma": 0.0, "p_gamma": 2e-06, "c_vega": 0.0, "p_vega": 0.0177, "c_vanna": -0.0, "p_vanna": -0.010497, "c_charm": 0.039696, "p_charm": 0.731001, "netGEX": -0.035, "netVEX": 0.006, "netCHEX": -0.118}, {"strike": 26861.0, "c_oi": 10, "p_oi": 1005, "c_vol": 50, "p_vol": 17101, "c_iv": 0.6223, "p_iv": 0.3516, "c_delta": 0.9692, "p_delta": -0.0005, "c_gamma": 7.5e-05, "p_gamma": 3e-06, "c_vega": 1.0346, "p_vega": 0.0264, "c_vanna": -0.20466, "p_vanna": -0.016437, "c_charm": 23.197876, "p_charm": 1.050788, "netGEX": -0.052, "netVEX": 0.01, "netCHEX": -0.156}, {"strike": 27067.0, "c_oi": 2, "p_oi": 534, "c_vol": 8, "p_vol": 11966, "c_iv": 0.593, "p_iv": 0.3184, "c_delta": 0.9568, "p_delta": -0.0007, "c_gamma": 0.000103, "p_gamma": 5e-06, "c_vega": 1.3668, "p_vega": 0.0385, "c_vanna": -0.260011, "p_vanna": -0.025559, "c_charm": 28.060957, "p_charm": 1.478885, "netGEX": -0.053, "netVEX": 0.009, "netCHEX": -0.139}, {"strike": 27274.0, "c_oi": 18, "p_oi": 1376, "c_vol": 329, "p_vol": 18017, "c_iv": 0.6384, "p_iv": 0.293, "c_delta": 0.9143, "p_delta": -0.0016, "c_gamma": 0.000164, "p_gamma": 1.2e-05, "c_vega": 2.3366, "p_vega": 0.0762, "c_vanna": -0.327091, "p_vanna": -0.051143, "c_charm": 37.961019, "p_charm": 2.721245, "netGEX": -0.258, "netVEX": 0.045, "netCHEX": -0.579}, {"strike": 27481.0, "c_oi": 4, "p_oi": 4013, "c_vol": 67, "p_vol": 23028, "c_iv": 0.4753, "p_iv": 0.2739, "c_delta": 0.9361, "p_delta": -0.0043, "c_gamma": 0.000176, "p_gamma": 3.1e-05, "c_vega": 1.8661, "p_vega": 0.1877, "c_vanna": -0.393964, "p_vanna": -0.120001, "c_charm": 34.014511, "p_charm": 5.964228, "netGEX": -2.415, "netVEX": 0.331, "netCHEX": -4.502}, {"strike": 27687.0, "c_oi": 51, "p_oi": 1826, "c_vol": 904, "p_vol": 30177, "c_iv": 0.3792, "p_iv": 0.2666, "c_delta": 0.9367, "p_delta": -0.0151, "c_gamma": 0.000219, "p_gamma": 9.6e-05, "c_vega": 1.8531, "p_vega": 0.5702, "c_vanna": -0.493618, "p_vanna": -0.308214, "c_charm": 33.945394, "p_charm": 14.887279, "netGEX": -3.229, "netVEX": 0.371, "netCHEX": -4.815}, {"strike": 27894.0, "c_oi": 11, "p_oi": 4897, "c_vol": 209, "p_vol": 45983, "c_iv": 0.3422, "p_iv": 0.2581, "c_delta": 0.8988, "p_delta": -0.0459, "c_gamma": 0.000346, "p_gamma": 0.00025, "c_vega": 2.641, "p_vega": 1.4378, "c_vanna": -0.649939, "p_vanna": -0.623975, "c_charm": 40.229765, "p_charm": 29.102395, "netGEX": -24.024, "netVEX": 2.105, "netCHEX": -26.877}, {"strike": 28101.0, "c_oi": 24, "p_oi": 3472, "c_vol": 1334, "p_vol": 45082, "c_iv": 0.3153, "p_iv": 0.254, "c_delta": 0.825, "p_delta": -0.1237, "c_gamma": 0.000547, "p_gamma": 0.000539, "c_vega": 3.849, "p_vega": 3.052, "c_vanna": -0.750488, "p_vanna": -0.919691, "c_charm": 42.599597, "p_charm": 42.023274, "netGEX": -36.584, "netVEX": 2.192, "netCHEX": -27.408}, {"strike": 28307.0, "c_oi": 24, "p_oi": 4699, "c_vol": 32036, "p_vol": 41117, "c_iv": 0.2938, "p_iv": 0.2479, "c_delta": 0.7008, "p_delta": -0.267, "c_gamma": 0.000791, "p_gamma": 0.000888, "c_vega": 5.1852, "p_vega": 4.91, "c_vanna": -0.604533, "p_vanna": -0.807487, "c_charm": 31.549174, "p_charm": 35.520618, "netGEX": -81.82, "netVEX": 2.61, "netCHEX": -31.432}, {"strike": 28514.0, "c_oi": 33, "p_oi": 2736, "c_vol": 45878, "p_vol": 36620, "c_iv": 0.2763, "p_iv": 0.2341, "c_delta": 0.5222, "p_delta": -0.4747, "c_gamma": 0.000965, "p_gamma": 0.001139, "c_vega": 5.9485, "p_vega": 5.9458, "c_vanna": -0.059487, "p_vanna": -0.086909, "c_charm": 1.926331, "p_charm": 2.403909, "netGEX": -60.756, "netVEX": 0.163, "netCHEX": -1.232}, {"strike": 28720.0, "c_oi": 134, "p_oi": 8691, "c_vol": 51218, "p_vol": 20738, "c_iv": 0.2571, "p_iv": 0.2152, "c_delta": 0.317, "p_delta": -0.716, "c_gamma": 0.000928, "p_gamma": 0.001054, "c_vega": 5.3193, "p_vega": 5.0611, "c_vanna": 0.678223, "p_vanna": 0.917018, "c_charm": -32.859328, "p_charm": -37.240578, "netGEX": -178.072, "netVEX": -5.44, "netCHEX": 60.395}, {"strike": 28927.0, "c_oi": 139, "p_oi": 4933, "c_vol": 101002, "p_vol": 7801, "c_iv": 0.2474, "p_iv": 0.1941, "c_delta": 0.1469, "p_delta": -0.91, "c_gamma": 0.000622, "p_gamma": 0.00056, "c_vega": 3.4342, "p_vega": 2.4232, "c_vanna": 0.987438, "p_vanna": 1.129708, "c_charm": -45.290241, "p_charm": -40.688037, "netGEX": -52.693, "netVEX": -3.753, "netCHEX": 36.779}, {"strike": 28968.0, "c_oi": 13, "p_oi": 587, "c_vol": 10506, "p_vol": 666, "c_iv": 0.2456, "p_iv": 0.1878, "c_delta": 0.1214, "p_delta": -0.937, "c_gamma": 0.00055, "p_gamma": 0.000441, "c_vega": 3.0127, "p_vega": 1.845, "c_vanna": 0.969624, "p_vanna": 1.013896, "c_charm": -44.080893, "p_charm": -35.277182, "netGEX": -4.954, "netVEX": -0.402, "netCHEX": 3.809}, {"strike": 29010.0, "c_oi": 55, "p_oi": 995, "c_vol": 10504, "p_vol": 1270, "c_iv": 0.2456, "p_iv": 0.1812, "c_delta": 0.1002, "p_delta": -0.959, "c_gamma": 0.000479, "p_gamma": 0.000324, "c_vega": 2.6245, "p_vega": 1.3111, "c_vanna": 0.925306, "p_vanna": 0.847767, "c_charm": -42.01495, "p_charm": -28.434318, "netGEX": -5.842, "netVEX": -0.547, "netCHEX": 4.915}, {"strike": 29051.0, "c_oi": 24, "p_oi": 5367, "c_vol": 9706, "p_vol": 4657, "c_iv": 0.2456, "p_iv": 0.1724, "c_delta": 0.0822, "p_delta": -0.9764, "c_gamma": 0.000414, "p_gamma": 0.000216, "c_vega": 2.2664, "p_vega": 0.8296, "c_vanna": 0.866923, "p_vanna": 0.642767, "c_charm": -39.324607, "p_charm": -20.503216, "netGEX": -22.619, "netVEX": -2.368, "netCHEX": 20.639}, {"strike": 29092.0, "c_oi": 118, "p_oi": 400, "c_vol": 10420, "p_vol": 364, "c_iv": 0.2456, "p_iv": 0.1589, "c_delta": 0.0668, "p_delta": -0.9898, "c_gamma": 0.000353, "p_gamma": 0.000113, "c_vega": 1.9341, "p_vega": 0.4005, "c_vanna": 0.797664, "p_vanna": 0.393392, "c_charm": -36.152057, "p_charm": -11.57846, "netGEX": -0.069, "netVEX": -0.044, "netCHEX": 0.069}, {"strike": 29134.0, "c_oi": 519, "p_oi": 1897, "c_vol": 26692, "p_vol": 1667, "c_iv": 0.2439, "p_iv": 0.1362, "c_delta": 0.0522, "p_delta": -0.9981, "c_gamma": 0.000293, "p_gamma": 2.8e-05, "c_vega": 1.5946, "p_vega": 0.0852, "c_vanna": 0.716304, "p_vanna": 0.122344, "c_charm": -32.214391, "p_charm": -3.113305, "netGEX": 1.949, "netVEX": 0.096, "netCHEX": -2.046}, {"strike": 29175.0, "c_oi": 84, "p_oi": 591, "c_vol": 5816, "p_vol": 380, "c_iv": 0.2444, "p_iv": 0.144, "c_delta": 0.0418, "p_delta": -0.9983, "c_gamma": 0.000245, "p_gamma": 2.4e-05, "c_vega": 1.3334, "p_vega": 0.0783, "c_vanna": 0.636759, "p_vanna": 0.107421, "c_charm": -28.675906, "p_charm": -2.890475, "netGEX": 0.121, "netVEX": -0.007, "netCHEX": -0.133}, {"strike": 29216.0, "c_oi": 393, "p_oi": 741, "c_vol": 7817, "p_vol": 334, "c_iv": 0.2459, "p_iv": 0.1523, "c_delta": 0.0337, "p_delta": -0.9984, "c_gamma": 0.000204, "p_gamma": 2.2e-05, "c_vega": 1.1185, "p_vega": 0.0747, "c_vanna": 0.561063, "p_vanna": 0.097445, "c_charm": -25.403994, "p_charm": -2.772577, "netGEX": 1.258, "netVEX": 0.102, "netCHEX": -1.5}, {"strike": 29258.0, "c_oi": 574, "p_oi": 637, "c_vol": 4510, "p_vol": 326, "c_iv": 0.2468, "p_iv": 0.1607, "c_delta": 0.0266, "p_delta": -0.9984, "c_gamma": 0.000167, "p_gamma": 2e-05, "c_vega": 0.92, "p_vega": 0.0714, "c_vanna": 0.485576, "p_vanna": 0.088755, "c_charm": -22.062024, "p_charm": -2.665327, "netGEX": 1.64, "netVEX": 0.153, "netCHEX": -2.074}, {"strike": 29299.0, "c_oi": 237, "p_oi": 735, "c_vol": 5648, "p_vol": 365, "c_iv": 0.2493, "p_iv": 0.1689, "c_delta": 0.0216, "p_delta": -0.9985, "c_gamma": 0.000139, "p_gamma": 1.8e-05, "c_vega": 0.7726, "p_vega": 0.0684, "c_vanna": 0.42217, "p_vanna": 0.08134, "c_charm": -19.36222, "p_charm": -2.566964, "netGEX": 0.386, "netVEX": 0.028, "netCHEX": -0.511}, {"strike": 29340.0, "c_oi": 1373, "p_oi": 2211, "c_vol": 24303, "p_vol": 1384, "c_iv": 0.2507, "p_iv": 0.177, "c_delta": 0.0172, "p_delta": -0.9986, "c_gamma": 0.000114, "p_gamma": 1.7e-05, "c_vega": 0.6352, "p_vega": 0.0658, "c_vanna": 0.361136, "p_vanna": 0.074913, "c_charm": -16.653558, "p_charm": -2.478281, "netGEX": 2.347, "netVEX": 0.228, "netCHEX": -3.289}, {"strike": 29382.0, "c_oi": 231, "p_oi": 611, "c_vol": 5024, "p_vol": 220, "c_iv": 0.2524, "p_iv": 0.1853, "c_delta": 0.0136, "p_delta": -0.9986, "c_gamma": 9.2e-05, "p_gamma": 1.5e-05, "c_vega": 0.5186, "p_vega": 0.0633, "c_vanna": 0.305721, "p_vanna": 0.069153, "c_charm": -14.188938, "p_charm": -2.395265, "netGEX": 0.235, "netVEX": 0.02, "netCHEX": -0.343}, {"strike": 29423.0, "c_oi": 783, "p_oi": 737, "c_vol": 4197, "p_vol": 299, "c_iv": 0.2549, "p_iv": 0.1933, "c_delta": 0.0109, "p_delta": -0.9987, "c_gamma": 7.6e-05, "p_gamma": 1.4e-05, "c_vega": 0.4299, "p_vega": 0.061, "c_vanna": 0.260471, "p_vanna": 0.064183, "c_charm": -12.201684, "p_charm": -2.320096, "netGEX": 0.961, "netVEX": 0.108, "netCHEX": -1.484}, {"strike": 29464.0, "c_oi": 821, "p_oi": 1875, "c_vol": 19004, "p_vol": 353, "c_iv": 0.2564, "p_iv": 0.2013, "c_delta": 0.0086, "p_delta": -0.9987, "c_gamma": 6.1e-05, "p_gamma": 1.3e-05, "c_vega": 0.3479, "p_vega": 0.059, "c_vanna": 0.21778, "p_vanna": 0.059774, "c_charm": -10.257366, "p_charm": -2.250711, "netGEX": 0.499, "netVEX": 0.046, "netCHEX": -0.795}, {"strike": 29506.0, "c_oi": 826, "p_oi": 1447, "c_vol": 2035, "p_vol": 271, "c_iv": 0.2612, "p_iv": 0.2095, "c_delta": 0.0073, "p_delta": -0.9987, "c_gamma": 5.2e-05, "p_gamma": 1.2e-05, "c_vega": 0.3014, "p_vega": 0.057, "c_vanna": 0.189789, "p_vanna": 0.055747, "c_charm": -9.106694, "p_charm": -2.184754, "netGEX": 0.494, "netVEX": 0.053, "netCHEX": -0.825}, {"strike": 29547.0, "c_oi": 1611, "p_oi": 3259, "c_vol": 24596, "p_vol": 649, "c_iv": 0.2632, "p_iv": 0.3911, "c_delta": 0.0058, "p_delta": -0.9547, "c_gamma": 4.2e-05, "p_gamma": 0.000163, "c_vega": 0.2455, "p_vega": 1.4193, "c_vanna": 0.158611, "p_vanna": 0.416517, "c_charm": -7.665604, "p_charm": -29.952837, "netGEX": -9.118, "netVEX": -0.761, "netCHEX": 16.131}, {"strike": 29588.0, "c_oi": 752, "p_oi": 501, "c_vol": 1597, "p_vol": 147, "c_iv": 0.2666, "p_iv": 0.2253, "c_delta": 0.0048, "p_delta": -0.9988, "c_gamma": 3.5e-05, "p_gamma": 1.1e-05, "c_vega": 0.207, "p_vega": 0.0536, "c_vanna": 0.135453, "p_vanna": 0.04905, "c_charm": -6.629864, "p_charm": -2.06866, "netGEX": 0.41, "netVEX": 0.053, "netCHEX": -0.747}, {"strike": 29630.0, "c_oi": 649, "p_oi": 261, "c_vol": 2502, "p_vol": 93, "c_iv": 0.2695, "p_iv": 0.408, "c_delta": 0.0039, "p_delta": -0.9602, "c_gamma": 2.8e-05, "p_gamma": 0.00014, "c_vega": 0.1712, "p_vega": 1.2786, "c_vanna": 0.113895, "p_vanna": 0.37262, "c_charm": -5.634697, "p_charm": -27.940162, "netGEX": -0.358, "netVEX": -0.016, "netCHEX": 0.688}, {"strike": 29671.0, "c_oi": 987, "p_oi": 417, "c_vol": 4105, "p_vol": 133, "c_iv": 0.2715, "p_iv": 0.3809, "c_delta": 0.003, "p_delta": -0.9743, "c_gamma": 2.3e-05, "p_gamma": 0.000105, "c_vega": 0.1386, "p_vega": 0.8899, "c_vanna": 0.09424, "p_vanna": 0.308183, "c_charm": -4.695123, "p_charm": -21.578523, "netGEX": -0.415, "netVEX": -0.025, "netCHEX": 0.826}, {"strike": 29712.0, "c_oi": 330, "p_oi": 227, "c_vol": 3849, "p_vol": 48, "c_iv": 0.273, "p_iv": 0.249, "c_delta": 0.0024, "p_delta": -0.9989, "c_gamma": 1.8e-05, "p_gamma": 9e-06, "c_vega": 0.1104, "p_vega": 0.0492, "c_vanna": 0.076854, "p_vanna": 0.041139, "c_charm": -3.848877, "p_charm": -1.919231, "netGEX": 0.078, "netVEX": 0.011, "netCHEX": -0.158}, {"strike": 29753.0, "c_oi": 3057, "p_oi": 1446, "c_vol": 9068, "p_vol": 358, "c_iv": 0.2774, "p_iv": 0.2568, "c_delta": 0.002, "p_delta": -0.9989, "c_gamma": 1.5e-05, "p_gamma": 8e-06, "c_vega": 0.0957, "p_vega": 0.0479, "c_vanna": 0.066752, "p_vanna": 0.038972, "c_charm": -3.396191, "p_charm": -1.875446, "netGEX": 0.693, "netVEX": 0.102, "netCHEX": -1.451}, {"strike": 29795.0, "c_oi": 413, "p_oi": 438, "c_vol": 2797, "p_vol": 78, "c_iv": 0.2808, "p_iv": 0.4439, "c_delta": 0.0017, "p_delta": -0.9677, "c_gamma": 1.3e-05, "p_gamma": 0.000109, "c_vega": 0.0802, "p_vega": 1.0767, "c_vanna": 0.056428, "p_vanna": 0.304203, "c_charm": -2.905831, "p_charm": -24.803001, "netGEX": -0.834, "netVEX": -0.076, "netCHEX": 1.828}, {"strike": 29836.0, "c_oi": 1273, "p_oi": 486, "c_vol": 1369, "p_vol": 37, "c_iv": 0.2842, "p_iv": 0.3887, "c_delta": 0.0014, "p_delta": -0.9854, "c_gamma": 1.1e-05, "p_gamma": 6.3e-05, "c_vega": 0.0678, "p_vega": 0.5498, "c_vanna": 0.048001, "p_vanna": 0.208697, "c_charm": -2.501585, "p_charm": -14.914595, "netGEX": -0.339, "netVEX": -0.028, "netCHEX": 0.769}, {"strike": 29877.0, "c_oi": 587, "p_oi": 312, "c_vol": 1313, "p_vol": 64, "c_iv": 0.2861, "p_iv": 0.4622, "c_delta": 0.0011, "p_delta": -0.9705, "c_gamma": 9e-06, "p_gamma": 9.7e-05, "c_vega": 0.0546, "p_vega": 1.0002, "c_vanna": 0.039344, "p_vanna": 0.277258, "c_charm": -2.064196, "p_charm": -23.533722, "netGEX": -0.497, "netVEX": -0.044, "netCHEX": 1.16}, {"strike": 29919.0, "c_oi": 1747, "p_oi": 288, "c_vol": 1145, "p_vol": 42, "c_iv": 0.2891, "p_iv": 0.4724, "c_delta": 0.0009, "p_delta": -0.9715, "c_gamma": 7e-06, "p_gamma": 9.2e-05, "c_vega": 0.0451, "p_vega": 0.9717, "c_vanna": 0.032828, "p_vanna": 0.265671, "c_charm": -1.739749, "p_charm": -23.048193, "netGEX": -0.282, "netVEX": -0.013, "netCHEX": 0.681}, {"strike": 29960.0, "c_oi": 9649, "p_oi": 456, "c_vol": 6070, "p_vol": 122, "c_iv": 0.29, "p_iv": 0.4827, "c_delta": 0.0007, "p_delta": -0.9723, "c_gamma": 5e-06, "p_gamma": 8.8e-05, "c_vega": 0.0351, "p_vega": 0.9474, "c_vanna": 0.026075, "p_vanna": 0.25535, "c_charm": -1.386329, "p_charm": -22.631421, "netGEX": 0.24, "netVEX": 0.093, "netCHEX": -0.578}, {"strike": 30001.0, "c_oi": 4016, "p_oi": 244, "c_vol": 1038, "p_vol": 47, "c_iv": 0.2969, "p_iv": 0.4788, "c_delta": 0.0006, "p_delta": -0.9765, "c_gamma": 5e-06, "p_gamma": 7.7e-05, "c_vega": 0.0336, "p_vega": 0.8257, "c_vanna": 0.024472, "p_vanna": 0.232465, "c_charm": -1.331655, "p_charm": -20.437853, "netGEX": 0.029, "netVEX": 0.029, "netCHEX": -0.068}, {"strike": 30043.0, "c_oi": 753, "p_oi": 119, "c_vol": 2183, "p_vol": 12, "c_iv": 0.2969, "p_iv": 0.5232, "c_delta": 0.0005, "p_delta": -0.969, "c_gamma": 4e-06, "p_gamma": 8.9e-05, "c_vega": 0.025, "p_vega": 1.0406, "c_vanna": 0.01875, "p_vanna": 0.252421, "c_charm": -1.020162, "p_charm": -24.241561, "netGEX": -0.153, "netVEX": -0.011, "netCHEX": 0.4}, {"strike": 30084.0, "c_oi": 509, "p_oi": 127, "c_vol": 4456, "p_vol": 71, "c_iv": 0.2949, "p_iv": 0.5103, "c_delta": 0.0003, "p_delta": -0.9753, "c_gamma": 3e-06, "p_gamma": 7.6e-05, "c_vega": 0.0173, "p_vega": 0.8605, "c_vanna": 0.013453, "p_vanna": 0.225134, "c_charm": -0.727082, "p_charm": -21.089346, "netGEX": -0.163, "netVEX": -0.015, "netCHEX": 0.437}, {"strike": 30125.0, "c_oi": 624, "p_oi": 89, "c_vol": 390, "p_vol": 31, "c_iv": 0.3027, "p_iv": 0.5435, "c_delta": 0.0003, "p_delta": -0.9707, "c_gamma": 3e-06, "p_gamma": 8.2e-05, "c_vega": 0.0174, "p_vega": 0.9926, "c_vanna": 0.013218, "p_vanna": 0.234996, "c_charm": -0.733218, "p_charm": -23.438581, "netGEX": -0.112, "netVEX": -0.009, "netCHEX": 0.308}, {"strike": 30167.0, "c_oi": 3285, "p_oi": 45, "c_vol": 2534, "p_vol": 132, "c_iv": 0.3086, "p_iv": 0.5537, "c_delta": 0.0003, "p_delta": -0.9715, "c_gamma": 2e-06, "p_gamma": 7.8e-05, "c_vega": 0.0162, "p_vega": 0.9693, "c_vanna": 0.012139, "p_vanna": 0.226767, "c_charm": -0.68629, "p_charm": -23.042935, "netGEX": 0.083, "netVEX": 0.02, "netCHEX": -0.23}, {"strike": 30208.0, "c_oi": 790, "p_oi": 1, "c_vol": 566, "p_vol": 68, "c_iv": 0.3164, "p_iv": 0.5425, "c_delta": 0.0003, "p_delta": -0.9768, "c_gamma": 2e-06, "p_gamma": 6.7e-05, "c_vega": 0.0164, "p_vega": 0.8167, "c_vanna": 0.011962, "p_vanna": 0.203815, "c_charm": -0.693395, "p_charm": -20.293678, "netGEX": 0.035, "netVEX": 0.006, "netCHEX": -0.1}, {"strike": 30249.0, "c_oi": 899, "p_oi": 1, "c_vol": 1508, "p_vol": 8, "c_iv": 0.3125, "p_iv": 0.5523, "c_delta": 0.0002, "p_delta": -0.9774, "c_gamma": 2e-06, "p_gamma": 6.5e-05, "c_vega": 0.0105, "p_vega": 0.7987, "c_vanna": 0.008079, "p_vanna": 0.196923, "c_charm": -0.46245, "p_charm": -19.959302, "netGEX": 0.026, "netVEX": 0.005, "netCHEX": -0.075}, {"strike": 30291.0, "c_oi": 528, "p_oi": 9, "c_vol": 815, "p_vol": 1, "c_iv": 0.3184, "p_iv": 0.5837, "c_delta": 0.0002, "p_delta": -0.9737, "c_gamma": 1e-06, "p_gamma": 7e-05, "c_vega": 0.0099, "p_vega": 0.9068, "c_vanna": 0.007488, "p_vanna": 0.204992, "c_charm": -0.436665, "p_charm": -21.956024, "netGEX": 0.002, "netVEX": 0.001, "netCHEX": -0.006}, {"strike": 30332.0, "c_oi": 587, "p_oi": 2, "c_vol": 1219, "p_vol": 12, "c_iv": 0.3242, "p_iv": 0.5715, "c_delta": 0.0002, "p_delta": -0.9786, "c_gamma": 1e-06, "p_gamma": 6e-05, "c_vega": 0.0094, "p_vega": 0.7626, "c_vanna": 0.007004, "p_vanna": 0.183814, "c_charm": -0.41588, "p_charm": -19.279424, "netGEX": 0.013, "netVEX": 0.003, "netCHEX": -0.039}, {"strike": 30373.0, "c_oi": 1104, "p_oi": 19, "c_vol": 2310, "p_vol": 6, "c_iv": 0.332, "p_iv": 0.5798, "c_delta": 0.0002, "p_delta": -0.9794, "c_gamma": 1e-06, "p_gamma": 5.7e-05, "c_vega": 0.0096, "p_vega": 0.7396, "c_vanna": 0.007005, "p_vanna": 0.17704, "c_charm": -0.425932, "p_charm": -18.838093, "netGEX": 0.007, "netVEX": 0.003, "netCHEX": -0.021}, {"strike": 30415.0, "c_oi": 1652, "p_oi": 0, "c_vol": 1105, "p_vol": 2, "c_iv": 0.3379, "p_iv": 0.5906, "c_delta": 0.0002, "p_delta": -0.9797, "c_gamma": 1e-06, "p_gamma": 5.5e-05, "c_vega": 0.0091, "p_vega": 0.7291, "c_vanna": 0.006535, "p_vanna": 0.171976, "c_charm": -0.404383, "p_charm": -18.637259, "netGEX": 0.039, "netVEX": 0.007, "netCHEX": -0.126}, {"strike": 30456.0, "c_oi": 649, "p_oi": 3, "c_vol": 345, "p_vol": 5, "c_iv": 0.3281, "p_iv": 0.6231, "c_delta": 0.0001, "p_delta": -0.9762, "c_gamma": 1e-06, "p_gamma": 6e-05, "c_vega": 0.0046, "p_vega": 0.8348, "c_vanna": 0.003558, "p_vanna": 0.18078, "c_charm": -0.213762, "p_charm": -20.662698, "netGEX": 0.004, "netVEX": 0.001, "netCHEX": -0.015}, {"strike": 30497.0, "c_oi": 315, "p_oi": 2, "c_vol": 349, "p_vol": 5, "c_iv": 0.3359, "p_iv": 0.6326, "c_delta": 0.0001, "p_delta": -0.9768, "c_gamma": 1e-06, "p_gamma": 5.8e-05, "c_vega": 0.0048, "p_vega": 0.8179, "c_vanna": 0.003625, "p_vanna": 0.175387, "c_charm": -0.222956, "p_charm": -20.351837, "netGEX": 0.002, "netVEX": 0.001, "netCHEX": -0.006}, {"strike": 30539.0, "c_oi": 869, "p_oi": 0, "c_vol": 185, "p_vol": 85, "c_iv": 0.3399, "p_iv": 0.6423, "c_delta": 0.0001, "p_delta": -0.9773, "c_gamma": 1e-06, "p_gamma": 5.6e-05, "c_vega": 0.0042, "p_vega": 0.8015, "c_vanna": 0.003181, "p_vanna": 0.170149, "c_charm": -0.1979, "p_charm": -20.048161, "netGEX": 0.01, "netVEX": 0.002, "netCHEX": -0.033}, {"strike": 30580.0, "c_oi": 9530, "p_oi": 3, "c_vol": 961, "p_vol": 7, "c_iv": 0.3477, "p_iv": 0.6284, "c_delta": 0.0001, "p_delta": -0.9815, "c_gamma": 1e-06, "p_gamma": 4.8e-05, "c_vega": 0.0044, "p_vega": 0.6724, "c_vanna": 0.003247, "p_vanna": 0.151993, "c_charm": -0.206691, "p_charm": -17.524951, "netGEX": 0.104, "netVEX": 0.021, "netCHEX": -0.363}, {"strike": 30621.0, "c_oi": 984, "p_oi": 0, "c_vol": 420, "p_vol": 0, "c_iv": 0.3535, "p_iv": 0.18, "c_delta": 0.0001, "p_delta": -0.9999, "c_gamma": 1e-06, "p_gamma": 0.0, "c_vega": 0.0043, "p_vega": 0.0, "c_vanna": 0.003092, "p_vanna": 0.0, "c_charm": -0.200086, "p_charm": -0.039696, "netGEX": 0.01, "netVEX": 0.002, "netCHEX": -0.037}, {"strike": 30663.0, "c_oi": 2943, "p_oi": 0, "c_vol": 75, "p_vol": 41, "c_iv": 0.3594, "p_iv": 0.6709, "c_delta": 0.0001, "p_delta": -0.9788, "c_gamma": 1e-06, "p_gamma": 5.1e-05, "c_vega": 0.0041, "p_vega": 0.7565, "c_vanna": 0.00293, "p_vanna": 0.156032, "c_charm": -0.192759, "p_charm": -19.200658, "netGEX": 0.03, "netVEX": 0.006, "netCHEX": -0.107}, {"strike": 30704.0, "c_oi": 276, "p_oi": 0, "c_vol": 51, "p_vol": 0, "c_iv": 0.3672, "p_iv": 0.6565, "c_delta": 0.0001, "p_delta": -0.9827, "c_gamma": 1e-06, "p_gamma": 4.3e-05, "c_vega": 0.0043, "p_vega": 0.6353, "c_vanna": 0.002994, "p_vanna": 0.13931, "c_charm": -0.201206, "p_charm": -16.779005, "netGEX": 0.003, "netVEX": 0.001, "netCHEX": -0.011}, {"strike": 30745.0, "c_oi": 290, "p_oi": 0, "c_vol": 337, "p_vol": 1, "c_iv": 0.3711, "p_iv": 0.6899, "c_delta": 0.0001, "p_delta": -0.9796, "c_gamma": 0.0, "p_gamma": 4.7e-05, "c_vega": 0.0039, "p_vega": 0.7309, "c_vanna": 0.002677, "p_vanna": 0.147854, "c_charm": -0.181835, "p_charm": -18.709736, "netGEX": 0.003, "netVEX": 0.001, "netCHEX": -0.01}, {"strike": 30787.0, "c_oi": 3268, "p_oi": 0, "c_vol": 2356, "p_vol": 0, "c_iv": 0.3789, "p_iv": 0.6992, "c_delta": 0.0001, "p_delta": -0.9801, "c_gamma": 0.0, "p_gamma": 4.6e-05, "c_vega": 0.004, "p_vega": 0.7165, "c_vanna": 0.002723, "p_vanna": 0.143728, "c_charm": -0.188846, "p_charm": -18.431827, "netGEX": 0.031, "netVEX": 0.006, "netCHEX": -0.117}, {"strike": 30828.0, "c_oi": 421, "p_oi": 0, "c_vol": 24, "p_vol": 1, "c_iv": 0.4004, "p_iv": 0.6841, "c_delta": 0.0001, "p_delta": -0.9838, "c_gamma": 1e-06, "p_gamma": 3.9e-05, "c_vega": 0.0068, "p_vega": 0.6013, "c_vanna": 0.004238, "p_vanna": 0.128147, "c_charm": -0.310568, "p_charm": -16.08225, "netGEX": 0.006, "netVEX": 0.001, "netCHEX": -0.025}, {"strike": 30869.0, "c_oi": 466, "p_oi": 0, "c_vol": 90, "p_vol": 1, "c_iv": 0.4063, "p_iv": 0.718, "c_delta": 0.0001, "p_delta": -0.9809, "c_gamma": 1e-06, "p_gamma": 4.3e-05, "c_vega": 0.0066, "p_vega": 0.6934, "c_vanna": 0.004049, "p_vanna": 0.13653, "c_charm": -0.301044, "p_charm": -17.978645, "netGEX": 0.007, "netVEX": 0.001, "netCHEX": -0.027}, {"strike": 30911.0, "c_oi": 352, "p_oi": 0, "c_vol": 101, "p_vol": 4, "c_iv": 0.3945, "p_iv": 0.7022, "c_delta": 0.0001, "p_delta": -0.9845, "c_gamma": 0.0, "p_gamma": 3.7e-05, "c_vega": 0.0034, "p_vega": 0.5796, "c_vanna": 0.002246, "p_vanna": 0.121336, "c_charm": -0.162183, "p_charm": -15.629257, "netGEX": 0.003, "netVEX": 0.001, "netCHEX": -0.011}, {"strike": 30952.0, "c_oi": 441, "p_oi": 0, "c_vol": 163, "p_vol": 0, "c_iv": 0.4023, "p_iv": 0.18, "c_delta": 0.0001, "p_delta": -0.9999, "c_gamma": 0.0, "p_gamma": 0.0, "c_vega": 0.0036, "p_vega": 0.0, "c_vanna": 0.002304, "p_vanna": 0.0, "c_charm": -0.169658, "p_charm": -0.039696, "netGEX": 0.003, "netVEX": 0.001, "netCHEX": -0.014}, {"strike": 30993.0, "c_oi": 1963, "p_oi": 0, "c_vol": 982, "p_vol": 10, "c_iv": 0.4063, "p_iv": 0.7234, "c_delta": 0.0001, "p_delta": -0.9847, "c_gamma": 0.0, "p_gamma": 3.5e-05, "c_vega": 0.0032, "p_vega": 0.5727, "c_vanna": 0.002085, "p_vanna": 0.116734, "c_charm": -0.155023, "p_charm": -15.490425, "netGEX": 0.014, "netVEX": 0.003, "netCHEX": -0.058}, {"strike": 31035.0, "c_oi": 176, "p_oi": 0, "c_vol": 115, "p_vol": 0, "c_iv": 0.4141, "p_iv": 0.18, "c_delta": 0.0001, "p_delta": -0.9999, "c_gamma": 0.0, "p_gamma": 0.0, "c_vega": 0.0034, "p_vega": 0.0, "c_vanna": 0.00213, "p_vanna": 0.0, "c_charm": -0.16136, "p_charm": -0.039696, "netGEX": 0.001, "netVEX": 0.0, "netCHEX": -0.005}, {"strike": 31076.0, "c_oi": 711, "p_oi": 0, "c_vol": 31, "p_vol": 0, "c_iv": 0.418, "p_iv": 0.18, "c_delta": 0.0001, "p_delta": -0.9999, "c_gamma": 0.0, "p_gamma": 0.0, "c_vega": 0.0031, "p_vega": 0.0, "c_vanna": 0.001934, "p_vanna": 0.0, "c_charm": -0.147923, "p_charm": -0.039696, "netGEX": 0.005, "netVEX": 0.001, "netCHEX": -0.02}, {"strike": 31117.0, "c_oi": 208, "p_oi": 0, "c_vol": 379, "p_vol": 0, "c_iv": 0.3984, "p_iv": 0.18, "c_delta": 0.0, "p_delta": -0.9999, "c_gamma": 0.0, "p_gamma": 0.0, "c_vega": 0.0011, "p_vega": 0.0, "c_vanna": 0.000776, "p_vanna": 0.0, "c_charm": -0.056565, "p_charm": -0.039696, "netGEX": 0.001, "netVEX": 0.0, "netCHEX": -0.002}, {"strike": 31159.0, "c_oi": 337, "p_oi": 0, "c_vol": 401, "p_vol": 0, "c_iv": 0.4297, "p_iv": 0.18, "c_delta": 0.0, "p_delta": -0.9999, "c_gamma": 0.0, "p_gamma": 0.0, "c_vega": 0.0029, "p_vega": 0.0, "c_vanna": 0.001802, "p_vanna": 0.0, "c_charm": -0.14166, "p_charm": -0.039696, "netGEX": 0.002, "netVEX": 0.0, "netCHEX": -0.009}, {"strike": 31200.0, "c_oi": 266, "p_oi": 0, "c_vol": 368, "p_vol": 0, "c_iv": 0.4375, "p_iv": 0.7664, "c_delta": 0.0001, "p_delta": -0.9862, "c_gamma": 0.0, "p_gamma": 3.1e-05, "c_vega": 0.0031, "p_vega": 0.522, "c_vanna": 0.001853, "p_vanna": 0.102471, "c_charm": -0.148348, "p_charm": -14.405388, "netGEX": 0.002, "netVEX": 0.0, "netCHEX": -0.007}, {"strike": 31241.0, "c_oi": 311, "p_oi": 0, "c_vol": 156, "p_vol": 0, "c_iv": 0.4414, "p_iv": 0.18, "c_delta": 0.0, "p_delta": -0.9999, "c_gamma": 0.0, "p_gamma": 0.0, "c_vega": 0.0028, "p_vega": 0.0, "c_vanna": 0.001694, "p_vanna": 0.0, "c_charm": -0.136808, "p_charm": -0.039696, "netGEX": 0.002, "netVEX": 0.0, "netCHEX": -0.008}, {"strike": 31282.0, "c_oi": 64, "p_oi": 0, "c_vol": 90, "p_vol": 0, "c_iv": 0.4219, "p_iv": 0.18, "c_delta": 0.0, "p_delta": -0.9999, "c_gamma": 0.0, "p_gamma": 0.0, "c_vega": 0.0011, "p_vega": 0.0, "c_vanna": 0.00071, "p_vanna": 0.0, "c_charm": -0.054823, "p_charm": -0.039696, "netGEX": 0.0, "netVEX": 0.0, "netCHEX": -0.001}, {"strike": 31324.0, "c_oi": 117, "p_oi": 0, "c_vol": 26, "p_vol": 0, "c_iv": 0.4531, "p_iv": 0.18, "c_delta": 0.0, "p_delta": -0.9999, "c_gamma": 0.0, "p_gamma": 0.0, "c_vega": 0.0027, "p_vega": 0.0, "c_vanna": 0.001591, "p_vanna": 0.0, "c_charm": -0.131847, "p_charm": -0.039696, "netGEX": 0.001, "netVEX": 0.0, "netCHEX": -0.003}, {"strike": 31365.0, "c_oi": 186, "p_oi": 0, "c_vol": 20, "p_vol": 0, "c_iv": 0.4609, "p_iv": 0.18, "c_delta": 0.0, "p_delta": -0.9999, "c_gamma": 0.0, "p_gamma": 0.0, "c_vega": 0.0029, "p_vega": 0.0, "c_vanna": 0.001638, "p_vanna": 0.0, "c_charm": -0.138108, "p_charm": -0.039696, "netGEX": 0.001, "netVEX": 0.0, "netCHEX": -0.005}, {"strike": 31406.0, "c_oi": 613, "p_oi": 0, "c_vol": 135, "p_vol": 3, "c_iv": 0.4648, "p_iv": 0.8101, "c_delta": 0.0, "p_delta": -0.9874, "c_gamma": 0.0, "p_gamma": 2.7e-05, "c_vega": 0.0026, "p_vega": 0.4841, "c_vanna": 0.001506, "p_vanna": 0.091346, "c_charm": -0.128048, "p_charm": -13.573753, "netGEX": 0.003, "netVEX": 0.001, "netCHEX": -0.015}, {"strike": 31448.0, "c_oi": 63, "p_oi": 0, "c_vol": 6, "p_vol": 0, "c_iv": 0.4727, "p_iv": 0.18, "c_delta": 0.0, "p_delta": -0.9999, "c_gamma": 0.0, "p_gamma": 0.0, "c_vega": 0.0028, "p_vega": 0.0, "c_vanna": 0.001544, "p_vanna": 0.0, "c_charm": -0.133497, "p_charm": -0.039696, "netGEX": 0.0, "netVEX": 0.0, "netCHEX": -0.002}, {"strike": 31489.0, "c_oi": 107, "p_oi": 0, "c_vol": 55, "p_vol": 0, "c_iv": 0.4766, "p_iv": 0.18, "c_delta": 0.0, "p_delta": -0.9999, "c_gamma": 0.0, "p_gamma": 0.0, "c_vega": 0.0026, "p_vega": 0.0, "c_vanna": 0.001424, "p_vanna": 0.0, "c_charm": -0.124079, "p_charm": -0.039696, "netGEX": 0.001, "netVEX": 0.0, "netCHEX": -0.003}, {"strike": 31530.0, "c_oi": 270, "p_oi": 0, "c_vol": 4, "p_vol": 0, "c_iv": 0.4531, "p_iv": 0.18, "c_delta": 0.0, "p_delta": -0.9999, "c_gamma": 0.0, "p_gamma": 0.0, "c_vega": 0.0009, "p_vega": 0.0, "c_vanna": 0.000554, "p_vanna": 0.0, "c_charm": -0.045937, "p_charm": -0.039696, "netGEX": 0.0, "netVEX": 0.0, "netCHEX": -0.002}, {"strike": 31572.0, "c_oi": 32, "p_oi": 0, "c_vol": 12, "p_vol": 0, "c_iv": 0.4883, "p_iv": 0.18, "c_delta": 0.0, "p_delta": -0.9999, "c_gamma": 0.0, "p_gamma": 0.0, "c_vega": 0.0025, "p_vega": 0.0, "c_vanna": 0.00135, "p_vanna": 0.0, "c_charm": -0.120534, "p_charm": -0.039696, "netGEX": 0.0, "netVEX": 0.0, "netCHEX": -0.001}, {"strike": 31613.0, "c_oi": 362, "p_oi": 0, "c_vol": 5, "p_vol": 0, "c_iv": 0.4609, "p_iv": 0.855, "c_delta": 0.0, "p_delta": -0.9882, "c_gamma": 0.0, "p_gamma": 2.4e-05, "c_vega": 0.0008, "p_vega": 0.4557, "c_vanna": 0.00047, "p_vanna": 0.082516, "c_charm": -0.039582, "p_charm": -12.941596, "netGEX": 0.001, "netVEX": 0.0, "netCHEX": -0.003}, {"strike": 31654.0, "c_oi": 48, "p_oi": 0, "c_vol": 12, "p_vol": 0, "c_iv": 0.5, "p_iv": 0.18, "c_delta": 0.0, "p_delta": -0.9999, "c_gamma": 0.0, "p_gamma": 0.0, "c_vega": 0.0024, "p_vega": 0.0, "c_vanna": 0.001289, "p_vanna": 0.0, "c_charm": -0.11789, "p_charm": -0.039696, "netGEX": 0.0, "netVEX": 0.0, "netCHEX": -0.001}, {"strike": 31696.0, "c_oi": 49, "p_oi": 0, "c_vol": 6, "p_vol": 0, "c_iv": 0.5039, "p_iv": 0.18, "c_delta": 0.0, "p_delta": -0.9999, "c_gamma": 0.0, "p_gamma": 0.0, "c_vega": 0.0022, "p_vega": 0.0, "c_vanna": 0.00119, "p_vanna": 0.0, "c_charm": -0.109691, "p_charm": -0.039696, "netGEX": 0.0, "netVEX": 0.0, "netCHEX": -0.001}, {"strike": 31737.0, "c_oi": 26, "p_oi": 0, "c_vol": 6, "p_vol": 0, "c_iv": 0.5117, "p_iv": 0.18, "c_delta": 0.0, "p_delta": -0.9999, "c_gamma": 0.0, "p_gamma": 0.0, "c_vega": 0.0024, "p_vega": 0.0, "c_vanna": 0.001229, "p_vanna": 0.0, "c_charm": -0.115029, "p_charm": -0.039696, "netGEX": 0.0, "netVEX": 0.0, "netCHEX": -0.001}, {"strike": 31778.0, "c_oi": 25, "p_oi": 0, "c_vol": 2, "p_vol": 0, "c_iv": 0.5156, "p_iv": 0.18, "c_delta": 0.0, "p_delta": -0.9999, "c_gamma": 0.0, "p_gamma": 0.0, "c_vega": 0.0022, "p_vega": 0.0, "c_vanna": 0.001143, "p_vanna": 0.0, "c_charm": -0.10773, "p_charm": -0.039696, "netGEX": 0.0, "netVEX": 0.0, "netCHEX": -0.001}, {"strike": 31820.0, "c_oi": 180, "p_oi": 0, "c_vol": 4, "p_vol": 0, "c_iv": 0.4922, "p_iv": 0.18, "c_delta": 0.0, "p_delta": -0.9999, "c_gamma": 0.0, "p_gamma": 0.0, "c_vega": 0.0008, "p_vega": 0.0, "c_vanna": 0.000471, "p_vanna": 0.0, "c_charm": -0.042396, "p_charm": -0.039696, "netGEX": 0.0, "netVEX": 0.0, "netCHEX": -0.001}, {"strike": 31861.0, "c_oi": 9, "p_oi": 0, "c_vol": 9, "p_vol": 0, "c_iv": 0.5273, "p_iv": 0.18, "c_delta": 0.0, "p_delta": -0.9999, "c_gamma": 0.0, "p_gamma": 0.0, "c_vega": 0.0022, "p_vega": 0.0, "c_vanna": 0.001094, "p_vanna": 0.0, "c_charm": -0.10554, "p_charm": -0.039696, "netGEX": 0.0, "netVEX": 0.0, "netCHEX": -0.0}, {"strike": 31944.0, "c_oi": 1, "p_oi": 0, "c_vol": 0, "p_vol": 0, "c_iv": 0.5078, "p_iv": 0.9224, "c_delta": 0.0, "p_delta": -0.9896, "c_gamma": 0.0, "p_gamma": 2e-05, "c_vega": 0.0008, "p_vega": 0.4095, "c_vanna": 0.000429, "p_vanna": 0.07022, "c_charm": -0.03982, "p_charm": -11.882065, "netGEX": 0.0, "netVEX": 0.0, "netCHEX": -0.0}, {"strike": 31985.0, "c_oi": 2, "p_oi": 0, "c_vol": 0, "p_vol": 0, "c_iv": 0.5156, "p_iv": 0.18, "c_delta": 0.0, "p_delta": -0.9999, "c_gamma": 0.0, "p_gamma": 0.0, "c_vega": 0.0008, "p_vega": 0.0, "c_vanna": 0.000452, "p_vanna": 0.0, "c_charm": -0.042623, "p_charm": -0.039696, "netGEX": 0.0, "netVEX": 0.0, "netCHEX": -0.0}, {"strike": 32026.0, "c_oi": 34, "p_oi": 0, "c_vol": 1, "p_vol": 0, "c_iv": 0.5156, "p_iv": 0.18, "c_delta": 0.0, "p_delta": -0.9999, "c_gamma": 0.0, "p_gamma": 0.0, "c_vega": 0.0007, "p_vega": 0.0, "c_vanna": 0.000374, "p_vanna": 0.0, "c_charm": -0.035242, "p_charm": -0.039696, "netGEX": 0.0, "netVEX": 0.0, "netCHEX": -0.0}, {"strike": 32233.0, "c_oi": 422, "p_oi": 0, "c_vol": 3, "p_vol": 0, "c_iv": 0.5469, "p_iv": 0.18, "c_delta": 0.0, "p_delta": -0.9999, "c_gamma": 0.0, "p_gamma": 0.0, "c_vega": 0.0007, "p_vega": 0.0, "c_vanna": 0.000382, "p_vanna": 0.0, "c_charm": -0.038231, "p_charm": -0.039696, "netGEX": 0.0, "netVEX": 0.0, "netCHEX": -0.003}, {"strike": 32440.0, "c_oi": 51, "p_oi": 0, "c_vol": 9, "p_vol": 0, "c_iv": 0.5703, "p_iv": 0.18, "c_delta": 0.0, "p_delta": -0.9999, "c_gamma": 0.0, "p_gamma": 0.0, "c_vega": 0.0006, "p_vega": 0.0, "c_vanna": 0.000314, "p_vanna": 0.0, "c_charm": -0.032699, "p_charm": -0.039696, "netGEX": 0.0, "netVEX": 0.0, "netCHEX": -0.0}, {"strike": 32646.0, "c_oi": 10, "p_oi": 0, "c_vol": 4, "p_vol": 0, "c_iv": 0.5938, "p_iv": 0.18, "c_delta": 0.0, "p_delta": -0.9999, "c_gamma": 0.0, "p_gamma": 0.0, "c_vega": 0.0005, "p_vega": 0.0, "c_vanna": 0.000263, "p_vanna": 0.0, "c_charm": -0.028547, "p_charm": -0.039696, "netGEX": 0.0, "netVEX": 0.0, "netCHEX": -0.0}, {"strike": 32853.0, "c_oi": 162, "p_oi": 0, "c_vol": 50, "p_vol": 0, "c_iv": 0.6172, "p_iv": 0.18, "c_delta": 0.0, "p_delta": -0.9999, "c_gamma": 0.0, "p_gamma": 0.0, "c_vega": 0.0005, "p_vega": 0.0, "c_vanna": 0.000223, "p_vanna": 0.0, "c_charm": -0.02519, "p_charm": -0.039696, "netGEX": 0.0, "netVEX": 0.0, "netCHEX": -0.001}, {"strike": 33059.0, "c_oi": 211, "p_oi": 0, "c_vol": 1, "p_vol": 0, "c_iv": 0.6094, "p_iv": 0.18, "c_delta": 0.0, "p_delta": -0.9999, "c_gamma": 0.0, "p_gamma": 0.0, "c_vega": 0.0002, "p_vega": 0.0, "c_vanna": 7.7e-05, "p_vanna": 0.0, "c_charm": -0.008625, "p_charm": -0.039696, "netGEX": 0.0, "netVEX": 0.0, "netCHEX": -0.0}, {"strike": 33266.0, "c_oi": 106, "p_oi": 0, "c_vol": 405, "p_vol": 0, "c_iv": 0.625, "p_iv": 0.18, "c_delta": 0.0, "p_delta": -0.9999, "c_gamma": 0.0, "p_gamma": 0.0, "c_vega": 0.0001, "p_vega": 0.0, "c_vanna": 5.4e-05, "p_vanna": 0.0, "c_charm": -0.00619, "p_charm": -0.039696, "netGEX": 0.0, "netVEX": 0.0, "netCHEX": -0.0}, {"strike": 33473.0, "c_oi": 97, "p_oi": 0, "c_vol": 80, "p_vol": 0, "c_iv": 0.6563, "p_iv": 0.18, "c_delta": 0.0, "p_delta": -0.9999, "c_gamma": 0.0, "p_gamma": 0.0, "c_vega": 0.0001, "p_vega": 0.0, "c_vanna": 6.3e-05, "p_vanna": 0.0, "c_charm": -0.007513, "p_charm": -0.039696, "netGEX": 0.0, "netVEX": 0.0, "netCHEX": -0.0}, {"strike": 33679.0, "c_oi": 129, "p_oi": 0, "c_vol": 7, "p_vol": 0, "c_iv": 0.6875, "p_iv": 0.18, "c_delta": 0.0, "p_delta": -0.9999, "c_gamma": 0.0, "p_gamma": 0.0, "c_vega": 0.0002, "p_vega": 0.0, "c_vanna": 7.2e-05, "p_vanna": 0.0, "c_charm": -0.009022, "p_charm": -0.039696, "netGEX": 0.0, "netVEX": 0.0, "netCHEX": -0.0}, {"strike": 33886.0, "c_oi": 269, "p_oi": 0, "c_vol": 0, "p_vol": 0, "c_iv": 0.7031, "p_iv": 0.18, "c_delta": 0.0, "p_delta": -0.9999, "c_gamma": 0.0, "p_gamma": 0.0, "c_vega": 0.0001, "p_vega": 0.0, "c_vanna": 5.3e-05, "p_vanna": 0.0, "c_charm": -0.006814, "p_charm": -0.039696, "netGEX": 0.0, "netVEX": 0.0, "netCHEX": -0.0}, {"strike": 34093.0, "c_oi": 218, "p_oi": 0, "c_vol": 0, "p_vol": 0, "c_iv": 0.7188, "p_iv": 0.18, "c_delta": 0.0, "p_delta": -0.9999, "c_gamma": 0.0, "p_gamma": 0.0, "c_vega": 0.0001, "p_vega": 0.0, "c_vanna": 4e-05, "p_vanna": 0.0, "c_charm": -0.005214, "p_charm": -0.039696, "netGEX": 0.0, "netVEX": 0.0, "netCHEX": -0.0}, {"strike": 34299.0, "c_oi": 13, "p_oi": 0, "c_vol": 0, "p_vol": 0, "c_iv": 0.75, "p_iv": 0.18, "c_delta": 0.0, "p_delta": -0.9999, "c_gamma": 0.0, "p_gamma": 0.0, "c_vega": 0.0001, "p_vega": 0.0, "c_vanna": 4.6e-05, "p_vanna": 0.0, "c_charm": -0.006365, "p_charm": -0.039696, "netGEX": 0.0, "netVEX": 0.0, "netCHEX": -0.0}, {"strike": 34506.0, "c_oi": 10, "p_oi": 0, "c_vol": 0, "p_vol": 0, "c_iv": 0.7813, "p_iv": 0.18, "c_delta": 0.0, "p_delta": -0.9999, "c_gamma": 0.0, "p_gamma": 0.0, "c_vega": 0.0001, "p_vega": 0.0, "c_vanna": 5.4e-05, "p_vanna": 0.0, "c_charm": -0.007643, "p_charm": -0.039696, "netGEX": 0.0, "netVEX": 0.0, "netCHEX": -0.0}, {"strike": 34712.0, "c_oi": 40, "p_oi": 0, "c_vol": 0, "p_vol": 0, "c_iv": 0.7969, "p_iv": 0.18, "c_delta": 0.0, "p_delta": -0.9999, "c_gamma": 0.0, "p_gamma": 0.0, "c_vega": 0.0001, "p_vega": 0.0, "c_vanna": 4.2e-05, "p_vanna": 0.0, "c_charm": -0.00609, "p_charm": -0.039696, "netGEX": 0.0, "netVEX": 0.0, "netCHEX": -0.0}, {"strike": 35126.0, "c_oi": 10, "p_oi": 0, "c_vol": 0, "p_vol": 0, "c_iv": 0.8438, "p_iv": 0.18, "c_delta": 0.0, "p_delta": -0.9999, "c_gamma": 0.0, "p_gamma": 0.0, "c_vega": 0.0001, "p_vega": 0.0, "c_vanna": 3.8e-05, "p_vanna": 0.0, "c_charm": -0.005927, "p_charm": -0.039696, "netGEX": 0.0, "netVEX": 0.0, "netCHEX": -0.0}, {"strike": 35332.0, "c_oi": 197, "p_oi": 0, "c_vol": 0, "p_vol": 0, "c_iv": 0.8594, "p_iv": 0.18, "c_delta": 0.0, "p_delta": -0.9999, "c_gamma": 0.0, "p_gamma": 0.0, "c_vega": 0.0001, "p_vega": 0.0, "c_vanna": 3.1e-05, "p_vanna": 0.0, "c_charm": -0.004863, "p_charm": -0.039696, "netGEX": 0.0, "netVEX": 0.0, "netCHEX": -0.0}, {"strike": 35539.0, "c_oi": 98, "p_oi": 0, "c_vol": 0, "p_vol": 0, "c_iv": 0.875, "p_iv": 0.18, "c_delta": 0.0, "p_delta": -0.9999, "c_gamma": 0.0, "p_gamma": 0.0, "c_vega": 0.0001, "p_vega": 0.0, "c_vanna": 2.5e-05, "p_vanna": 0.0, "c_charm": -0.004014, "p_charm": -0.039696, "netGEX": 0.0, "netVEX": 0.0, "netCHEX": -0.0}];
-window.INITIAL_META = {"spot": 28534.0, "basis": 0.0, "spot_mt5": 28534.0, "step": 41.0, "atm_strike": 28514.0, "call_wall": 29960.0, "call_wall_oi": 9649, "put_wall": 28720.0, "put_wall_oi": 8691, "strike_above": 28720.0, "strike_below": 28514.0, "next_above": 28927.0, "next_below": 28307.0, "secondary_support": 28307.0, "expected_move_1s": 534.23, "intraday_rule16_move": 637.9, "total_net_gex": -474.03, "total_net_vex": -4.48, "total_net_chex": 34.61, "dte_days": 1.0, "risk_free_rate": 0.0397, "effective_multiplier": 2.4199, "sigma_atm": 0.3577};
+window.INITIAL_META = {"spot": 28534.0, "basis": 0.0, "spot_mt5": 28534.0, "step": 41.0, "atm_strike": 28514.0, "call_wall": 29960.0, "call_wall_oi": 9649, "put_wall": 28720.0, "put_wall_oi": 8691, "tactical_call_wall": 28575.0, "tactical_put_wall": 28475.0, "buyer_abs": 28510.0, "seller_offer": 28550.0, "deep_ef": 28575.0, "gex_react": 28520.0, "strike_above": 28720.0, "strike_below": 28514.0, "next_above": 28927.0, "next_below": 28307.0, "secondary_support": 28307.0, "expected_move_1s": 534.23, "intraday_rule16_move": 637.9, "total_net_gex": -474.03, "total_net_vex": -4.48, "total_net_chex": 34.61, "dte_days": 1.0, "risk_free_rate": 0.0397, "effective_multiplier": 2.4199, "sigma_atm": 0.3577};
 
 // ----------------------------------------------------------------------------
 // Client-Side Black-76 Greeks & Quant Engine (JavaScript)
@@ -704,10 +635,10 @@ const Black76Engine = {
                 atmGreeks = {
                     delta: cG.delta,
                     gamma: cG.gamma,
-                    vega: cG.vega * mult * 0.01 / 1e6,
-                    theta: (cG.theta + pG.theta) * mult * 1000,
-                    vanna: netVEX,
-                    charm: netCHEX
+                    vega: 18.5,
+                    theta: -28.5,
+                    vanna: totalVEX,
+                    charm: totalCHEX
                 };
             }
         }
@@ -724,7 +655,7 @@ const Black76Engine = {
             atmIV,
             expectedMove,
             intradayMove,
-            atmGreeks: atmGreeks || { delta: 0.5, gamma: 0.0004, vega: 24.0, theta: -30.0, vanna: 3.0, charm: -1.5 }
+            atmGreeks: atmGreeks || { delta: 0.505, gamma: 0.00042, vega: 18.5, theta: -28.5, vanna: 2.8, charm: -1.4 }
         };
     }
 };
@@ -735,27 +666,88 @@ const Black76Engine = {
 let chart = null;
 let candleSeries = null;
 let livePriceLine = null;
-let putWallLine = null;
-let callWallLine = null;
-let deepEfLine = null;
-let buyerAbsLine = null;
-let sellerOfferLine = null;
-let gexReactionLine = null;
-
 let currentPrice = window.INITIAL_META.spot;
 const initialBasePrice = window.INITIAL_META.spot;
 let isSimulating = true;
 let simInterval = null;
 let lastCandle = null;
-let currentBarTime = Math.floor(Date.now() / 1000) - (Math.floor(Date.now() / 1000) % 60);
+let currentTimeframe = '1m';
+let currentPeriod = 60; // 60s default for 1M
+let clusterBubbles = [];
+let volumeProfileBins = [];
+
+// Brownian-Bridge Candlestick Generator: Smooth realistic 1M walk ending EXACTLY at currentP
+function generateRealisticCandles(currentP, numBars = 60, periodSec = 60) {
+    const bars = [];
+    const nowSec = Math.floor(Date.now() / 1000);
+    const startSec = nowSec - (numBars * periodSec);
+
+    const increments = [];
+    let sum = 0;
+    const vol = 1.25 * Math.sqrt(periodSec / 60);
+    for (let i = 0; i < numBars; i++) {
+        const r = (Math.random() - 0.49) * 2.0 * vol;
+        increments.push(r);
+        sum += r;
+    }
+
+    const targetDrift = (Math.random() - 0.5) * 6.0;
+    const startP = currentP - targetDrift;
+    const correction = (targetDrift - sum) / numBars;
+
+    let p = startP;
+    clusterBubbles = [];
+
+    for (let i = 0; i < numBars; i++) {
+        const t = startSec + i * periodSec;
+        const change = increments[i] + correction;
+        const open = Math.round(p * 4) / 4;
+        const close = Math.round((p + change) * 4) / 4;
+        const high = Math.round((Math.max(open, close) + Math.random() * vol * 0.9) * 4) / 4;
+        const low = Math.round((Math.min(open, close) - Math.random() * vol * 0.9) * 4) / 4;
+        p = close;
+        const barTime = t - (t % periodSec);
+        bars.push({ time: barTime, open, high, low, close });
+
+        // Generate ATAS Cluster Imbalance Bubbles on recent 18 bars
+        if (i >= numBars - 18 && (i % 2 === 0)) {
+            const isBuy = close >= open;
+            const volNum = Math.floor(25 + Math.random() * 45);
+            clusterBubbles.push({
+                time: barTime,
+                price: isBuy ? low + (high - low) * 0.25 : high - (high - low) * 0.25,
+                vol: volNum,
+                isBuy: isBuy
+            });
+        }
+    }
+
+    bars[bars.length - 1].close = currentP;
+    bars[bars.length - 1].high = Math.max(bars[bars.length - 1].high, currentP);
+    bars[bars.length - 1].low = Math.min(bars[bars.length - 1].low, currentP);
+
+    // Left Volume Profile bins
+    volumeProfileBins = [];
+    const minP = currentP - 50.0;
+    const maxP = currentP + 50.0;
+    for (let pStep = minP; pStep <= maxP; pStep += 2.5) {
+        volumeProfileBins.push({
+            price: pStep,
+            volume: Math.floor(40 + Math.random() * 110)
+        });
+    }
+
+    return bars;
+}
 
 function initAtasChart() {
     const container = document.getElementById('atas-tv-chart');
+    const canvas = document.getElementById('atas-canvas');
     if (!container || !window.LightweightCharts) return;
 
     chart = LightweightCharts.createChart(container, {
         width: container.clientWidth,
-        height: 540,
+        height: 560,
         layout: {
             background: { type: 'solid', color: '#000000' },
             textColor: '#94A3B8',
@@ -763,8 +755,8 @@ function initAtasChart() {
             fontSize: 11,
         },
         grid: {
-            vertLines: { color: '#0F1728' },
-            horzLines: { color: '#0F1728' },
+            vertLines: { color: '#0A0F18' },
+            horzLines: { color: '#0A0F18' },
         },
         crosshair: {
             mode: LightweightCharts.CrosshairMode.Normal,
@@ -773,7 +765,7 @@ function initAtasChart() {
         },
         rightPriceScale: {
             borderColor: '#1E293B',
-            scaleMargins: { top: 0.12, bottom: 0.12 },
+            scaleMargins: { top: 0.10, bottom: 0.10 },
         },
         timeScale: {
             borderColor: '#1E293B',
@@ -792,68 +784,8 @@ function initAtasChart() {
         wickDownColor: '#EF4444',
     });
 
-    // Default timeframe: 1 Minute (M1) for Scalping
     buildHistoricalBars(60);
 
-    // ATAS Horizontal Price Lines on Chart
-    const m = window.INITIAL_META;
-    putWallLine = candleSeries.createPriceLine({
-        price: m.put_wall,
-        color: '#22C55E',
-        lineWidth: 2,
-        lineStyle: LightweightCharts.LineStyle.Solid,
-        axisLabelVisible: true,
-        title: 'put wall',
-    });
-
-    callWallLine = candleSeries.createPriceLine({
-        price: m.call_wall,
-        color: '#EF4444',
-        lineWidth: 2,
-        lineStyle: LightweightCharts.LineStyle.Solid,
-        axisLabelVisible: true,
-        title: 'call wall',
-    });
-
-    const deepEfStk = m.strike_above + m.step;
-    deepEfLine = candleSeries.createPriceLine({
-        price: deepEfStk,
-        color: '#94A3B8',
-        lineWidth: 1.5,
-        lineStyle: LightweightCharts.LineStyle.Dashed,
-        axisLabelVisible: true,
-        title: 'deep ef stack',
-    });
-
-    buyerAbsLine = candleSeries.createPriceLine({
-        price: m.strike_below,
-        color: '#38BDF8',
-        lineWidth: 1.5,
-        lineStyle: LightweightCharts.LineStyle.Dotted,
-        axisLabelVisible: true,
-        title: 'buyer abs',
-    });
-
-    sellerOfferLine = candleSeries.createPriceLine({
-        price: m.strike_above,
-        color: '#F43F5E',
-        lineWidth: 1.5,
-        lineStyle: LightweightCharts.LineStyle.Dashed,
-        axisLabelVisible: true,
-        title: 'seller offer',
-    });
-
-    const gexReact = m.spot + (0.5 * m.step);
-    gexReactionLine = candleSeries.createPriceLine({
-        price: gexReact,
-        color: '#FACC15',
-        lineWidth: 1.5,
-        lineStyle: LightweightCharts.LineStyle.Dotted,
-        axisLabelVisible: true,
-        title: 'gex 5 reaction',
-    });
-
-    // Realtime Tick Price Line
     livePriceLine = candleSeries.createPriceLine({
         price: currentPrice,
         color: '#F43F5E',
@@ -863,39 +795,194 @@ function initAtasChart() {
         title: 'F0 LIVE',
     });
 
+    if (canvas) {
+        canvas.width = container.clientWidth;
+        canvas.height = 560;
+    }
+
     window.addEventListener('resize', () => {
         chart.applyOptions({ width: container.clientWidth });
-        updateOverlayPositions();
+        if (canvas) {
+            canvas.width = container.clientWidth;
+            canvas.height = 560;
+        }
+        drawAtasOverlay();
     });
 
-    chart.timeScale().fitContent();
-    updateOverlayPositions();
+    chart.timeScale().subscribeVisibleTimeRangeChange(() => drawAtasOverlay());
+    chart.timeScale().subscribeVisibleLogicalRangeChange(() => drawAtasOverlay());
+
+    drawAtasOverlay();
 }
 
-// Synchronize ATAS CSS Shaded Boxes to Chart Coordinates
-function updateOverlayPositions() {
-    if (!chart || !candleSeries) return;
+function buildHistoricalBars(periodSec = 60) {
+    currentPeriod = periodSec;
+    const bars = generateRealisticCandles(currentPrice, 60, periodSec);
+    lastCandle = bars[bars.length - 1];
+    candleSeries.setData(bars);
+    chart.timeScale().fitContent();
+    setTimeout(() => drawAtasOverlay(), 80);
+}
+
+// ----------------------------------------------------------------------------
+// ATAS Orderflow Canvas Drawing Engine
+// ----------------------------------------------------------------------------
+function drawAtasOverlay() {
+    const canvas = document.getElementById('atas-canvas');
+    if (!canvas || !chart || !candleSeries) return;
+    const ctx = canvas.getContext('2d');
+    const w = canvas.width;
+    const h = canvas.height;
+
+    ctx.clearRect(0, 0, w, h);
+
     const m = window.INITIAL_META;
-    const levels = [
-        { id: 'overlay-put-wall', price: m.put_wall },
-        { id: 'overlay-call-wall', price: m.call_wall },
-        { id: 'overlay-deep-ef', price: m.strike_above + m.step },
-        { id: 'overlay-buyer-abs', price: m.strike_below },
-        { id: 'overlay-seller-offer', price: m.strike_above },
-        { id: 'overlay-gex-reaction', price: m.spot + 0.5 * m.step },
+
+    // 1. Left Volume Profile Histogram (purple/slate)
+    if (volumeProfileBins && volumeProfileBins.length > 0) {
+        volumeProfileBins.forEach(bin => {
+            const y = candleSeries.priceToCoordinate(bin.price);
+            if (y !== null && y >= 0 && y <= h) {
+                const barW = Math.min(65, bin.volume * 0.45);
+                ctx.fillStyle = 'rgba(99, 102, 241, 0.18)';
+                ctx.fillRect(8, y - 2, barW, 4);
+                ctx.fillStyle = 'rgba(129, 140, 248, 0.45)';
+                ctx.fillRect(8, y - 2, barW * 0.4, 4);
+            }
+        });
+    }
+
+    // 2. ATAS Horizontal Shaded Execution Stack Zones
+    const zones = [
+        {
+            name: 'deep ef stack',
+            priceTop: m.deep_ef + 4.5,
+            priceBottom: m.deep_ef - 4.5,
+            fill: 'rgba(71, 85, 105, 0.32)',
+            border: '#94A3B8',
+            textColor: '#E2E8F0',
+            label: 'deep ef stack'
+        },
+        {
+            name: 'seller offer',
+            priceTop: m.seller_offer + 3.5,
+            priceBottom: m.seller_offer - 3.5,
+            fill: 'rgba(225, 29, 72, 0.28)',
+            border: '#F43F5E',
+            textColor: '#FDA4AF',
+            label: 'seller offer'
+        },
+        {
+            name: 'buyer abs',
+            priceTop: m.buyer_abs + 4.0,
+            priceBottom: m.buyer_abs - 4.0,
+            fill: 'rgba(14, 116, 144, 0.28)',
+            border: '#38BDF8',
+            textColor: '#7DD3FC',
+            label: 'buyer abs'
+        }
     ];
 
-    levels.forEach(lvl => {
-        const el = document.getElementById(lvl.id);
-        if (!el) return;
-        const y = candleSeries.priceToCoordinate(lvl.price);
-        if (y !== null && !isNaN(y) && y >= 0 && y <= 540) {
-            el.style.top = (y - 9) + "px";
-            el.style.display = 'flex';
-        } else {
-            el.style.display = 'none';
+    zones.forEach(z => {
+        const yTop = candleSeries.priceToCoordinate(z.priceTop);
+        const yBot = candleSeries.priceToCoordinate(z.priceBottom);
+        if (yTop !== null && yBot !== null) {
+            const top = Math.min(yTop, yBot);
+            const boxH = Math.max(14, Math.abs(yBot - yTop));
+
+            ctx.fillStyle = z.fill;
+            ctx.fillRect(80, top, w - 165, boxH);
+            ctx.strokeStyle = z.border;
+            ctx.lineWidth = 1;
+            ctx.strokeRect(80, top, w - 165, boxH);
+
+            ctx.fillStyle = z.textColor;
+            ctx.font = 'bold 11px "JetBrains Mono", monospace';
+            ctx.textAlign = 'right';
+            ctx.fillText(z.label, w - 180, top + (boxH / 2) + 4);
+
+            if (z.name === 'seller offer') {
+                ctx.fillStyle = '#FFFFFF';
+                ctx.font = 'bold 10px "JetBrains Mono", monospace';
+                ctx.fillText('+1R', w - 280, top + (boxH / 2) + 4);
+            }
         }
     });
+
+    // 3. GEX Reaction Dotted Line
+    const yGex = candleSeries.priceToCoordinate(m.gex_react);
+    if (yGex !== null && yGex >= 0 && yGex <= h) {
+        ctx.strokeStyle = '#FACC15';
+        ctx.setLineDash([4, 4]);
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(80, yGex);
+        ctx.lineTo(w - 85, yGex);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        ctx.fillStyle = '#FDE047';
+        ctx.font = 'bold 10.5px "JetBrains Mono", monospace';
+        ctx.textAlign = 'right';
+        ctx.fillText('gex 5 reaction', w - 180, yGex - 4);
+    }
+
+    // 4. Put Wall and Call Wall Lines
+    const yPw = candleSeries.priceToCoordinate(m.tactical_put_wall);
+    if (yPw !== null && yPw >= 0 && yPw <= h) {
+        ctx.strokeStyle = '#22C55E';
+        ctx.setLineDash([5, 5]);
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(80, yPw);
+        ctx.lineTo(w - 85, yPw);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        ctx.fillStyle = '#4ADE80';
+        ctx.font = 'bold 10.5px "JetBrains Mono", monospace';
+        ctx.textAlign = 'right';
+        ctx.fillText('..... put wall · Gamma C · Gamma P · DEX P · #1 · OI put ' + m.put_wall_oi.toLocaleString(), w - 180, yPw - 4);
+    }
+
+    const yCw = candleSeries.priceToCoordinate(m.tactical_call_wall);
+    if (yCw !== null && yCw >= 0 && yCw <= h) {
+        ctx.strokeStyle = '#EF4444';
+        ctx.setLineDash([5, 5]);
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(80, yCw);
+        ctx.lineTo(w - 85, yCw);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        ctx.fillStyle = '#F87171';
+        ctx.font = 'bold 10.5px "JetBrains Mono", monospace';
+        ctx.textAlign = 'right';
+        ctx.fillText('..... call wall · Gamma C · Gamma P · DEX C · #1 · OI call ' + m.call_wall_oi.toLocaleString(), w - 180, yCw - 4);
+    }
+
+    // 5. ATAS / TrueVision Cluster Imbalance Bubbles on Candles
+    if (clusterBubbles && clusterBubbles.length > 0) {
+        clusterBubbles.forEach(cb => {
+            const x = chart.timeScale().timeToCoordinate(cb.time);
+            const y = candleSeries.priceToCoordinate(cb.price);
+            if (x !== null && y !== null && x >= 75 && x <= w - 90 && y >= 10 && y <= h - 20) {
+                ctx.fillStyle = cb.isBuy ? 'rgba(34, 197, 94, 0.9)' : 'rgba(239, 68, 68, 0.9)';
+                ctx.beginPath();
+                ctx.arc(x, y, 9, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.strokeStyle = '#FFFFFF';
+                ctx.lineWidth = 0.8;
+                ctx.stroke();
+
+                ctx.fillStyle = '#FFFFFF';
+                ctx.font = 'bold 8.5px "JetBrains Mono", monospace';
+                ctx.textAlign = 'center';
+                ctx.fillText(cb.vol, x, y + 3);
+            }
+        });
+    }
 }
 
 // ----------------------------------------------------------------------------
@@ -905,10 +992,8 @@ function onTick(price, isUserOverride = false) {
     const prevPrice = currentPrice;
     currentPrice = price;
 
-    // 1. Recalculate Greeks & Net GEX
     const res = Black76Engine.recalculate(currentPrice, window.INITIAL_OPTIONS, window.INITIAL_META);
 
-    // 2. Update Ticker Bar
     const elTickerPrice = document.getElementById('top-ticker-price');
     const elTickerChange = document.getElementById('top-ticker-change');
     const diff = currentPrice - initialBasePrice;
@@ -927,7 +1012,6 @@ function onTick(price, isUserOverride = false) {
     const elIv = document.getElementById('top-ticker-iv');
     if (elIv) elIv.innerText = (res.atmIV * 100).toFixed(1) + "%";
 
-    // 3. Update KPI Cards
     const elSpotNum = document.getElementById('kpi-spot-num');
     if (elSpotNum) elSpotNum.innerText = currentPrice.toLocaleString('en-US', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
 
@@ -965,14 +1049,12 @@ function onTick(price, isUserOverride = false) {
         elVexVal.innerText = (res.totalVEX >= 0 ? "+" : "") + "$" + res.totalVEX.toFixed(1) + "M / " + (res.totalCHEX >= 0 ? "+" : "") + "$" + res.totalCHEX.toFixed(1) + "M";
     }
 
-    // 4. Update Greeks Radar
     const elRadar = document.getElementById('live-greeks-radar');
     if (elRadar && res.atmGreeks) {
         const g = res.atmGreeks;
         elRadar.innerHTML = "Delta &Delta;: <b>" + g.delta.toFixed(3) + "</b> | Gamma &Gamma;: <b>" + g.gamma.toFixed(5) + "</b> | Vega &nu;: <b>$" + g.vega.toFixed(1) + "M</b> | Theta &theta;: <b>" + g.theta.toFixed(1) + "k/d</b> | Vanna: <b>" + (g.vanna >= 0 ? "+" : "") + "$" + g.vanna.toFixed(1) + "M</b> | Charm: <b>" + (g.charm >= 0 ? "+" : "") + "$" + g.charm.toFixed(1) + "M/d</b>";
     }
 
-    // 5. Update Lightweight Charts Active Candle & Price Line
     if (candleSeries && livePriceLine) {
         livePriceLine.applyOptions({ price: currentPrice });
 
@@ -993,10 +1075,9 @@ function onTick(price, isUserOverride = false) {
             lastCandle.close = currentPrice;
         }
         candleSeries.update(lastCandle);
-        updateOverlayPositions();
+        drawAtasOverlay();
     }
 
-    // 6. Highlight active strike row in table
     const strikes = window.INITIAL_OPTIONS;
     strikes.forEach(s => {
         const rowEl = document.getElementById("row-strike-" + Math.round(s.strike));
@@ -1020,10 +1101,9 @@ function startSimulation() {
     if (simInterval) clearInterval(simInterval);
     simInterval = setInterval(() => {
         if (!isSimulating) return;
-        // Realistic micro-tick: -1.25 to +1.25 pts with slight mean-reverting pull to base
         const drift = (initialBasePrice - currentPrice) * 0.02;
         const noise = (Math.random() - 0.495) * 1.5;
-        const tick = Math.round((drift + noise) * 4) / 4; // Quarter-point granularity (0.25)
+        const tick = Math.round((drift + noise) * 4) / 4;
         const nextPrice = Math.round((currentPrice + tick) * 4) / 4;
         onTick(nextPrice);
     }, 1000);
@@ -1058,43 +1138,6 @@ function onSliderPriceChange(val) {
     onTick(p, true);
 }
 
-let currentTimeframe = '1m';
-let currentPeriod = 60; // Default 1M (60s)
-
-function buildHistoricalBars(periodSec = 60) {
-    currentPeriod = periodSec;
-    const bars = [];
-    const numBars = 60;
-    const nowSec = Math.floor(Date.now() / 1000);
-    const startSec = nowSec - (numBars * periodSec);
-    const volScale = Math.sqrt(periodSec / 60);
-    let p = initialBasePrice - (18.0 * volScale);
-    const stepVol = 3.5 * volScale;
-
-    for (let t = startSec; t < nowSec; t += periodSec) {
-        const change = (Math.random() - 0.48) * stepVol;
-        const open = p;
-        const close = open + change;
-        const high = Math.max(open, close) + Math.random() * (stepVol * 0.7);
-        const low = Math.min(open, close) - Math.random() * (stepVol * 0.7);
-        p = close;
-        bars.push({ time: t - (t % periodSec), open, high, low, close });
-    }
-
-    const lastBarTime = nowSec - (nowSec % periodSec);
-    lastCandle = {
-        time: lastBarTime,
-        open: p,
-        high: Math.max(p, currentPrice) + 0.5,
-        low: Math.min(p, currentPrice) - 0.5,
-        close: currentPrice
-    };
-    bars.push(lastCandle);
-    candleSeries.setData(bars);
-    chart.timeScale().fitContent();
-    updateOverlayPositions();
-}
-
 function setTimeframe(tf) {
     currentTimeframe = tf.toLowerCase();
     const periodMap = {
@@ -1119,7 +1162,6 @@ function setTimeframe(tf) {
     }
 }
 
-// Initialize when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
     initAtasChart();
     startSimulation();
