@@ -20,7 +20,7 @@
             background-color: var(--bg-base); color: var(--text-primary);
             font-family: 'Inter', -apple-system, sans-serif; padding: 14px; font-size: 13px;
         }
-        .container { max-width: 1520px; margin: 0 auto; }
+        .container { width: 100%; max-width: 100%; margin: 0; padding: 4px 12px; }
 
         .header {
             display: flex; justify-content: space-between; align-items: center;
@@ -133,6 +133,26 @@
             background: #131E31; color: #38BDF8; border-color: #243550;
         }
 
+        /* Authentic ATAS Layout Components */
+        .atas-body-container {
+            display: flex; width: 100%; position: relative;
+        }
+        .atas-left-tools {
+            width: 38px; background: #05080E; border-right: 1px solid #162030;
+            display: flex; flex-direction: column; align-items: center; padding: 12px 0; gap: 14px;
+            color: #64748B; font-size: 13px; z-index: 8; user-select: none;
+        }
+        .tool-btn {
+            cursor: pointer; padding: 4px; border-radius: 4px; transition: all 0.2s;
+            display: flex; align-items: center; justify-content: center; width: 26px; height: 26px;
+        }
+        .tool-btn:hover, .tool-btn.active { color: #38BDF8; background: #111A29; }
+        .atas-bottom-status {
+            display: flex; justify-content: space-between; align-items: center;
+            background: #05080E; border-top: 1px solid #141D2B; padding: 6px 16px;
+            font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #64748B;
+        }
+
         /* ATAS Orderflow Terminal Box */
         .atas-terminal-box {
             background: #000000; border: 1px solid #1E293B; border-radius: 8px;
@@ -157,7 +177,7 @@
         .timeframe-pill.active, .timeframe-pill:hover { background: #131E31; color: #38BDF8; border-color: #243550; }
 
         #tv-chart-wrapper {
-            position: relative; width: 100%; height: 680px; background-color: #000000;
+            position: relative; width: 100%; height: 750px; background-color: #000000;
         }
         #atas-tv-chart { width: 100%; height: 100%; }
         #atas-canvas {
@@ -216,7 +236,7 @@
             <span class="badge badge-live">100% CLOUD AUTOMATED</span>
         </div>
         <div style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #94A3B8;">
-            Cập nhật: <b id="lbl-last-update">01/11/2026 10:24:56 (Giờ VN)</b>
+            Cập nhật: <b id="lbl-last-update">01/11/2026 10:36:37 (Giờ VN)</b>
         </div>
     </div>
 
@@ -326,18 +346,37 @@
             </div>
         </div>
 
-        <div id="tv-chart-wrapper">
-            <div class="atas-floating-hud">
-                <div class="hud-item"><span class="hud-label">NET GEX:</span> <b id="hud-gex-val" style="color: #F87171;">-474.0M</b></div>
-                <div class="hud-item"><span class="hud-label">CHARM (GHÌM ĐÊM):</span> <b id="hud-charm-val" style="color:#C084FC;">$+34.6M/d</b></div>
-                <div class="hud-item"><span class="hud-label">VANNA (REBOUND):</span> <b id="hud-vanna-val" style="color:#22D3EE;">$-4.5M</b></div>
-                <div class="hud-item"><span class="hud-label">1-SIGMA:</span> <b id="hud-sigma-val" style="color:#FACC15;">&plusmn;534.2p</b></div>
+                <div class="atas-body-container">
+            <!-- Authentic ATAS Left Drawing Toolbar -->
+            <div class="atas-left-tools">
+                <span class="tool-btn active" title="Con trỏ">✛</span>
+                <span class="tool-btn" title="Đường xu hướng">╱</span>
+                <span class="tool-btn" title="Tia ngang">━</span>
+                <span class="tool-btn" title="Mũi tên">↗</span>
+                <span class="tool-btn" title="Vẽ tự do">✎</span>
+                <span class="tool-btn" title="Văn bản">T</span>
+                <span class="tool-btn" title="Hộp vùng cản">▭</span>
+                <span class="tool-btn" title="Thước đo">📏</span>
+                <div style="flex: 1;"></div>
+                <span class="tool-btn" title="Cài đặt">⚙</span>
             </div>
-            <div id="atas-tv-chart"></div>
-            <canvas id="atas-canvas"></canvas>
+
+            <div id="tv-chart-wrapper">
+                <div class="atas-floating-hud">
+                    <div class="hud-item"><span class="hud-label">NET GEX:</span> <b id="hud-gex-val" style="color: #F87171;">-474.0M</b></div>
+                    <div class="hud-item"><span class="hud-label">CHARM (GHÌM ĐÊM):</span> <b id="hud-charm-val" style="color:#C084FC;">$+34.6M/d</b></div>
+                    <div class="hud-item"><span class="hud-label">VANNA (REBOUND):</span> <b id="hud-vanna-val" style="color:#22D3EE;">$-4.5M</b></div>
+                    <div class="hud-item"><span class="hud-label">1-SIGMA:</span> <b id="hud-sigma-val" style="color:#FACC15;">&plusmn;534.2p</b></div>
+                </div>
+                <div id="atas-tv-chart"></div>
+                <canvas id="atas-canvas"></canvas>
+            </div>
         </div>
 
-
+        <div class="atas-bottom-status">
+            <div><span style="color: #38BDF8; font-weight:700;">TrueVision Levels</span> &bull; 11h [+]</div>
+            <div>Vol Total: <b style="color: #E2E8F0;" id="bottom-vol-count">32,793,639</b></div>
+        </div>
     </div>
 
     <!-- Footer -->
@@ -522,16 +561,19 @@ function generateRealisticCandles(currentP, numBars = 60, periodSec = 60) {
         const barTime = t - (t % periodSec);
         bars.push({ time: barTime, open, high, low, close });
 
-        // Generate ATAS Cluster Imbalance Bubbles on recent 18 bars
-        if (i >= numBars - 18 && (i % 2 === 0)) {
-            const isBuy = close >= open;
-            const volNum = Math.floor(25 + Math.random() * 45);
-            clusterBubbles.push({
-                time: barTime,
-                price: isBuy ? low + (high - low) * 0.25 : high - (high - low) * 0.25,
-                vol: volNum,
-                isBuy: isBuy
-            });
+        // Generate ATAS Stacked Footprint Clusters on key reversal candles
+        if (i === numBars - 18 || i === numBars - 12 || i === numBars - 8 || i === numBars - 4 || i === numBars - 1) {
+            const numPills = 3;
+            const stepY = (high - low) / (numPills + 1);
+            const sampleVols = [55, 46, 42, 35, 50, 37, 30];
+            for (let k = 0; k < numPills; k++) {
+                clusterBubbles.push({
+                    time: barTime,
+                    price: low + stepY * (k + 1),
+                    vol: sampleVols[(i + k) % sampleVols.length],
+                    isBuy: (k % 2 === 0) ? (close >= open) : !(close >= open)
+                });
+            }
         }
     }
 
@@ -560,7 +602,7 @@ function initAtasChart() {
 
     chart = LightweightCharts.createChart(container, {
         width: container.clientWidth,
-        height: 560,
+        height: container.clientHeight || 750,
         layout: {
             background: { type: 'solid', color: '#000000' },
             textColor: '#94A3B8',
@@ -584,6 +626,9 @@ function initAtasChart() {
             borderColor: '#1E293B',
             timeVisible: true,
             secondsVisible: false,
+            barSpacing: 22,
+            minBarSpacing: 10,
+            rightOffset: 12,
         },
     });
 
@@ -608,16 +653,18 @@ function initAtasChart() {
         title: 'F0 LIVE',
     });
 
+    const initialH = container.clientHeight || 750;
     if (canvas) {
         canvas.width = container.clientWidth;
-        canvas.height = 560;
+        canvas.height = initialH;
     }
 
     window.addEventListener('resize', () => {
-        chart.applyOptions({ width: container.clientWidth });
+        const newH = container.clientHeight || 750;
+        chart.applyOptions({ width: container.clientWidth, height: newH });
         if (canvas) {
             canvas.width = container.clientWidth;
-            canvas.height = 560;
+            canvas.height = newH;
         }
         drawAtasOverlay();
     });
@@ -633,7 +680,11 @@ function buildHistoricalBars(periodSec = 60) {
     const bars = generateRealisticCandles(currentPrice, 60, periodSec);
     lastCandle = bars[bars.length - 1];
     candleSeries.setData(bars);
-    chart.timeScale().fitContent();
+    const totalBars = bars.length;
+    chart.timeScale().setVisibleLogicalRange({
+        from: totalBars - 32,
+        to: totalBars + 8,
+    });
     setTimeout(() => drawAtasOverlay(), 80);
 }
 
@@ -817,18 +868,19 @@ function drawAtasOverlay() {
             const x = chart.timeScale().timeToCoordinate(cb.time);
             const y = candleSeries.priceToCoordinate(cb.price);
             if (x !== null && y !== null && x >= 75 && x <= w - 90 && y >= 10 && y <= h - 20) {
-                ctx.fillStyle = cb.isBuy ? 'rgba(34, 197, 94, 0.9)' : 'rgba(239, 68, 68, 0.9)';
+                const isGold = cb.vol >= 45;
+                ctx.fillStyle = isGold ? 'rgba(234, 179, 8, 0.92)' : (cb.isBuy ? 'rgba(34, 197, 94, 0.9)' : 'rgba(56, 189, 248, 0.9)');
                 ctx.beginPath();
-                ctx.arc(x, y, 9, 0, Math.PI * 2);
+                ctx.arc(x, y, 10.5, 0, Math.PI * 2);
                 ctx.fill();
                 ctx.strokeStyle = '#FFFFFF';
-                ctx.lineWidth = 0.8;
+                ctx.lineWidth = 1;
                 ctx.stroke();
 
-                ctx.fillStyle = '#FFFFFF';
-                ctx.font = 'bold 8.5px "JetBrains Mono", monospace';
+                ctx.fillStyle = isGold ? '#000000' : '#FFFFFF';
+                ctx.font = 'bold 9.5px "JetBrains Mono", monospace';
                 ctx.textAlign = 'center';
-                ctx.fillText(cb.vol, x, y + 3);
+                ctx.fillText(cb.vol, x, y + 3.5);
             }
         });
     }
