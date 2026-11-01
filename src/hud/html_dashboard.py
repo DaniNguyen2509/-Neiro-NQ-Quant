@@ -434,6 +434,27 @@ def generate_html_terminal(df: pd.DataFrame, meta: Dict[str, Any], fig: go.Figur
     secondary_support = meta["secondary_support"]
     r_rate = meta.get("risk_free_rate", 0.0397)
 
+    # Cost of Carry for Nasdaq Index (NQ Futures): F_theoretical = S_0 * exp((r - d) * T)
+    div_yield_ndx = 0.0058  # Dividend yield rổ Nasdaq 100 ~ 0.58%
+    dte_val = meta.get("dte_days", 1.0)
+    t_carry = max(dte_val, 0.5) / 365.0
+    spot_underlying = meta.get("spot_underlying_ndx", spot - basis if abs(basis) > 0.01 else spot - 12.5)
+    f0_theoretical = spot_underlying * math.exp((r_rate - div_yield_ndx) * t_carry)
+    delta_f = spot - f0_theoretical
+
+    if delta_f > 3.0:
+        delta_badge_class = "badge-pos"
+        delta_status = "PREMIUM &bull; MUA ĐUỔI"
+        delta_color = "#4ADE80"
+    elif delta_f < -3.0:
+        delta_badge_class = "badge-neg"
+        delta_status = "DISCOUNT &bull; BÁN XẢ"
+        delta_color = "#F87171"
+    else:
+        delta_badge_class = "badge-gold"
+        delta_status = "FAIR VALUE &bull; CÂN BẰNG"
+        delta_color = "#FACC15" 
+
     # Tactical Microstructure Ladder for 1M/5M ATAS Chart (25/50 pts grid centered around spot)
     tactical_step = 25.0
     atm_pivot = round(spot / tactical_step) * tactical_step
@@ -469,7 +490,7 @@ def generate_html_terminal(df: pd.DataFrame, meta: Dict[str, Any], fig: go.Figur
         <div class="kpi-card">
             <div class="kpi-label">SPOT CME FUTURES (F0) &mdash; CME GLOBEX</div>
             <div class="kpi-val" style="color: #60A5FA;" id="kpi-spot-display">NQ <span id="kpi-spot-num">{spot:,.1f}</span></div>
-            <div class="kpi-sub">Trục ATM Option Pivot: <b id="kpi-atm-num">{meta['atm_strike']:,.0f} pts</b> | Đồng bộ TV & MT5 Forward</div>
+            <div class="kpi-sub">F0 Lý Thuyết: <b id="kpi-fair-f0">{f0_theoretical:,.1f}</b> | Độ Lệch &Delta;F: <b id="kpi-delta-f" style="color: {delta_color};">{delta_f:+.1f} pts</b> (<span id="kpi-delta-status">{delta_status}</span>)</div>
         </div>
         """
         th_mt5 = ""
@@ -488,7 +509,7 @@ def generate_html_terminal(df: pd.DataFrame, meta: Dict[str, Any], fig: go.Figur
         <div class="kpi-card">
             <div class="kpi-label">SPOT CME FUTURES &mdash; SPOT MT5 (Quy đổi)</div>
             <div class="kpi-val" style="color: #60A5FA;" id="kpi-spot-display">NQ <span id="kpi-spot-num">{spot:,.1f}</span> <span style="font-size: 15px; color: #38BDF8;">(MT5: ~<span id="kpi-mt5-num">{spot_mt5:,.1f}</span>)</span></div>
-            <div class="kpi-sub">Trục ATM CME: <b id="kpi-atm-num">{meta['atm_strike']:,.0f} pts</b> | Basis MT5 Spot: <b>{basis:+0.1f} pts</b></div>
+            <div class="kpi-sub">F0 Lý Thuyết: <b id="kpi-fair-f0">{f0_theoretical:,.1f}</b> | Độ Lệch &Delta;F: <b id="kpi-delta-f" style="color: {delta_color};">{delta_f:+.1f} pts</b> (<span id="kpi-delta-status">{delta_status}</span>)</div>
         </div>
         """
         th_mt5 = "<th>MT5 Spot (~ Basis)</th>"
@@ -563,6 +584,10 @@ def generate_html_terminal(df: pd.DataFrame, meta: Dict[str, Any], fig: go.Figur
         "risk_free_rate": r_rate,
         "effective_multiplier": meta.get("effective_multiplier", 20.0),
         "sigma_atm": meta.get("sigma_atm", 0.18),
+        "f0_theoretical": float(round(f0_theoretical, 2)),
+        "delta_f": float(round(delta_f, 2)),
+        "div_yield": div_yield_ndx,
+        "spot_underlying": float(round(spot_underlying, 2)),
     })
 
     html = f"""<!DOCTYPE html>
@@ -820,6 +845,16 @@ def generate_html_terminal(df: pd.DataFrame, meta: Dict[str, Any], fig: go.Figur
             <div class="ticker-item">
                 <span style="color: #94A3B8;">DTE:</span>
                 <b style="color: #A855F7;">{meta.get('dte_days', 1.0):.1f} ngày</b>
+            </div>
+            <div class="ticker-item" style="color: #64748B;">|</div>
+            <div class="ticker-item">
+                <span style="color: #94A3B8;">F0 LÝ THUYẾT:</span>
+                <b style="color: #E2E8F0;" id="top-ticker-f0-fair">{f0_theoretical:,.1f}</b>
+            </div>
+            <div class="ticker-item" style="color: #64748B;">|</div>
+            <div class="ticker-item">
+                <span style="color: #94A3B8;">ĐỘ LỆCH &Delta;F:</span>
+                <span id="top-ticker-delta-f" class="badge {delta_badge_class}">{delta_f:+.1f} pts ({delta_status})</span>
             </div>
         </div>
         <div class="ticker-controls">
@@ -1457,6 +1492,33 @@ function onTick(price, isUserOverride = false) {{
     const elVexVal = document.getElementById('kpi-vex-val');
     if (elVexVal) {{
         elVexVal.innerText = (res.totalVEX >= 0 ? "+" : "") + "$" + res.totalVEX.toFixed(1) + "M / " + (res.totalCHEX >= 0 ? "+" : "") + "$" + res.totalCHEX.toFixed(1) + "M";
+    }}
+
+    // Recalculate F0 Theoretical & Delta F Spread
+    const divYield = window.INITIAL_META.div_yield || 0.0058;
+    const spotUnd = window.INITIAL_META.spot_underlying || (currentPrice - 12.5);
+    const f0Fair = spotUnd * Math.exp((rRate - divYield) * tYears);
+    const deltaF = currentPrice - f0Fair;
+
+    const f0FairEl = document.getElementById("top-ticker-f0-fair");
+    if (f0FairEl) f0FairEl.textContent = f0Fair.toLocaleString('en-US', {{ minimumFractionDigits: 1, maximumFractionDigits: 1 }});
+    const deltaFEl = document.getElementById("top-ticker-delta-f");
+    if (deltaFEl) {{
+        const statusText = deltaF > 3 ? "PREMIUM • MUA ĐUỔI" : (deltaF < -3 ? "DISCOUNT • BÁN XẢ" : "FAIR VALUE • CÂN BẰNG");
+        const badgeCls = deltaF > 3 ? "badge badge-pos" : (deltaF < -3 ? "badge badge-neg" : "badge badge-gold");
+        deltaFEl.className = badgeCls;
+        deltaFEl.innerHTML = (deltaF >= 0 ? "+" : "") + deltaF.toFixed(1) + " pts (" + statusText + ")";
+    }}
+    const kpiFairEl = document.getElementById("kpi-fair-f0");
+    if (kpiFairEl) kpiFairEl.textContent = f0Fair.toLocaleString('en-US', {{ minimumFractionDigits: 1, maximumFractionDigits: 1 }});
+    const kpiDeltaEl = document.getElementById("kpi-delta-f");
+    if (kpiDeltaEl) {{
+        kpiDeltaEl.style.color = deltaF > 3 ? "#4ADE80" : (deltaF < -3 ? "#F87171" : "#FACC15");
+        kpiDeltaEl.textContent = (deltaF >= 0 ? "+" : "") + deltaF.toFixed(1) + " pts";
+    }}
+    const kpiDeltaStatEl = document.getElementById("kpi-delta-status");
+    if (kpiDeltaStatEl) {{
+        kpiDeltaStatEl.textContent = deltaF > 3 ? "PREMIUM • MUA ĐUỔI" : (deltaF < -3 ? "DISCOUNT • BÁN XẢ" : "FAIR VALUE • CÂN BẰNG");
     }}
 
     const elRadar = document.getElementById('live-greeks-radar');
