@@ -269,7 +269,7 @@
         <div class="atas-logo-badge">
             <span style="color:#38BDF8; font-weight:800;">ATAS</span>
             <span style="color:#94A3B8;">TrueVision Levels &bull; 11h [+]</span>
-            <span style="color:#475569; font-size:9.5px; margin-left:8px;">Cập nhật: 01/11/2026 11:21:30 (VN)</span>
+            <span style="color:#475569; font-size:9.5px; margin-left:8px;">Cập nhật: 01/11/2026 11:27:58 (VN)</span>
         </div>
         <div style="display:flex; align-items:center; gap:10px;">
             <span style="color:#475569; font-size:10px;">CME GLOBEX</span>
@@ -419,6 +419,7 @@ let lastCandle = null;
 let currentTimeframe = '1m';
 let currentPeriod = 60; // 60s default for 1M
 let clusterBubbles = [];
+let anchoredZones = [];
 let volumeProfileBins = [];
 
 // Brownian-Bridge Candlestick Generator: Smooth realistic 1M walk ending EXACTLY at currentP
@@ -472,6 +473,25 @@ function generateRealisticCandles(currentP, numBars = 60, periodSec = 60) {
             }
         }
     }
+
+    // ATAS anchored orderflow zones: each zone starts at a specific candle and extends right
+    anchoredZones = [];
+    const zoneDefs = [
+        { idx: numBars - 22, label: 'deep ef stack', side: 'high', oval: true },
+        { idx: numBars - 19, label: '',              side: 'high', oval: true },
+        { idx: numBars - 15, label: 'buyer abs',     side: 'low',  oval: false },
+        { idx: numBars - 10, label: 'seller offer',  side: 'high', oval: true, tag: '+1R' },
+        { idx: numBars - 6,  label: '',              side: 'low',  oval: false },
+    ];
+    zoneDefs.forEach(z => {
+        const b = bars[z.idx];
+        if (!b) return;
+        const bodyTop = Math.max(b.open, b.close);
+        const bodyBot = Math.min(b.open, b.close);
+        const top = z.side === 'high' ? b.high : bodyBot + 0.75;
+        const bot = z.side === 'high' ? Math.max(bodyTop - 0.75, b.low) : b.low;
+        anchoredZones.push({ time: b.time, top: Math.max(top, bot + 0.75), bottom: bot, label: z.label, oval: z.oval, tag: z.tag || '' });
+    });
 
     bars[bars.length - 1].close = currentP;
     bars[bars.length - 1].high = Math.max(bars[bars.length - 1].high, currentP);
@@ -635,95 +655,40 @@ function drawAtasOverlay() {
         ctx.fillText('..... Put wall · Gamma C · Gamma P · DEX P · #1 · OI put ' + (m.put_wall_oi || 31287).toLocaleString(), rightX - 5, yPw - 4);
     }
 
-    // B. deep ef stack (Two stacked horizontal grey bars)
-    const yDeepTop = candleSeries.priceToCoordinate(m.deep_ef + 4.5);
-    const yDeepMid = candleSeries.priceToCoordinate(m.deep_ef);
-    const yDeepBot = candleSeries.priceToCoordinate(m.deep_ef - 4.5);
-    if (yDeepTop !== null && yDeepBot !== null && boxW > 40) {
-        const bH = Math.max(10, Math.abs(yDeepMid - yDeepTop));
-        // Bar 1
-        ctx.fillStyle = 'rgba(85, 93, 106, 0.65)';
-        ctx.fillRect(startX + 35, Math.min(yDeepTop, yDeepMid), boxW - 35, bH);
-        ctx.strokeStyle = '#71717A';
+    // B. ATAS anchored zones: x starts at the source candle, extends to the price scale
+    anchoredZones.forEach(z => {
+        const x0 = chart.timeScale().timeToCoordinate(z.time);
+        const yT = candleSeries.priceToCoordinate(z.top);
+        const yB = candleSeries.priceToCoordinate(z.bottom);
+        if (x0 === null || yT === null || yB === null || x0 > rightX) return;
+        const xs = Math.max(0, x0 - 4);
+        const top = Math.min(yT, yB);
+        const hz = Math.max(6, Math.abs(yB - yT));
+        ctx.fillStyle = 'rgba(150, 156, 166, 0.55)';
+        ctx.fillRect(xs, top, rightX - xs, hz);
+        ctx.strokeStyle = 'rgba(200, 204, 212, 0.6)';
         ctx.lineWidth = 1;
-        ctx.strokeRect(startX + 35, Math.min(yDeepTop, yDeepMid), boxW - 35, bH);
-
-        // Bar 2
-        ctx.fillStyle = 'rgba(85, 93, 106, 0.65)';
-        ctx.fillRect(startX, Math.min(yDeepMid, yDeepBot), boxW, bH);
-        ctx.strokeStyle = '#71717A';
-        ctx.lineWidth = 1;
-        ctx.strokeRect(startX, Math.min(yDeepMid, yDeepBot), boxW, bH);
-
-        // Label: deep ef stack
-        ctx.fillStyle = '#FFFFFF';
-        ctx.font = 'bold 11px "JetBrains Mono", monospace';
-        ctx.textAlign = 'center';
-        ctx.fillText('deep ef stack', startX + (boxW / 2), Math.max(yDeepTop, yDeepBot) + 14);
-
-        // Red Oval indicator
-        ctx.strokeStyle = 'rgba(239, 68, 68, 0.85)';
-        ctx.lineWidth = 1.6;
-        ctx.beginPath();
-        ctx.ellipse(startX + 65, (yDeepTop + yDeepBot) / 2, 45, 11, 0, 0, Math.PI * 2);
-        ctx.stroke();
-    }
-
-    // C. buyer abs (Solid grey absorption band)
-    const yBuyerTop = candleSeries.priceToCoordinate(m.buyer_abs + 3.5);
-    const yBuyerBot = candleSeries.priceToCoordinate(m.buyer_abs - 3.5);
-    if (yBuyerTop !== null && yBuyerBot !== null && boxW > 40) {
-        const topB = Math.min(yBuyerTop, yBuyerBot);
-        const hB = Math.max(14, Math.abs(yBuyerBot - yBuyerTop));
-        ctx.fillStyle = 'rgba(85, 93, 106, 0.65)';
-        ctx.fillRect(startX + 60, topB, boxW - 60, hB);
-        ctx.strokeStyle = '#71717A';
-        ctx.lineWidth = 1;
-        ctx.strokeRect(startX + 60, topB, boxW - 60, hB);
-
-        ctx.fillStyle = '#FFFFFF';
-        ctx.font = 'bold 11px "JetBrains Mono", monospace';
-        ctx.textAlign = 'center';
-        ctx.fillText('buyer abs', startX + 60 + ((boxW - 60) / 2), topB - 4);
-    }
-
-    // D. +1R Target Label
-    if (yBuyerTop !== null) {
-        ctx.fillStyle = '#FFFFFF';
-        ctx.font = 'bold 11px "JetBrains Mono", monospace';
-        ctx.textAlign = 'center';
-        ctx.fillText('+1R', startX + 60 + ((boxW - 60) / 2) + 60, yBuyerTop + 32);
-    }
-
-    // E. seller offer (Thick dark band)
-    const ySellerTop = candleSeries.priceToCoordinate(m.seller_offer + 5.0);
-    const ySellerBot = candleSeries.priceToCoordinate(m.seller_offer - 5.0);
-    if (ySellerTop !== null && ySellerBot !== null && boxW > 40) {
-        const topS = Math.min(ySellerTop, ySellerBot);
-        const hS = Math.max(22, Math.abs(ySellerBot - ySellerTop));
-        ctx.fillStyle = 'rgba(39, 45, 56, 0.75)';
-        ctx.fillRect(80, topS, rightX - 80, hS);
-        ctx.strokeStyle = '#52525B';
-        ctx.lineWidth = 1;
-        ctx.strokeRect(80, topS, rightX - 80, hS);
-
-        ctx.fillStyle = '#FFFFFF';
-        ctx.font = 'bold 11px "JetBrains Mono", monospace';
-        ctx.textAlign = 'left';
-        ctx.fillText('seller offer', startX + 30, topS - 4);
-
-        // Lower bar within seller offer
-        ctx.fillStyle = 'rgba(85, 93, 106, 0.65)';
-        ctx.fillRect(startX + 40, topS + hS - 12, boxW - 40, 12);
-        ctx.strokeRect(startX + 40, topS + hS - 12, boxW - 40, 12);
-
-        // Red oval around seller offer execution cluster
-        ctx.strokeStyle = 'rgba(239, 68, 68, 0.85)';
-        ctx.lineWidth = 1.6;
-        ctx.beginPath();
-        ctx.ellipse(startX + 10, topS + 12, 60, 14, 0, 0, Math.PI * 2);
-        ctx.stroke();
-    }
+        ctx.strokeRect(xs, top, rightX - xs, hz);
+        if (z.label) {
+            ctx.fillStyle = '#FFFFFF';
+            ctx.font = '12px Inter, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText(z.label, xs + (rightX - xs) * 0.55, top - 6);
+        }
+        if (z.tag) {
+            ctx.fillStyle = '#FFFFFF';
+            ctx.font = '12px Inter, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText(z.tag, xs + (rightX - xs) * 0.8, top - 24);
+        }
+        if (z.oval) {
+            ctx.strokeStyle = 'rgba(239, 68, 68, 0.85)';
+            ctx.lineWidth = 1.4;
+            ctx.beginPath();
+            ctx.ellipse(xs + (rightX - xs) * 0.55, top + hz / 2, 50, Math.max(9, hz), 0, 0, Math.PI * 2);
+            ctx.stroke();
+        }
+    });
 
     // F. gex 5 reaction (White outlined box)
     const yGex = candleSeries.priceToCoordinate(m.gex_react || (m.spot - 15.0));
