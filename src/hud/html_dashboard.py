@@ -7,15 +7,14 @@ E-mini Nasdaq-100 Futures Options (NQ / NQZ26 / NAS100) incorporating:
   * High-contrast Pure Black ATAS styling (#000000)
   * Brownian-bridge 1-Minute Candlestick generator (zero artificial spike artifacts)
   * HTML5 Canvas Orderflow Layer synchronized with TradingView Lightweight Charts v4.2
-  * Horizontal Shaded Execution Stack Zones across the chart:
-    - [deep ef stack] (Institutional Execution Flow)
-    - [seller offer] (+1R Supply Zone)
-    - [gex 5 reaction] (Pivot Reaction Line)
-    - [F0 LIVE] (Tick-by-tick Horizontal Price Line)
-    - [buyer abs] (Buyer Absorption Zone)
-    - [put wall] & [call wall] (Major Gamma Support & Resistance)
-  * TrueVision / ATAS Cluster Imbalance Bubbles on Candlesticks
-  * Left Volume Profile Histogram (Bid/Ask cluster profile)
+  * Pure Institutional CME Globex Candlesticks (1m, 5m, 15m, 1h, 1d)
+  * Real Black-76 Quantitative Options Levels:
+    - [CALL WALL] & [PUT WALL] (Major Gamma Support & Resistance)
+    - [GAMMA SQUEEZE ↑] & [GAMMA SQUEEZE ↓] (Breakout Acceleration Targets)
+    - [VANNA (VEX)] & [CHARM (CHEX)] (Volatility Rebound & Overnight Drift Pin)
+    - [GAMMA FLIP] (Equilibrium Pivot Axis)
+    - [F0 LIVE] (Tick-by-tick Settlement Price Line)
+  * Per-Strike Greeks Exposure Profile Overlay (GEX, VEX, CHEX, THETA)
 - In-Browser Client-Side Black-76 Engine (Pure JS):
   * Recalculates Delta, Gamma, Theta, Vega, Vanna, Charm, and Net GEX ($M) every second
   * Realistic institutional Greek scaling (Theta -$k/day, Vega $M, Vanna, Charm)
@@ -984,9 +983,6 @@ const initialBasePrice = window.INITIAL_META.spot;
 let lastCandle = null;
 let currentTimeframe = '15m';
 let currentPeriod = 900; // 900s default for M15 candles
-let clusterBubbles = [];
-let anchoredZones = [];
-
 // Brownian-Bridge Candlestick Generator: Smooth realistic M15 walk ending EXACTLY at currentP
 function generateRealisticCandles(currentP, numBars = 60, periodSec = 900) {{
     const bars = [];
@@ -1008,7 +1004,6 @@ function generateRealisticCandles(currentP, numBars = 60, periodSec = 900) {{
     const correction = (targetDrift - sum) / numBars;
 
     let p = startP;
-    clusterBubbles = [];
 
     for (let i = 0; i < numBars; i++) {{
         const t = startSec + i * periodSec;
@@ -1021,49 +1016,7 @@ function generateRealisticCandles(currentP, numBars = 60, periodSec = 900) {{
         const barTime = t - (t % periodSec);
         bars.push({{ time: barTime, open, high, low, close }});
 
-        // Generate authentic Footprint delta cluster bubbles along key reversal M15 candles
-        if (i === numBars - 20 || i === numBars - 12 || i === numBars - 28) {{
-            const clusterCounts = 5;
-            const stepY = (high - low) / (clusterCounts + 1);
-            const sampleVols = [35, 42, 55, 46, 50, 38, 52];
-            for (let k = 0; k < clusterCounts; k++) {{
-                const v = sampleVols[(i + k) % sampleVols.length];
-                clusterBubbles.push({{
-                    time: barTime,
-                    price: low + stepY * (k + 1),
-                    vol: v,
-                    isGold: (v >= 45) // Ochre/gold for high absorption, dark blue for Delta
-                }});
-            }}
-        }}
     }}
-
-    // Orderflow absorption zones DRAWN DIRECTLY ON THE M15 CANDLES:
-    anchoredZones = [];
-    const zoneDefs = [
-        {{ idx: numBars - 28, endIdx: numBars - 25, label: 'deep of stack', side: 'high', oval: true }},
-        {{ idx: numBars - 20, endIdx: numBars - 16, label: 'buyer abs',     side: 'low',  oval: true }},
-        {{ idx: numBars - 12, endIdx: numBars - 8,  label: 'seller offer',  side: 'high', oval: true, tag: '+1R' }},
-    ];
-    zoneDefs.forEach(z => {{
-        const b = bars[z.idx];
-        const bEnd = bars[z.endIdx] || bars[bars.length - 1];
-        if (!b) return;
-        const bodyTop = Math.max(b.open, b.close);
-        const bodyBot = Math.min(b.open, b.close);
-        const top = z.side === 'high' ? b.high : bodyBot + 1.75;
-        const bot = z.side === 'high' ? Math.max(bodyTop - 1.75, b.low) : b.low;
-        anchoredZones.push({{
-            time: b.time,
-            endTime: bEnd ? bEnd.time : null,
-            top: Math.max(top, bot + 1.25),
-            bottom: bot,
-            label: z.label,
-            oval: z.oval,
-            tag: z.tag || '',
-            side: z.side
-        }});
-    }});
 
     bars[bars.length - 1].close = currentP;
     bars[bars.length - 1].high = Math.max(bars[bars.length - 1].high, currentP);
@@ -1152,71 +1105,6 @@ function initAtasChart() {{
     drawAtasOverlay();
 }}
 
-function deriveOrderflowFromRealBars(bars) {{
-    clusterBubbles = [];
-    anchoredZones = [];
-    const n = bars.length;
-    if (n < 15) return;
-
-    let maxH = -1e9, maxIdx = n - 10;
-    let minL = 1e9, minIdx = n - 18;
-    const searchWindow = Math.min(35, n - 4);
-    for (let i = n - searchWindow; i < n - 2; i++) {{
-        if (bars[i].high > maxH) {{
-            maxH = bars[i].high;
-            maxIdx = i;
-        }}
-        if (bars[i].low < minL) {{
-            minL = bars[i].low;
-            minIdx = i;
-        }}
-    }}
-
-    const deepIdx = Math.max(0, Math.min(n - 28, Math.floor((maxIdx + minIdx) / 2)));
-
-    const zoneDefs = [
-        {{ idx: deepIdx, endIdx: deepIdx + 4, label: 'deep of stack', side: 'high', oval: true }},
-        {{ idx: minIdx,  endIdx: minIdx + 4,  label: 'buyer abs',     side: 'low',  oval: true }},
-        {{ idx: maxIdx,  endIdx: maxIdx + 4,  label: 'seller offer',  side: 'high', oval: true, tag: '+1R' }},
-    ];
-    zoneDefs.forEach(z => {{
-        const b = bars[z.idx];
-        const bEnd = bars[z.endIdx] || bars[n - 1];
-        if (!b) return;
-        const bodyTop = Math.max(b.open, b.close);
-        const bodyBot = Math.min(b.open, b.close);
-        const top = z.side === 'high' ? b.high : bodyBot + 1.75;
-        const bot = z.side === 'high' ? Math.max(bodyTop - 1.75, b.low) : b.low;
-        anchoredZones.push({{
-            time: b.time,
-            endTime: bEnd ? bEnd.time : null,
-            top: Math.max(top, bot + 1.25),
-            bottom: bot,
-            label: z.label,
-            oval: z.oval,
-            tag: z.tag || '',
-            side: z.side
-        }});
-    }});
-
-    [maxIdx, minIdx, deepIdx].forEach(idx => {{
-        const b = bars[idx];
-        if (!b) return;
-        const clusterCounts = 5;
-        const stepY = (b.high - b.low) / (clusterCounts + 1);
-        const sampleVols = [38, 52, 45, 60, 42];
-        for (let k = 0; k < clusterCounts; k++) {{
-            const v = sampleVols[k % sampleVols.length];
-            clusterBubbles.push({{
-                time: b.time,
-                price: b.low + stepY * (k + 1),
-                vol: v,
-                isGold: (v >= 45)
-            }});
-        }}
-    }});
-}}
-
 function buildHistoricalBars(periodSec = 900) {{
     currentPeriod = periodSec;
     const tfKey = currentTimeframe || '15m';
@@ -1229,8 +1117,6 @@ function buildHistoricalBars(periodSec = 900) {{
         bars[bars.length - 1].close = currentPrice;
         bars[bars.length - 1].high = Math.max(bars[bars.length - 1].high, currentPrice);
         bars[bars.length - 1].low = Math.min(bars[bars.length - 1].low, currentPrice);
-
-        deriveOrderflowFromRealBars(bars);
     }} else {{
         bars = generateRealisticCandles(currentPrice, 60, periodSec);
     }}
@@ -1260,83 +1146,7 @@ function drawAtasOverlay() {{
     const m = window.INITIAL_META;
     const rightX = w - 70;
 
-    // 1. Orderflow Absorption Zones: Drawn directly on the M15 candles (đi theo từng nến)
-    anchoredZones.forEach(z => {{
-        const x0 = chart.timeScale().timeToCoordinate(z.time);
-        const x1 = z.endTime ? chart.timeScale().timeToCoordinate(z.endTime) : null;
-        const yT = candleSeries.priceToCoordinate(z.top);
-        const yB = candleSeries.priceToCoordinate(z.bottom);
-        if (x0 === null || yT === null || yB === null) return;
-        const top = Math.min(yT, yB);
-        const hz = Math.max(7, Math.abs(yB - yT));
-        const xs = x0 - 8;
-        const xe = (x1 !== null && x1 > x0) ? (x1 + 8) : (x0 + 38);
-        const wBox = Math.max(22, Math.min(xe - xs, rightX - xs - 8));
-
-        // Shaded orderflow absorption block tightly bounding these candles
-        ctx.fillStyle = 'rgba(148, 163, 184, 0.28)';
-        ctx.fillRect(xs, top, wBox, hz);
-        ctx.strokeStyle = 'rgba(203, 213, 225, 0.55)';
-        ctx.lineWidth = 1;
-        ctx.strokeRect(xs, top, wBox, hz);
-
-        // Red oval circling the trigger candle footprint cluster at x0
-        if (z.oval) {{
-            ctx.strokeStyle = 'rgba(239, 68, 68, 0.92)';
-            ctx.lineWidth = 1.6;
-            ctx.beginPath();
-            ctx.ellipse(x0, top + hz / 2, 14, Math.max(8, hz / 2 + 3), 0, 0, Math.PI * 2);
-            ctx.stroke();
-        }}
-
-        // Label badge placed directly at candle x0
-        if (z.label) {{
-            ctx.font = 'bold 10px "JetBrains Mono", monospace';
-            const tw = ctx.measureText(z.label).width;
-            const ly = z.side === 'high' ? (top - 8) : (top + hz + 14);
-            ctx.fillStyle = 'rgba(15, 23, 42, 0.90)';
-            ctx.fillRect(x0 - tw / 2 - 4, ly - 10, tw + 8, 14);
-            ctx.strokeStyle = 'rgba(148, 163, 184, 0.5)';
-            ctx.strokeRect(x0 - tw / 2 - 4, ly - 10, tw + 8, 14);
-            ctx.fillStyle = '#FFFFFF';
-            ctx.textAlign = 'center';
-            ctx.fillText(z.label, x0, ly);
-        }}
-
-        // Tag (+1R) placed right at candle x0
-        if (z.tag) {{
-            ctx.font = 'bold 9.5px "JetBrains Mono", monospace';
-            const ty = z.side === 'high' ? (top - 23) : (top + hz + 28);
-            ctx.fillStyle = '#38BDF8';
-            ctx.textAlign = 'center';
-            ctx.fillText(z.tag, x0, ty);
-        }}
-    }});
-
-    // 2. Footprint Delta Cluster Bubbles directly on reversal candles
-    if (clusterBubbles && clusterBubbles.length > 0) {{
-        clusterBubbles.forEach(cb => {{
-            const x = chart.timeScale().timeToCoordinate(cb.time);
-            const y = candleSeries.priceToCoordinate(cb.price);
-            if (x !== null && y !== null && x >= 10 && x <= rightX - 10 && y >= 10 && y <= h - 20) {{
-                // Gold/Ochre (#B45309) for absorption, Dark Blue (#1D4ED8) for Delta
-                ctx.fillStyle = cb.isGold ? '#B45309' : '#1D4ED8';
-                ctx.beginPath();
-                ctx.arc(x, y, 8.5, 0, Math.PI * 2);
-                ctx.fill();
-                ctx.strokeStyle = cb.isGold ? '#FDE047' : '#93C5FD';
-                ctx.lineWidth = 0.8;
-                ctx.stroke();
-
-                ctx.fillStyle = '#FFFFFF';
-                ctx.font = 'bold 8.5px "JetBrains Mono", monospace';
-                ctx.textAlign = 'center';
-                ctx.fillText(cb.vol, x, y + 3);
-            }}
-        }});
-    }}
-
-    // 3. Key Greeks levels: Call/Put Wall, Gamma Flip, Gamma Squeeze, Vanna, Charm
+    // 1. Key Quant Options Levels: Call/Put Wall, Gamma Flip, Gamma Squeeze, Vanna, Charm
     const keyLevels = [
         {{ p: m.tactical_call_wall || m.call_wall, c: '#EF4444', d: [6, 4], txt: 'CALL WALL ' + Math.round(m.tactical_call_wall || m.call_wall) + ' · OI ' + (m.call_wall_oi || 0).toLocaleString() }},
         {{ p: m.tactical_put_wall || m.put_wall,   c: '#22C55E', d: [6, 4], txt: 'PUT WALL ' + Math.round(m.tactical_put_wall || m.put_wall) + ' · OI ' + (m.put_wall_oi || 0).toLocaleString() }},
@@ -1401,7 +1211,7 @@ function drawAtasOverlay() {{
         }}
     }});
 
-    // 4. Per-strike Greeks exposure profile (GEX | VEX | CHEX | THETA)
+    // 2. Per-strike Greeks exposure profile (GEX | VEX | CHEX | THETA)
     const opts = window.INITIAL_OPTIONS || [];
     if (opts.length && opts[0].currentNetGEX !== undefined) {{
         const cols = [
