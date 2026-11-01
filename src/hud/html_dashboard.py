@@ -749,7 +749,7 @@ def generate_html_terminal(df: pd.DataFrame, meta: Dict[str, Any], fig: go.Figur
         .timeframe-pill.active, .timeframe-pill:hover {{ background: #131E31; color: #38BDF8; border-color: #243550; }}
 
         #tv-chart-wrapper {{
-            position: relative; width: 100%; height: 620px; background-color: #000000;
+            position: relative; width: 100%; height: 680px; background-color: #000000;
         }}
         #atas-tv-chart {{ width: 100%; height: 100%; }}
         #atas-canvas {{
@@ -757,12 +757,7 @@ def generate_html_terminal(df: pd.DataFrame, meta: Dict[str, Any], fig: go.Figur
             pointer-events: none; z-index: 5;
         }}
 
-        .slider-box {{
-            display: flex; align-items: center; justify-content: space-between; gap: 14px;
-            background: #080D15; border-top: 1px solid #162030; padding: 7px 16px;
-            font-family: 'JetBrains Mono', monospace; font-size: 11px;
-        }}
-        .slider-box input[type=range] {{ flex: 1; accent-color: #38BDF8; cursor: pointer; }}
+
 
         .chart-box {{
             background-color: var(--bg-card); border: 1px solid var(--border-color);
@@ -858,7 +853,7 @@ def generate_html_terminal(df: pd.DataFrame, meta: Dict[str, Any], fig: go.Figur
             </div>
         </div>
         <div class="ticker-controls">
-            <button class="btn-ctrl btn-sim" id="btn-toggle-sim" onclick="toggleSimulation()">● SIMULATION: ON</button>
+            <button class="btn-ctrl btn-sim paused" id="btn-toggle-sim" onclick="toggleSimulation()">❚❚ SIMULATION: OFF</button>
             <button class="btn-ctrl" onclick="resetToLiveCME()">↺ RESET CME</button>
         </div>
     </div>
@@ -928,12 +923,7 @@ def generate_html_terminal(df: pd.DataFrame, meta: Dict[str, Any], fig: go.Figur
             <canvas id="atas-canvas"></canvas>
         </div>
 
-        <div class="slider-box">
-            <span style="color: #94A3B8;">THỬ NGHIỆM GIÁ NQ (SIMULATE SPOT):</span>
-            <input type="range" id="price-slider" min="{spot - 300:.0f}" max="{spot + 300:.0f}" step="0.25" value="{spot:.2f}" oninput="onSliderPriceChange(this.value)">
-            <span style="color: #38BDF8; font-weight:700; width: 90px; text-align:right;" id="slider-price-val">{spot:,.2f}</span>
-            <button class="btn-ctrl" onclick="resetToLiveCME()">MẶC ĐỊNH</button>
-        </div>
+
     </div>
 
     <!-- Footer -->
@@ -1077,7 +1067,7 @@ let candleSeries = null;
 let livePriceLine = null;
 let currentPrice = window.INITIAL_META.spot;
 const initialBasePrice = window.INITIAL_META.spot;
-let isSimulating = true;
+let isSimulating = false; // Default OFF: Stands still on CME official close
 let simInterval = null;
 let lastCandle = null;
 let currentTimeframe = '1m';
