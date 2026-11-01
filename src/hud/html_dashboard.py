@@ -608,7 +608,6 @@ def generate_html_terminal(df: pd.DataFrame, meta: Dict[str, Any], fig: go.Figur
             --bg-base: #000000; --bg-card: #0A0F18; --border-color: #141A24;
             --text-primary: #F8FAFC; --text-secondary: #94A3B8; --text-muted: #64748B;
             --neon-green: #22C55E; --neon-red: #EF4444; --neon-blue: #38BDF8; --neon-gold: #FACC15;
-            --neon-coral: #F43F5E;
         }}
         * {{ box-sizing: border-box; margin: 0; padding: 0; }}
         html, body {{
@@ -623,63 +622,73 @@ def generate_html_terminal(df: pd.DataFrame, meta: Dict[str, Any], fig: go.Figur
             background-color: #000000;
             user-select: none;
         }}
-        /* ATAS Desktop Titlebar */
+
+        /* 100% Authentic ATAS Top Titlebar */
         .atas-win-topbar {{
-            height: 38px; background: #0B0E14; border-bottom: 1px solid #161D29;
+            height: 34px; background: #161A22; border-bottom: 1px solid #232A37;
             display: flex; align-items: center; justify-content: space-between;
-            padding: 0 10px; font-family: 'JetBrains Mono', monospace; font-size: 11px;
+            padding: 0 8px; font-family: 'JetBrains Mono', monospace; font-size: 11px;
             flex-shrink: 0;
         }}
         .atas-top-left, .atas-top-center, .atas-top-right {{
-            display: flex; align-items: center; gap: 6px;
+            display: flex; align-items: center; gap: 5px;
+        }}
+        .atas-blue-indicator {{
+            width: 4px; height: 18px; background: #0284C7; border-radius: 2px; margin-right: 3px;
         }}
         .atas-tab {{
-            background: #141C28; border: 1px solid #233144; color: #FFFFFF;
-            padding: 4px 10px; border-radius: 3px; font-weight: 700; font-size: 11.5px;
+            background: #202632; border: 1px solid #2F3849; color: #FFFFFF;
+            padding: 3px 9px; border-radius: 4px; font-weight: 700; font-size: 11px;
             cursor: pointer;
         }}
         .atas-tab.active {{
-            background: #192538; border-color: #38BDF8; color: #38BDF8;
+            background: #252D3C; border-color: #38BDF8; color: #FFFFFF;
         }}
-        .atas-win-sep {{ color: #334155; margin: 0 2px; }}
-        .atas-top-tag {{
-            background: #0E141F; border: 1px solid #1E293B; color: #94A3B8;
-            padding: 3px 8px; border-radius: 3px; font-size: 11px; font-weight: 600;
+        .atas-win-sep {{ color: #3A4556; margin: 0 2px; font-size: 11px; }}
+        .atas-btn-icon {{
+            background: #202632; border: 1px solid #2F3849; color: #CBD5E1;
+            padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: 600;
+            display: flex; align-items: center; gap: 4px;
         }}
         .atas-tf-group {{ display: flex; align-items: center; gap: 2px; }}
         .timeframe-pill {{
-            background: transparent; color: #64748B; border: 1px solid transparent;
-            padding: 3px 7px; border-radius: 3px; font-size: 11px; cursor: pointer; font-weight: 600;
+            background: transparent; color: #94A3B8; border: 1px solid transparent;
+            padding: 2px 6px; border-radius: 3px; font-size: 11px; cursor: pointer; font-weight: 600;
             font-family: 'JetBrains Mono', monospace;
         }}
         .timeframe-pill.active, .timeframe-pill:hover {{
-            background: #162030; color: #38BDF8; border-color: #243550;
+            background: #2A3444; color: #38BDF8; border-color: #38BDF8;
         }}
-        .atas-top-btn {{
-            background: #0E141F; border: 1px solid #1E293B; color: #CBD5E1;
-            padding: 3px 8px; border-radius: 3px; font-size: 11px; cursor: pointer;
-            display: flex; align-items: center; gap: 4px; font-family: 'JetBrains Mono', monospace;
+        .atas-icon-btn {{
+            background: transparent; border: 1px solid transparent; color: #94A3B8;
+            padding: 3px 6px; border-radius: 3px; font-size: 11px; cursor: pointer;
+            display: flex; align-items: center; gap: 3px; font-family: 'JetBrains Mono', monospace;
         }}
-        .atas-top-btn:hover {{ background: #162030; border-color: #38BDF8; }}
-        .atas-badge-sm {{
-            background: #0F172A; border: 1px solid #1E293B; color: #64748B;
-            padding: 1px 6px; border-radius: 3px; font-size: 10px;
-        }}
+        .atas-icon-btn:hover {{ background: #202632; color: #E2E8F0; }}
         .atas-badge-contract {{
-            background: rgba(56, 189, 248, 0.12); border: 1px solid rgba(56, 189, 248, 0.3);
-            color: #38BDF8; padding: 2px 7px; border-radius: 3px; font-size: 10.5px; font-weight: 700;
+            background: rgba(56, 189, 248, 0.15); border: 1px solid rgba(56, 189, 248, 0.4);
+            color: #38BDF8; padding: 2px 6px; border-radius: 3px; font-size: 10.5px; font-weight: 700;
         }}
-        .pulse-dot {{
-            width: 7px; height: 7px; border-radius: 50%; background-color: var(--neon-green);
-            box-shadow: 0 0 8px var(--neon-green); animation: pulse 2s infinite;
+        .atas-camera-btn {{
+            background: #0284C7; color: #FFFFFF; border: none; padding: 3px 7px;
+            border-radius: 4px; font-size: 11px; cursor: pointer; transition: all 0.2s;
         }}
-        @keyframes pulse {{
-            0% {{ transform: scale(0.95); opacity: 0.8; }}
-            70% {{ transform: scale(1.1); opacity: 1; }}
-            100% {{ transform: scale(0.95); opacity: 0.8; }}
+        .atas-camera-btn:hover {{ background: #0369A1; }}
+
+        /* Quantitative Top Metrics */
+        .atas-quant-pill {{
+            display: flex; align-items: center; gap: 6px; background: #10141C;
+            border: 1px solid #1E2635; padding: 2px 8px; border-radius: 4px; font-size: 10.5px;
         }}
+        .atas-sym-label {{ color: #64748B; font-size: 10px; font-weight: 600; }}
+        .atas-price-val {{ font-size: 12px; font-weight: 800; }}
+        .atas-mt5-tag {{ color: #64748B; font-size: 10px; }}
+        .ticker-change {{ font-size: 10px; font-weight: 600; padding: 1px 4px; border-radius: 2px; }}
+        .change-up {{ color: #4ADE80; background: rgba(34, 197, 94, 0.12); }}
+        .change-down {{ color: #F87171; background: rgba(239, 68, 68, 0.12); }}
+        .atas-pill-lbl {{ color: #64748B; font-size: 9.5px; }}
         .badge {{
-            display: inline-block; padding: 2px 6px; border-radius: 3px; font-size: 10.5px;
+            display: inline-block; padding: 1px 5px; border-radius: 2px; font-size: 10px;
             font-weight: 700; font-family: 'JetBrains Mono', monospace;
         }}
         .badge-live {{ background: rgba(34, 197, 94, 0.15); color: #4ADE80; border: 1px solid rgba(34, 197, 94, 0.4); }}
@@ -687,65 +696,39 @@ def generate_html_terminal(df: pd.DataFrame, meta: Dict[str, Any], fig: go.Figur
         .badge-pos {{ background: rgba(74, 222, 128, 0.15); color: #4ADE80; border: 1px solid rgba(74, 222, 128, 0.4); }}
         .badge-neg {{ background: rgba(248, 113, 113, 0.15); color: #F87171; border: 1px solid rgba(248, 113, 113, 0.4); }}
 
-        .atas-ticker-pill {{
-            display: flex; align-items: center; gap: 5px; background: #0E141F;
-            border: 1px solid #1A2433; padding: 3px 8px; border-radius: 4px;
-        }}
-        .atas-sym-label {{ color: #64748B; font-size: 10.5px; font-weight: 600; }}
-        .atas-price-val {{ font-size: 12.5px; font-weight: 800; }}
-        .atas-mt5-tag {{ color: #64748B; font-size: 10px; }}
-        .ticker-change {{ font-size: 10.5px; font-weight: 600; padding: 1px 4px; border-radius: 3px; }}
-        .change-up {{ color: #4ADE80; background: rgba(34, 197, 94, 0.12); }}
-        .change-down {{ color: #F87171; background: rgba(239, 68, 68, 0.12); }}
-        .atas-quant-pill {{
-            display: flex; align-items: center; gap: 5px; background: #0E141F;
-            border: 1px solid #1A2433; padding: 3px 8px; border-radius: 4px; font-size: 11px;
-        }}
-        .atas-pill-lbl {{ color: #64748B; font-size: 10px; }}
-        .btn-ctrl {{
-            background: #111A29; color: #94A3B8; border: 1px solid #23354E; padding: 3px 8px;
-            border-radius: 4px; font-size: 10.5px; font-weight: 600; cursor: pointer; transition: all 0.2s;
-            font-family: 'JetBrains Mono', monospace;
-        }}
-        .btn-ctrl:hover, .btn-ctrl.active {{ background: #1E293B; color: #38BDF8; border-color: #38BDF8; }}
-        .btn-sim {{ background: rgba(34, 197, 94, 0.15); color: #4ADE80; border-color: rgba(34, 197, 94, 0.4); }}
-        .btn-sim.paused {{ background: rgba(239, 68, 68, 0.15); color: #F87171; border-color: rgba(239, 68, 68, 0.4); }}
-        .atas-win-controls {{
-            display: flex; align-items: center; gap: 4px; margin-left: 4px;
-        }}
+        /* Window Buttons */
         .win-btn {{
             width: 20px; height: 20px; display: flex; align-items: center; justify-content: center;
-            background: #111722; border: 1px solid #1E293B; border-radius: 3px;
-            color: #64748B; font-size: 9.5px; cursor: pointer;
+            background: #202632; border: 1px solid #2F3849; border-radius: 3px;
+            color: #94A3B8; font-size: 9px; cursor: pointer;
         }}
-        .win-btn:hover {{ background: #1E293B; color: #F8FAFC; }}
+        .win-btn:hover {{ background: #2F3849; color: #FFFFFF; }}
         .win-close:hover {{ background: #EF4444; color: #FFFFFF; border-color: #EF4444; }}
 
-        /* Subbar Watermark & Radar */
+        /* Subbar Watermark */
         .atas-win-subbar {{
-            height: 24px; background: #080A0E; border-bottom: 1px solid #121822;
+            height: 20px; background: #0B0E14; border-bottom: 1px solid #161D29;
             display: flex; align-items: center; justify-content: space-between;
-            padding: 0 10px; font-family: 'JetBrains Mono', monospace; font-size: 10.5px;
+            padding: 0 10px; font-family: 'JetBrains Mono', monospace; font-size: 10px;
             flex-shrink: 0;
         }}
-        .atas-watermark-text {{ color: #475569; font-size: 10px; font-weight: 500; }}
-        .atas-subbar-right {{ display: flex; align-items: center; font-size: 10.5px; }}
+        .atas-watermark-text {{ color: #475569; font-size: 9.5px; }}
 
         /* Body & Chart */
         .atas-body-container {{
-            display: flex; flex: 1; width: 100%; height: calc(100vh - 62px);
+            display: flex; flex: 1; width: 100%; height: calc(100vh - 58px);
             position: relative; overflow: hidden; background: #000000;
         }}
         .atas-left-tools {{
-            width: 36px; background: #06080D; border-right: 1px solid #141A24;
-            display: flex; flex-direction: column; align-items: center; padding: 8px 0; gap: 10px;
-            color: #64748B; font-size: 12.5px; z-index: 8; user-select: none; flex-shrink: 0;
+            width: 32px; background: #0B0E14; border-right: 1px solid #1A222F;
+            display: flex; flex-direction: column; align-items: center; padding: 6px 0; gap: 8px;
+            color: #64748B; font-size: 12px; z-index: 8; user-select: none; flex-shrink: 0;
         }}
         .tool-btn {{
-            cursor: pointer; padding: 3px; border-radius: 3px; transition: all 0.2s;
-            display: flex; align-items: center; justify-content: center; width: 24px; height: 24px;
+            cursor: pointer; padding: 2px; border-radius: 3px; transition: all 0.2s;
+            display: flex; align-items: center; justify-content: center; width: 22px; height: 22px;
         }}
-        .tool-btn:hover, .tool-btn.active {{ color: #38BDF8; background: #111A29; }}
+        .tool-btn:hover, .tool-btn.active {{ color: #38BDF8; background: #1C2433; }}
         #tv-chart-wrapper {{
             position: relative; flex: 1; height: 100%; background-color: #000000;
         }}
@@ -754,70 +737,62 @@ def generate_html_terminal(df: pd.DataFrame, meta: Dict[str, Any], fig: go.Figur
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             pointer-events: none; z-index: 5;
         }}
-        .atas-floating-hud {{
-            position: absolute; top: 8px; left: 12px; z-index: 10;
-            display: flex; align-items: center; gap: 10px;
-            background: rgba(6, 8, 13, 0.88); backdrop-filter: blur(6px);
-            border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 4px;
-            padding: 4px 10px; font-family: 'JetBrains Mono', monospace; font-size: 10px;
-            pointer-events: none; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.8);
-        }}
-        .hud-item {{ display: flex; align-items: center; gap: 4px; }}
-        .hud-label {{ color: #64748B; font-weight: 600; font-size: 9.5px; }}
 
         /* Bottom Status */
         .atas-bottom-status {{
-            height: 24px; background: #05070B; border-top: 1px solid #111722;
+            height: 24px; background: #07090E; border-top: 1px solid #141A24;
             display: flex; justify-content: space-between; align-items: center;
-            padding: 0 14px; font-family: 'JetBrains Mono', monospace; font-size: 10.5px; color: #64748B;
+            padding: 0 12px; font-family: 'JetBrains Mono', monospace; font-size: 10.5px; color: #64748B;
             flex-shrink: 0;
         }}
-        .vol-pill {{
-            background: #0C121B; border: 1px solid #192333; padding: 2px 8px;
-            border-radius: 3px; color: #94A3B8; font-size: 10px;
+        .atas-logo-badge {{
+            display: flex; align-items: center; gap: 6px; color: #94A3B8; font-weight: 700;
+        }}
+        .atas-vol-bar {{
+            background: #0F172A; border: 1px solid #1E293B; height: 18px;
+            padding: 0 12px; border-radius: 3px; display: flex; align-items: center;
+            color: #60A5FA; font-weight: 700; font-size: 11px;
         }}
     </style>
 </head>
 <body>
 <div class="atas-desktop-window" id="sec-atas">
-    <!-- ATAS Top Application Bar (Native Desktop Titlebar) -->
+    <!-- 100% Authentic ATAS Application Toolbar -->
     <div class="atas-win-topbar">
         <div class="atas-top-left">
+            <span class="atas-blue-indicator"></span>
             <div class="atas-tab active"><span class="atas-tab-text">#NQZ6</span></div>
             <span class="atas-win-sep">|</span>
-            <div class="atas-top-tag lock-icon" title="Symbol Locked">🔒</div>
-            <div class="atas-top-tag">1 Lots</div>
+            <div class="atas-btn-icon"><span style="font-size:10px;">📈</span> 1 Lots</div>
             <span class="atas-win-sep">|</span>
             <div class="atas-tf-group">
-                <button class="timeframe-pill active" onclick="setTimeframe('1m')">M1</button>
                 <button class="timeframe-pill" onclick="setTimeframe('5m')">M5</button>
-                <button class="timeframe-pill" onclick="setTimeframe('15m')">15M</button>
                 <button class="timeframe-pill" onclick="setTimeframe('1h')">H1</button>
-                <button class="timeframe-pill" onclick="setTimeframe('D')">D</button>
+                <button class="timeframe-pill" onclick="setTimeframe('d')">D</button>
+                <button class="timeframe-pill active" onclick="setTimeframe('1m')">M1 ⌵</button>
             </div>
             <span class="atas-win-sep">|</span>
-            <button class="atas-top-btn"><span style="color:#38BDF8;">✎</span> Indicators</button>
-            <span class="atas-badge-sm">0</span>
-            <button class="atas-top-btn">DOM Trader</button>
+            <button class="atas-icon-btn" title="Indicators">📊 Indicators</button>
+            <span class="atas-win-sep">|</span>
+            <span class="atas-icon-btn" title="Mouse Mode">🖱️ 0</span>
+            <span class="atas-icon-btn" title="Grid Layout">⊞</span>
+            <span class="atas-icon-btn" title="DOM Trader">🗖 DOM Trader ⌵</span>
             <span class="atas-badge-contract">NQ 1m</span>
         </div>
 
-        <!-- Center: Realtime Quantitative Ticker & Fair Value -->
+        <!-- Center: Quantitative Metrics -->
         <div class="atas-top-center">
-            <div class="atas-ticker-pill">
-                <span class="pulse-dot"></span>
+            <div class="atas-quant-pill">
                 <span class="atas-sym-label">SPOT CME:</span>
                 <b class="atas-price-val" id="top-ticker-price" style="color: #38BDF8;">{spot:,.2f}</b>
                 <span class="ticker-change change-up" id="top-ticker-change">+0.00 (+0.00%)</span>
                 <span class="atas-mt5-tag">(MT5: ~<span id="kpi-mt5-num">{spot_mt5:,.1f}</span>)</span>
-            </div>
-            <div class="atas-quant-pill">
+                <span class="atas-win-sep">|</span>
                 <span class="atas-pill-lbl">F0 FAIR:</span>
                 <b id="top-ticker-f0-fair" style="color:#F1F5F9;">{f0_theoretical:,.1f}</b>
                 <span class="atas-pill-lbl">&Delta;F:</span>
                 <span id="top-ticker-delta-f" class="badge {delta_badge_class}">{delta_f:+.1f} pts</span>
-            </div>
-            <div class="atas-quant-pill">
+                <span class="atas-win-sep">|</span>
                 <span class="atas-pill-lbl">GEX:</span> <b id="kpi-gex-val" style="color:{regime_color};">${total_gex:+.1f}M</b>
                 <span class="atas-pill-lbl">CHARM:</span> <b id="top-charm-val" style="color:#C084FC;">${total_chex:+.1f}M/d</b>
                 <span class="atas-pill-lbl">VANNA:</span> <b id="kpi-vex-val" style="color:#22D3EE;">${total_vex:+.1f}M</b>
@@ -825,34 +800,36 @@ def generate_html_terminal(df: pd.DataFrame, meta: Dict[str, Any], fig: go.Figur
             </div>
         </div>
 
-        <!-- Right: Authentic ATAS System & Window Controls -->
+        <!-- Right: Authentic ATAS Controls -->
         <div class="atas-top-right">
-            <button class="win-btn" title="Chụp ảnh biểu đồ (Snapshot)" onclick="alert('ATAS Snapshot captured')">📷</button>
-            <button class="win-btn" title="Cài đặt hệ thống (Settings)">⚙</button>
-            <div class="atas-win-controls">
-                <span class="win-btn win-min" title="Minimize">—</span>
-                <span class="win-btn win-max" title="Maximize">□</span>
-                <span class="win-btn win-close" title="Close">✕</span>
-            </div>
+            <span class="atas-icon-btn" title="Fullscreen">⛶</span>
+            <span class="atas-icon-btn" title="Link Symbol">🔗</span>
+            <button class="atas-camera-btn" title="Snapshot" onclick="alert('ATAS Snapshot captured')">📷</button>
+            <span class="atas-icon-btn" title="Calendar">📅</span>
+            <span class="atas-icon-btn" style="color: #E2E8F0; font-weight:700;">ETH</span>
+            <span class="atas-win-sep">|</span>
+            <button class="win-btn" title="Settings">⚙</button>
+            <span class="win-btn win-min" title="Minimize">—</span>
+            <span class="win-btn win-close" title="Close">✕</span>
         </div>
     </div>
 
-    <!-- Sub-bar: Clean Watermark & Greeks Radar -->
+    <!-- Authentic ATAS Subbar Watermark -->
     <div class="atas-win-subbar">
         <div class="atas-subbar-left">
-            <span class="atas-watermark-text">NEIRO-NQ-QUANT TERMINAL &bull; TradingPattern by Rithmic &bull; Powered by OMNE™</span>
+            <span class="atas-watermark-text">NEIRO-NQ-QUANT TERMINAL &bull; TradingPlatform by Rithmic™ &bull; Powered by OMNE™</span>
         </div>
         <div class="atas-subbar-right">
             <span style="color:#38BDF8; font-weight:700;">⚡ LIVE BLACK-76 REALTIME GREEKS RADAR:</span>
-            <span id="live-greeks-radar" style="margin-left: 6px; color: #E2E8F0;">
+            <span id="live-greeks-radar" style="margin-left: 6px; color: #CBD5E1;">
                 Delta &Delta;: <b>0.505</b> | Gamma &Gamma;: <b>0.00042</b> | Vega &nu;: <b>$18.5M</b> | Theta &theta;: <b>-$28.5k/d</b> | Vanna: <b>+$2.8M</b> | Charm: <b>-$1.4M/d</b>
             </span>
             <span style="color:#64748B; margin-left: 8px;">| ATM: <b id="top-ticker-atm">{meta['atm_strike']:,.0f} pts</b> | IV: <b id="top-ticker-iv">{meta.get('sigma_atm', 0.18)*100:.1f}%</b> | r: <b>{r_rate*100:.2f}%</b></span>
         </div>
     </div>
 
-    <!-- Main ATAS Body: Left Toolbar + Full-Height Chart -->
-    <div class="atas-body-container">
+    <!-- Main ATAS Body -->
+    <div class="atas-body-container"><div class="atas-body-container">
         <!-- Authentic ATAS Left Drawing Toolbar -->
         <div class="atas-left-tools">
             <span class="tool-btn active" title="Con trỏ">✛</span>
@@ -881,13 +858,14 @@ def generate_html_terminal(df: pd.DataFrame, meta: Dict[str, Any], fig: go.Figur
 
     <!-- Bottom Status Bar -->
     <div class="atas-bottom-status">
-        <div style="display:flex; align-items:center; gap:8px;">
-            <span style="color: #38BDF8; font-weight:700;">TrueVision Levels</span> &bull; 11h [+]
-            <span style="color: #475569; font-size:10px;">| Cập nhật: {now_str} (VN)</span>
+        <div class="atas-logo-badge">
+            <span style="color:#38BDF8; font-weight:800;">ATAS</span>
+            <span style="color:#94A3B8;">TrueVision Levels &bull; 11h [+]</span>
+            <span style="color:#475569; font-size:9.5px; margin-left:8px;">Cập nhật: {now_str} (VN)</span>
         </div>
-        <div style="display:flex; align-items:center; gap:12px;">
-            <span style="color: #64748B;">CME GLOBEX E-MINI</span>
-            <span class="vol-pill">Vol Total: <b style="color: #E2E8F0;" id="bottom-vol-count">32,793,639</b></span>
+        <div style="display:flex; align-items:center; gap:10px;">
+            <span style="color:#475569; font-size:10px;">CME GLOBEX</span>
+            <div class="atas-vol-bar">32793639</div>
         </div>
     </div>
 </div>
@@ -1068,17 +1046,20 @@ function generateRealisticCandles(currentP, numBars = 60, periodSec = 60) {{
         const barTime = t - (t % periodSec);
         bars.push({{ time: barTime, open, high, low, close }});
 
-        // Generate ATAS Stacked Footprint Clusters on key reversal candles
-        if (i === numBars - 18 || i === numBars - 12 || i === numBars - 8 || i === numBars - 4 || i === numBars - 1) {{
-            const numPills = 3;
+        // Generate authentic ATAS blue and gold footprint cluster bubbles along reversal candles
+        if (i >= numBars - 24 && (i % 2 === 0 || i >= numBars - 6)) {{
+            const clusterCounts = [4, 5, 3, 6, 4];
+            const numPills = clusterCounts[i % clusterCounts.length];
             const stepY = (high - low) / (numPills + 1);
-            const sampleVols = [55, 46, 42, 35, 50, 37, 30];
+            const sampleVols = [33, 52, 30, 40, 41, 51, 42, 43, 50, 54, 46, 55, 65, 36, 35, 59, 37, 30, 35, 37];
             for (let k = 0; k < numPills; k++) {{
+                const v = sampleVols[(i * 3 + k) % sampleVols.length];
+                const isGold = (v >= 42); // Ochre/gold for high absorption, dark blue for Delta
                 clusterBubbles.push({{
                     time: barTime,
                     price: low + stepY * (k + 1),
-                    vol: sampleVols[(i + k) % sampleVols.length],
-                    isBuy: (k % 2 === 0) ? (close >= open) : !(close >= open)
+                    vol: v,
+                    isGold: isGold
                 }});
             }}
         }}
@@ -1140,13 +1121,13 @@ function initAtasChart() {{
     }});
 
     candleSeries = chart.addCandlestickSeries({{
-        upColor: '#22C55E',
-        downColor: '#EF4444',
+        upColor: 'rgba(28, 34, 46, 0.75)',
+        downColor: 'rgba(28, 34, 46, 0.75)',
         borderVisible: true,
-        borderUpColor: '#22C55E',
-        borderDownColor: '#EF4444',
-        wickUpColor: '#22C55E',
-        wickDownColor: '#EF4444',
+        borderUpColor: '#A1A1AA',
+        borderDownColor: '#71717A',
+        wickUpColor: '#A1A1AA',
+        wickDownColor: '#71717A',
     }});
 
     buildHistoricalBars(60);
@@ -1209,218 +1190,202 @@ function drawAtasOverlay() {{
 
     const m = window.INITIAL_META;
 
-    // 1. Left Volume Profile Histogram (purple/slate)
+    // 1. Left Volume Profile Histogram (purple/slate bars)
     if (volumeProfileBins && volumeProfileBins.length > 0) {{
         volumeProfileBins.forEach(bin => {{
             const y = candleSeries.priceToCoordinate(bin.price);
             if (y !== null && y >= 0 && y <= h) {{
                 const barW = Math.min(65, bin.volume * 0.45);
-                ctx.fillStyle = 'rgba(99, 102, 241, 0.20)';
-                ctx.fillRect(6, y - 2, barW, 4);
-                ctx.fillStyle = 'rgba(129, 140, 248, 0.45)';
-                ctx.fillRect(6, y - 2, barW * 0.4, 4);
+                ctx.fillStyle = 'rgba(99, 102, 241, 0.22)';
+                ctx.fillRect(4, y - 2, barW, 4);
+                ctx.fillStyle = 'rgba(129, 140, 248, 0.50)';
+                ctx.fillRect(4, y - 2, barW * 0.4, 4);
             }}
         }});
     }}
 
-    // 2. ATAS Horizontal Orderflow Shaded Zones (buyer abs, seller offer, deep ef stack)
-    const startX = Math.max(80, Math.floor(w * 0.35));
-    const boxW = Math.max(100, (w - 85) - startX);
+    // 2. Exact ATAS Orderflow Shaded Zones (matching atas_crop_boxes.png)
+    const startX = Math.max(80, Math.floor(w * 0.30));
+    const rightX = w - 75;
+    const boxW = Math.max(100, rightX - startX);
 
-    // A. deep ef stack (Two stacked horizontal grey bars)
-    const yDeepTop = candleSeries.priceToCoordinate(m.deep_ef + 4.0);
+    // A. Put Wall Dotted Line (Yellow)
+    const yPw = candleSeries.priceToCoordinate(m.tactical_put_wall || (m.spot + 20.0));
+    if (yPw !== null && yPw >= 0 && yPw <= h) {{
+        ctx.strokeStyle = '#FACC15';
+        ctx.setLineDash([2, 3]);
+        ctx.lineWidth = 1.2;
+        ctx.beginPath();
+        ctx.moveTo(80, yPw);
+        ctx.lineTo(rightX, yPw);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        ctx.fillStyle = '#FEF08A';
+        ctx.font = '10px "JetBrains Mono", monospace';
+        ctx.textAlign = 'right';
+        ctx.fillText('..... Put wall · Gamma C · Gamma P · DEX P · #1 · OI put ' + (m.put_wall_oi || 31287).toLocaleString(), rightX - 5, yPw - 4);
+    }}
+
+    // B. deep ef stack (Two stacked horizontal grey bars)
+    const yDeepTop = candleSeries.priceToCoordinate(m.deep_ef + 4.5);
     const yDeepMid = candleSeries.priceToCoordinate(m.deep_ef);
-    const yDeepBot = candleSeries.priceToCoordinate(m.deep_ef - 4.0);
+    const yDeepBot = candleSeries.priceToCoordinate(m.deep_ef - 4.5);
     if (yDeepTop !== null && yDeepBot !== null && boxW > 40) {{
-        // Stack Bar 1 (Upper)
-        ctx.fillStyle = 'rgba(75, 85, 99, 0.42)';
-        ctx.fillRect(startX + 30, Math.min(yDeepTop, yDeepMid), boxW - 30, Math.max(8, Math.abs(yDeepMid - yDeepTop)));
-        ctx.strokeStyle = '#64748B';
+        const bH = Math.max(10, Math.abs(yDeepMid - yDeepTop));
+        // Bar 1
+        ctx.fillStyle = 'rgba(85, 93, 106, 0.65)';
+        ctx.fillRect(startX + 35, Math.min(yDeepTop, yDeepMid), boxW - 35, bH);
+        ctx.strokeStyle = '#71717A';
         ctx.lineWidth = 1;
-        ctx.strokeRect(startX + 30, Math.min(yDeepTop, yDeepMid), boxW - 30, Math.max(8, Math.abs(yDeepMid - yDeepTop)));
+        ctx.strokeRect(startX + 35, Math.min(yDeepTop, yDeepMid), boxW - 35, bH);
 
-        // Stack Bar 2 (Lower)
-        ctx.fillStyle = 'rgba(75, 85, 99, 0.42)';
-        ctx.fillRect(startX, Math.min(yDeepMid, yDeepBot), boxW, Math.max(8, Math.abs(yDeepBot - yDeepMid)));
-        ctx.strokeStyle = '#64748B';
+        // Bar 2
+        ctx.fillStyle = 'rgba(85, 93, 106, 0.65)';
+        ctx.fillRect(startX, Math.min(yDeepMid, yDeepBot), boxW, bH);
+        ctx.strokeStyle = '#71717A';
         ctx.lineWidth = 1;
-        ctx.strokeRect(startX, Math.min(yDeepMid, yDeepBot), boxW, Math.max(8, Math.abs(yDeepBot - yDeepMid)));
+        ctx.strokeRect(startX, Math.min(yDeepMid, yDeepBot), boxW, bH);
 
         // Label: deep ef stack
-        ctx.fillStyle = '#E2E8F0';
+        ctx.fillStyle = '#FFFFFF';
         ctx.font = 'bold 11px "JetBrains Mono", monospace';
         ctx.textAlign = 'center';
-        ctx.fillText('deep ef stack', startX + (boxW / 2), Math.min(yDeepTop, yDeepBot) + Math.abs(yDeepBot - yDeepTop) + 14);
+        ctx.fillText('deep ef stack', startX + (boxW / 2), Math.max(yDeepTop, yDeepBot) + 14);
 
-        // Highlight red oval indicator (as drawn by trader in ATAS)
+        // Red Oval indicator
         ctx.strokeStyle = 'rgba(239, 68, 68, 0.85)';
         ctx.lineWidth = 1.6;
         ctx.beginPath();
-        ctx.ellipse(startX + 65, yDeepMid || 100, 45, 12, 0, 0, Math.PI * 2);
+        ctx.ellipse(startX + 65, (yDeepTop + yDeepBot) / 2, 45, 11, 0, 0, Math.PI * 2);
         ctx.stroke();
     }}
 
-    // B. buyer abs (Solid absorption rectangle)
+    // C. buyer abs (Solid grey absorption band)
     const yBuyerTop = candleSeries.priceToCoordinate(m.buyer_abs + 3.5);
     const yBuyerBot = candleSeries.priceToCoordinate(m.buyer_abs - 3.5);
     if (yBuyerTop !== null && yBuyerBot !== null && boxW > 40) {{
         const topB = Math.min(yBuyerTop, yBuyerBot);
-        const hB = Math.max(12, Math.abs(yBuyerBot - yBuyerTop));
-        ctx.fillStyle = 'rgba(71, 85, 105, 0.45)';
-        ctx.fillRect(startX + 40, topB, boxW - 40, hB);
-        ctx.strokeStyle = '#64748B';
+        const hB = Math.max(14, Math.abs(yBuyerBot - yBuyerTop));
+        ctx.fillStyle = 'rgba(85, 93, 106, 0.65)';
+        ctx.fillRect(startX + 60, topB, boxW - 60, hB);
+        ctx.strokeStyle = '#71717A';
         ctx.lineWidth = 1;
-        ctx.strokeRect(startX + 40, topB, boxW - 40, hB);
+        ctx.strokeRect(startX + 60, topB, boxW - 60, hB);
 
-        ctx.fillStyle = '#F1F5F9';
-        ctx.font = 'bold 11px "JetBrains Mono", monospace';
-        ctx.textAlign = 'center';
-        ctx.fillText('buyer abs', startX + 40 + ((boxW - 40) / 2), topB + (hB / 2) + 4);
-    }}
-
-    // C. seller offer (Offer zone with +1R marker)
-    const ySellerTop = candleSeries.priceToCoordinate(m.seller_offer + 3.5);
-    const ySellerBot = candleSeries.priceToCoordinate(m.seller_offer - 3.5);
-    if (ySellerTop !== null && ySellerBot !== null && boxW > 40) {{
-        const topS = Math.min(ySellerTop, ySellerBot);
-        const hS = Math.max(12, Math.abs(ySellerBot - ySellerTop));
-        ctx.fillStyle = 'rgba(71, 85, 105, 0.45)';
-        ctx.fillRect(startX + 10, topS, boxW - 10, hS);
-        ctx.strokeStyle = '#64748B';
-        ctx.lineWidth = 1;
-        ctx.strokeRect(startX + 10, topS, boxW - 10, hS);
-
-        ctx.fillStyle = '#F1F5F9';
-        ctx.font = 'bold 11px "JetBrains Mono", monospace';
-        ctx.textAlign = 'center';
-        ctx.fillText('seller offer', startX + 10 + ((boxW - 10) / 2), topS + (hS / 2) + 4);
-
-        // +1R Marker
         ctx.fillStyle = '#FFFFFF';
         ctx.font = 'bold 11px "JetBrains Mono", monospace';
         ctx.textAlign = 'center';
-        ctx.fillText('+1R', startX + 10 + ((boxW - 10) / 2) + 75, topS - 10);
+        ctx.fillText('buyer abs', startX + 60 + ((boxW - 60) / 2), topB - 4);
     }}
 
-    // 3. GEX Reaction    // 3. GEX Reaction / Gamma Flip Dotted Line
-    const yGex = candleSeries.priceToCoordinate(m.gex_react);
+    // D. +1R Target Label
+    if (yBuyerTop !== null) {{
+        ctx.fillStyle = '#FFFFFF';
+        ctx.font = 'bold 11px "JetBrains Mono", monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('+1R', startX + 60 + ((boxW - 60) / 2) + 60, yBuyerTop + 32);
+    }}
+
+    // E. seller offer (Thick dark band)
+    const ySellerTop = candleSeries.priceToCoordinate(m.seller_offer + 5.0);
+    const ySellerBot = candleSeries.priceToCoordinate(m.seller_offer - 5.0);
+    if (ySellerTop !== null && ySellerBot !== null && boxW > 40) {{
+        const topS = Math.min(ySellerTop, ySellerBot);
+        const hS = Math.max(22, Math.abs(ySellerBot - ySellerTop));
+        ctx.fillStyle = 'rgba(39, 45, 56, 0.75)';
+        ctx.fillRect(80, topS, rightX - 80, hS);
+        ctx.strokeStyle = '#52525B';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(80, topS, rightX - 80, hS);
+
+        ctx.fillStyle = '#FFFFFF';
+        ctx.font = 'bold 11px "JetBrains Mono", monospace';
+        ctx.textAlign = 'left';
+        ctx.fillText('seller offer', startX + 30, topS - 4);
+
+        // Lower bar within seller offer
+        ctx.fillStyle = 'rgba(85, 93, 106, 0.65)';
+        ctx.fillRect(startX + 40, topS + hS - 12, boxW - 40, 12);
+        ctx.strokeRect(startX + 40, topS + hS - 12, boxW - 40, 12);
+
+        // Red oval around seller offer execution cluster
+        ctx.strokeStyle = 'rgba(239, 68, 68, 0.85)';
+        ctx.lineWidth = 1.6;
+        ctx.beginPath();
+        ctx.ellipse(startX + 10, topS + 12, 60, 14, 0, 0, Math.PI * 2);
+        ctx.stroke();
+    }}
+
+    // F. gex 5 reaction (White outlined box)
+    const yGex = candleSeries.priceToCoordinate(m.gex_react || (m.spot - 15.0));
     if (yGex !== null && yGex >= 0 && yGex <= h) {{
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(80, yGex - 8, rightX - 80, 16);
+
+        ctx.fillStyle = '#FFFFFF';
+        ctx.font = 'bold 11px "JetBrains Mono", monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('gex 5 reaction', startX + (boxW / 2), yGex + 4);
+
+        // Bottom dotted level #5 31246.00
         ctx.strokeStyle = '#FACC15';
-        ctx.setLineDash([4, 4]);
-        ctx.lineWidth = 1.5;
+        ctx.setLineDash([2, 3]);
+        ctx.lineWidth = 1;
         ctx.beginPath();
-        ctx.moveTo(80, yGex);
-        ctx.lineTo(w - 85, yGex);
+        ctx.moveTo(80, yGex + 18);
+        ctx.lineTo(rightX, yGex + 18);
         ctx.stroke();
         ctx.setLineDash([]);
 
-        ctx.fillStyle = '#FDE047';
-        ctx.font = 'bold 10.5px "JetBrains Mono", monospace';
+        ctx.fillStyle = '#FACC15';
+        ctx.font = '10px "JetBrains Mono", monospace';
         ctx.textAlign = 'right';
-        ctx.fillText('gex 5 reaction · GAMMA FLIP (Trục Lật Rủi Ro)', w - 180, yGex - 4);
+        ctx.fillText('#5 ' + (m.gex_react - 5).toFixed(2), rightX - 5, yGex + 15);
     }}
 
-    // 3b. ĐỈNH CHARM Line (Nam Châm Ghim Giá Đêm)
-    const yCharm = candleSeries.priceToCoordinate(m.charm_level);
-    if (yCharm !== null && yCharm >= 0 && yCharm <= h) {{
-        ctx.strokeStyle = '#C084FC';
-        ctx.setLineDash([6, 3]);
-        ctx.lineWidth = 1.5;
-        ctx.beginPath();
-        ctx.moveTo(80, yCharm);
-        ctx.lineTo(w - 85, yCharm);
-        ctx.stroke();
-        ctx.setLineDash([]);
-
-        ctx.fillStyle = '#E9D5FF';
-        ctx.font = 'bold 10.5px "JetBrains Mono", monospace';
-        ctx.textAlign = 'right';
-        ctx.fillText('..... ĐỈNH CHARM · NAM CHÂM GHÌM GIÁ ĐÊM · +' + (m.total_net_chex || 0).toFixed(1) + 'M/d', w - 180, yCharm - 4);
-    }}
-
-    // 3c. ĐỈNH VANNA Line (Lực Bật V-Rebound)
-    const yVanna = candleSeries.priceToCoordinate(m.vanna_level);
-    if (yVanna !== null && yVanna >= 0 && yVanna <= h) {{
-        ctx.strokeStyle = '#22D3EE';
-        ctx.setLineDash([6, 3]);
-        ctx.lineWidth = 1.5;
-        ctx.beginPath();
-        ctx.moveTo(80, yVanna);
-        ctx.lineTo(w - 85, yVanna);
-        ctx.stroke();
-        ctx.setLineDash([]);
-
-        ctx.fillStyle = '#A5F3FC';
-        ctx.font = 'bold 10.5px "JetBrains Mono", monospace';
-        ctx.textAlign = 'right';
-        ctx.fillText('..... ĐỈNH VANNA · LỰC ĐẨY V-REBOUND · ' + (m.total_net_vex || 0).toFixed(1) + 'M', w - 180, yVanna - 4);
-    }}
-
-    // 4. Put Wall and Call Wall Lines
-    const yPw = candleSeries.priceToCoordinate(m.tactical_put_wall);
-    if (yPw !== null && yPw >= 0 && yPw <= h) {{
-        ctx.strokeStyle = '#22C55E';
-        ctx.setLineDash([5, 5]);
-        ctx.lineWidth = 1.5;
-        ctx.beginPath();
-        ctx.moveTo(80, yPw);
-        ctx.lineTo(w - 85, yPw);
-        ctx.stroke();
-        ctx.setLineDash([]);
-
-        ctx.fillStyle = '#4ADE80';
-        ctx.font = 'bold 10.5px "JetBrains Mono", monospace';
-        ctx.textAlign = 'right';
-        ctx.fillText('..... PUT WALL · GEX -$185M · OI ' + m.put_wall_oi.toLocaleString() + ' · THÀNH TRÌ ĐỠ DƯỚI', w - 180, yPw - 4);
-    }}
-
-    const yCw = candleSeries.priceToCoordinate(m.tactical_call_wall);
-    if (yCw !== null && yCw >= 0 && yCw <= h) {{
-        ctx.strokeStyle = '#EF4444';
-        ctx.setLineDash([5, 5]);
-        ctx.lineWidth = 1.5;
-        ctx.beginPath();
-        ctx.moveTo(80, yCw);
-        ctx.lineTo(w - 85, yCw);
-        ctx.stroke();
-        ctx.setLineDash([]);
-
-        ctx.fillStyle = '#F87171';
-        ctx.font = 'bold 10.5px "JetBrains Mono", monospace';
-        ctx.textAlign = 'right';
-        ctx.fillText('..... CALL WALL · GEX +$142M · OI ' + m.call_wall_oi.toLocaleString() + ' · THÀNH TRÌ CẢN TRÊN', w - 180, yCw - 4);
-    }}
-
-    // 4b. Right Axis Small Volume Blocks (authentic ATAS lower right ladder)
-    const bottomY = h - 60;
-    for (let sIdx = 0; sIdx < 8; sIdx++) {{
-        const bY = bottomY + (sIdx * 6);
-        if (bY <= h - 10) {{
-            const bWidth = 14 + ((sIdx * 7) % 24);
-            ctx.fillStyle = 'rgba(56, 189, 248, 0.38)';
-            ctx.fillRect(w - 80, bY, bWidth, 4);
+    // G. Right Axis Volume Histogram Bars (ATAS tick ladder volume)
+    const rightTicks = [
+        {{ offset: 25.0, w: 26, isBlue: false }},
+        {{ offset: 20.0, w: 38, isBlue: true }},
+        {{ offset: 15.0, w: 18, isBlue: false }},
+        {{ offset: 10.0, w: 45, isBlue: true }},
+        {{ offset: 5.0, w: 12, isBlue: false }},
+        {{ offset: -2.5, w: 22, isBlue: false }},
+        {{ offset: -7.5, w: 34, isBlue: true }},
+        {{ offset: -12.5, w: 48, isBlue: true }},
+        {{ offset: -17.5, w: 15, isBlue: false }},
+        {{ offset: -22.5, w: 30, isBlue: true }},
+        {{ offset: -27.5, w: 42, isBlue: true }},
+    ];
+    rightTicks.forEach(t => {{
+        const y = candleSeries.priceToCoordinate(currentPrice + t.offset);
+        if (y !== null && y >= 0 && y <= h) {{
+            ctx.fillStyle = t.isBlue ? 'rgba(56, 189, 248, 0.85)' : 'rgba(255, 255, 255, 0.85)';
+            ctx.fillRect(rightX, y - 1.5, t.w, 3);
         }}
-    }}
+    }});
 
-    // 5. ATAS / TrueVision Cluster Imbalance Bubbles on Candles
+    // 3. Authentic ATAS Blue and Gold Footprint Cluster Bubbles
     if (clusterBubbles && clusterBubbles.length > 0) {{
         clusterBubbles.forEach(cb => {{
             const x = chart.timeScale().timeToCoordinate(cb.time);
             const y = candleSeries.priceToCoordinate(cb.price);
-            if (x !== null && y !== null && x >= 75 && x <= w - 90 && y >= 10 && y <= h - 20) {{
-                const isGold = cb.vol >= 45;
-                ctx.fillStyle = isGold ? 'rgba(234, 179, 8, 0.92)' : (cb.isBuy ? 'rgba(34, 197, 94, 0.9)' : 'rgba(56, 189, 248, 0.9)');
+            if (x !== null && y !== null && x >= 75 && x <= rightX - 10 && y >= 10 && y <= h - 20) {{
+                // Gold/Ochre (#B45309) for absorption, Dark Blue (#1D4ED8) for Delta
+                ctx.fillStyle = cb.isGold ? '#B45309' : '#1D4ED8';
                 ctx.beginPath();
-                ctx.arc(x, y, 10.5, 0, Math.PI * 2);
+                ctx.arc(x, y, 8.5, 0, Math.PI * 2);
                 ctx.fill();
-                ctx.strokeStyle = '#FFFFFF';
-                ctx.lineWidth = 1;
+                ctx.strokeStyle = cb.isGold ? '#FDE047' : '#93C5FD';
+                ctx.lineWidth = 0.8;
                 ctx.stroke();
 
-                ctx.fillStyle = isGold ? '#000000' : '#FFFFFF';
-                ctx.font = 'bold 9.5px "JetBrains Mono", monospace';
+                ctx.fillStyle = '#FFFFFF';
+                ctx.font = 'bold 8.5px "JetBrains Mono", monospace';
                 ctx.textAlign = 'center';
-                ctx.fillText(cb.vol, x, y + 3.5);
+                ctx.fillText(cb.vol, x, y + 3);
             }}
         }});
     }}
