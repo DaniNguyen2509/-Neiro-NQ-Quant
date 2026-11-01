@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-11-01T01:14:38.340352+00:00",
+  "timestamp": "2026-11-01T01:46:59.608436+00:00",
   "symbol": "QQQ",
   "futures_symbol": "NQ=F",
   "source": "yfinance",
@@ -25,7 +25,7 @@
     "pin_risk_magnet": 29960.0,
     "total_net_gex": -474.03,
     "total_net_vex": -4.48,
-    "total_net_chex": 35.34,
+    "total_net_chex": 34.61,
     "regime": "NEGATIVE_GAMMA_VOLATILE_EXPANSION",
     "regime_description": "Dealer khu\u1ebfch \u0111\u1ea1i xu h\u01b0\u1edbng (Mua \u0111u\u1ed5i khi t\u0103ng, B\u00e1n th\u00e1o khi gi\u1ea3m). C\u1ef1c k\u1ef3 nguy hi\u1ec3m khi th\u1ee7ng c\u1ea3n.",
     "step": 41.0,
@@ -39,6 +39,7 @@
     "secondary_support": 28307.0,
     "raw_source": "yfinance",
     "effective_multiplier": 2.4199,
-    "dte_days": 1.0
+    "dte_days": 1.0,
+    "risk_free_rate": 0.0397
   }
 }
