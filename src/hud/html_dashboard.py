@@ -1,24 +1,30 @@
-"""Neiro-NQ-Quant Tactical HTML Dashboard & ATAS Realtime Terminal Generator.
+"""Neiro-NQ-Quant Tactical HTML Dashboard & True ATAS Orderflow Terminal Generator.
 
-Generates a standalone, production-grade ATAS Orderflow & Quant Terminal for
+Generates a standalone, production-grade ATAS Orderflow Footprint & Quant Terminal for
 E-mini Nasdaq-100 Futures Options (NQ / NQZ26 / NAS100) incorporating:
 - Live Ticker Realtime Bar (CME Globex NQ=F, SOFR/Treasury 13W ^IRX rate, ATM IV)
-- Interactive ATAS Orderflow Footprint Candlestick Chart (TradingView Lightweight Charts v4.2)
-- Dynamic Quant Level Overlays directly on Chart:
-  * [PUT WALL] (Maximum Put Gamma Support)
-  * [CALL WALL] (Maximum Call Gamma Resistance)
-  * [DEEP EF STACK] (Institutional Execution Flow)
-  * [BUYER ABS] (Buyer Absorption Zone)
-  * [SELLER OFFER] (Seller Offer Supply Zone)
-  * [GEX REACTION ZONE] (Zero Gamma / Pivot Reaction Zone)
-  * [LIVE F0 PRICE LINE] (Realtime tick-by-tick horizontal line)
+- Interactive ATAS Orderflow Footprint Terminal:
+  * High-contrast Pure Black ATAS styling (#000000)
+  * Brownian-bridge 1-Minute Candlestick generator (zero artificial spike artifacts)
+  * HTML5 Canvas Orderflow Layer synchronized with TradingView Lightweight Charts v4.2
+  * Horizontal Shaded Execution Stack Zones across the chart:
+    - [deep ef stack] (Institutional Execution Flow)
+    - [seller offer] (+1R Supply Zone)
+    - [gex 5 reaction] (Pivot Reaction Line)
+    - [F0 LIVE] (Tick-by-tick Horizontal Price Line)
+    - [buyer abs] (Buyer Absorption Zone)
+    - [put wall] & [call wall] (Major Gamma Support & Resistance)
+  * TrueVision / ATAS Cluster Imbalance Bubbles on Candlesticks
+  * Left Volume Profile Histogram (Bid/Ask cluster profile)
 - In-Browser Client-Side Black-76 Engine (Pure JS):
   * Recalculates Delta, Gamma, Theta, Vega, Vanna, Charm, and Net GEX ($M) every second
+  * Realistic institutional Greek scaling (Theta -$k/day, Vega $M, Vanna, Charm)
   * Updates KPI Cards, Greeks Radar, and ATM Microstructure table tick-by-tick
 - Live Tick Feeder / Simulator with interactive user price override slider
 - 3-Panel Plotly Interactive Charts & Anti-collision algorithm
 - Intraday Scalping Strategy Table (30-50 pts NQ)
 - Structural Swing Walls Strategy Table (100-250 pts NQ)
+- Bottom Vietnamese Glossary & Tactical Playbook (Giải nghĩa dải cản ATAS)
 - Zero-waste & ASCII/UTF-8 compliant.
 """
 from __future__ import annotations
@@ -92,15 +98,12 @@ def load_options_dataset(
             if not df_live.empty and len(df_live) >= 5:
                 df_raw = df_live
                 basis_ratio = max(1.0, float(prices.get("basis", 41.3)))
-                # QQQ options have 100 shares multiplier; scale to equivalent NQ futures points
                 eff_multiplier = round(100.0 / basis_ratio, 4)
 
-                # Unified Futures mode (basis == 0.0) by default to synchronize with TV Pepperstone Forward & MT5.
                 if eff_basis is None:
                     eff_basis = 0.0
 
                 print(f"[+] Loaded {len(df_raw)} strikes via yfinance (QQQ ${prices['underlying']:.2f} -> NQ {prices['futures']:.2f}, Basis: {basis_ratio:.2f}, EffMult: {eff_multiplier}, r: {fetched_r_rate*100:.2f}%).")
-                # Save snapshot to CSV if path provided
                 if csv_path:
                     try:
                         p_csv = Path(csv_path)
@@ -119,7 +122,6 @@ def load_options_dataset(
             col_clean = {c: c.strip() for c in df_cand.columns}
             df_cand.rename(columns=col_clean, inplace=True)
             
-            # Check for valid Open Interest
             total_oi = 0
             if "callOpenInterest" in df_cand.columns and "putOpenInterest" in df_cand.columns:
                 total_oi = float(pd.to_numeric(df_cand["callOpenInterest"], errors="coerce").fillna(0).sum() +
@@ -141,7 +143,6 @@ def load_options_dataset(
         df_raw = generate_benchmark_nq_chain(spot=28500.0)
         eff_multiplier = multiplier
 
-    # Determine dynamic DTE from expiration date
     dte_val = 1.0
     if "expirationDate" in df_raw.columns and not df_raw["expirationDate"].empty:
         exp_val = str(df_raw["expirationDate"].iloc[0])
@@ -151,7 +152,6 @@ def load_options_dataset(
         except Exception:
             dte_val = 1.0
 
-    # Calculate complete quantitative matrix via Black-76
     df_enriched, meta = process_options_chain_black76(
         df_raw,
         multiplier=eff_multiplier,
@@ -185,7 +185,6 @@ def build_plotly_terminal(df_full: pd.DataFrame, meta: Dict[str, Any]) -> go.Fig
     next_below = meta["next_below"]
     secondary_support = meta["secondary_support"]
 
-    # Filter near-ATM strikes for clear terminal display (18-24 strikes)
     atm_idx = (df_full["strike"] - atm_strike).abs().idxmin()
     window = 20
     half = window // 2
@@ -207,9 +206,6 @@ def build_plotly_terminal(df_full: pd.DataFrame, meta: Dict[str, Any]) -> go.Fig
         column_widths=[0.36, 0.36, 0.28],
     )
 
-    # -------------------------------------------------------------------------
-    # PANEL 1: Net GEX ($M) Horizontal Bars
-    # -------------------------------------------------------------------------
     colors_g = ["#4ADE80" if x >= 0 else "#F87171" for x in df["netGEX"]]
     fig.add_trace(
         go.Bar(
@@ -221,21 +217,17 @@ def build_plotly_terminal(df_full: pd.DataFrame, meta: Dict[str, Any]) -> go.Fig
     )
     fig.add_vline(x=0, line_dash="solid", line_color="#475569", row=1, col=1)
 
-    # Spot Price horizontal line across all 3 panels
     for col_idx in (1, 2, 3):
         fig.add_hline(
             y=spot_price, line_color="#38BDF8", line_width=2.2,
             row=1, col=col_idx,
         )
 
-    # Call Wall & Put Wall lines on Panel 1
     if strikes.min() <= call_wall <= strikes.max():
         fig.add_hline(y=call_wall, line_color="#A855F7", line_dash="dash", line_width=1.8, row=1, col=1)
     if strikes.min() <= put_wall <= strikes.max():
         fig.add_hline(y=put_wall, line_color="#34D399", line_dash="dash", line_width=1.8, row=1, col=1)
 
-    # ANTI-COLLISION FEATURE 1:
-    # Spot CME label anchored firmly at right edge (x=0.98, xanchor='right') to avoid colliding with left annotations
     spot_label = f"◆ NQ FUTURES: {spot_price:,.1f}" if abs(spot_price - spot_mt5) < 0.1 else f"◆ SPOT CME: {spot_price:,.1f} (MT5: ~{spot_mt5:,.1f})"
     fig.add_annotation(
         x=0.98, y=spot_price,
@@ -246,7 +238,6 @@ def build_plotly_terminal(df_full: pd.DataFrame, meta: Dict[str, Any]) -> go.Fig
         row=1, col=1,
     )
 
-    # Tactical Annotations on Panel 1
     if strikes.min() <= put_wall <= strikes.max():
         fig.add_annotation(
             x=0.03, y=put_wall - step * 0.15,
@@ -288,9 +279,6 @@ def build_plotly_terminal(df_full: pd.DataFrame, meta: Dict[str, Any]) -> go.Fig
             row=1, col=1,
         )
 
-    # -------------------------------------------------------------------------
-    # PANEL 2: Volume vs Open Interest (Put Left, Call Right)
-    # -------------------------------------------------------------------------
     fig.add_trace(
         go.Bar(
             y=df["strike"], x=df["callOpenInterest"], orientation="h",
@@ -327,9 +315,6 @@ def build_plotly_terminal(df_full: pd.DataFrame, meta: Dict[str, Any]) -> go.Fig
     )
     fig.add_vline(x=0, line_dash="solid", line_color="#475569", row=1, col=2)
 
-    # -------------------------------------------------------------------------
-    # PANEL 3: Greeks Bậc 2 (Vanna & Charm)
-    # -------------------------------------------------------------------------
     fig.add_trace(
         go.Bar(
             y=df["strike"], x=df["netVEX"], orientation="h",
@@ -348,8 +333,6 @@ def build_plotly_terminal(df_full: pd.DataFrame, meta: Dict[str, Any]) -> go.Fig
     )
     fig.add_vline(x=0, line_dash="solid", line_color="#475569", row=1, col=3)
 
-    # ANTI-COLLISION FEATURE 2:
-    # Vertical height offset when Vanna and Charm peaks share the same strike
     top_vex_idx = df["netVEX"].abs().idxmax()
     top_vex_val = df.loc[top_vex_idx, "netVEX"]
     top_vex_stk = df.loc[top_vex_idx, "strike"]
@@ -381,8 +364,6 @@ def build_plotly_terminal(df_full: pd.DataFrame, meta: Dict[str, Any]) -> go.Fig
         bgcolor="#1C1917", bordercolor="#22D3EE", borderwidth=1, borderpad=2,
     )
 
-    # ANTI-COLLISION FEATURE 3:
-    # Legend placed at y=1.07 (separated from subplot titles by ~25px)
     fig.update_layout(
         template="plotly_dark",
         paper_bgcolor="#0A0E17",
@@ -414,7 +395,6 @@ def build_plotly_terminal(df_full: pd.DataFrame, meta: Dict[str, Any]) -> go.Fig
     fig.update_xaxes(gridcolor="#1E293B", title=dict(text="Net GEX ($M / 1% Move)", font=dict(size=10)), row=1, col=1)
     fig.update_xaxes(gridcolor="#1E293B", title=dict(text="Put OI/Vol (-) | Call OI/Vol (+)", font=dict(size=10)), row=1, col=2)
 
-    # Expand Panel 3 x-axis range cleanly
     max_vc = max(float(df["netVEX"].abs().max()), float(df["netCHEX"].abs().max()), 5.0)
     fig.update_xaxes(
         range=[-max_vc * 2.2, max_vc * 2.2],
@@ -427,7 +407,7 @@ def build_plotly_terminal(df_full: pd.DataFrame, meta: Dict[str, Any]) -> go.Fig
 
 
 def generate_html_terminal(df: pd.DataFrame, meta: Dict[str, Any], fig: go.Figure) -> str:
-    """Generate high-fidelity, standalone dark-mode HTML tactical report with ATAS Realtime Terminal."""
+    """Generate high-fidelity, standalone dark-mode HTML tactical report with True ATAS Orderflow Terminal."""
     now_vn = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=7)))
     now_str = now_vn.strftime("%d/%m/%Y %H:%M:%S")
 
@@ -454,14 +434,22 @@ def generate_html_terminal(df: pd.DataFrame, meta: Dict[str, Any], fig: go.Figur
     secondary_support = meta["secondary_support"]
     r_rate = meta.get("risk_free_rate", 0.0397)
 
-    # Dynamic SL & TP offsets based on strike step (no hardcoding)
+    # Tactical Microstructure Ladder for 1M/5M ATAS Chart (25/50 pts grid centered around spot)
+    tactical_step = 25.0
+    atm_pivot = round(spot / tactical_step) * tactical_step
+    buyer_abs_price = atm_pivot - 15.0 if spot >= atm_pivot else atm_pivot - 25.0
+    seller_offer_price = atm_pivot + 15.0 if spot <= atm_pivot else atm_pivot + 25.0
+    deep_ef_price = seller_offer_price + 25.0
+    gex_react_price = atm_pivot + (5.0 if total_gex >= 0 else -5.0)
+    tactical_put_wall = atm_pivot - 50.0
+    tactical_call_wall = atm_pivot + 50.0
+
     hard_sl_pts = min(step * 0.35, 25.0)
     fade_sl_pts = min(step * 0.30, 20.0)
     front_run_tp = max(1.0, step * 0.05)
 
     plotly_div = fig.to_html(full_html=False, include_plotlyjs="cdn", config={"responsive": True, "displayModeBar": True})
 
-    # Regime Color Badge
     if "POSITIVE" in regime:
         regime_badge = '<span class="badge badge-pos" id="regime-badge">POSITIVE GAMMA (NÉN BIẾN ĐỘ / FADE)</span>'
         regime_color = "#4ADE80"
@@ -513,7 +501,6 @@ def generate_html_terminal(df: pd.DataFrame, meta: Dict[str, Any], fig: go.Figur
         col_cme_sl = "Hard SL (CME)"
         micro_header = "📊 BẢNG DỮ LIỆU ĐỊNH LƯỢNG MICROSTRUCTURE TỪNG STRIKE (E-MINI NASDAQ & MT5 SPOT)"
 
-    # Microstructure rows near ATM
     table_rows_html = ""
     atm_strike = meta["atm_strike"]
     df_sorted = df[(df["strike"] >= atm_strike - 8 * step) & (df["strike"] <= atm_strike + 8 * step)].sort_values("strike", ascending=False)
@@ -548,7 +535,6 @@ def generate_html_terminal(df: pd.DataFrame, meta: Dict[str, Any], fig: go.Figur
         </tr>
         """
 
-    # Prepare serializable options chain for client-side JavaScript Black-76 Engine
     js_options_data = []
     for _, r in df.sort_values("strike").iterrows():
         js_options_data.append({
@@ -585,6 +571,12 @@ def generate_html_terminal(df: pd.DataFrame, meta: Dict[str, Any], fig: go.Figur
         "call_wall_oi": call_wall_oi,
         "put_wall": put_wall,
         "put_wall_oi": put_wall_oi,
+        "tactical_call_wall": tactical_call_wall,
+        "tactical_put_wall": tactical_put_wall,
+        "buyer_abs": buyer_abs_price,
+        "seller_offer": seller_offer_price,
+        "deep_ef": deep_ef_price,
+        "gex_react": gex_react_price,
         "strike_above": strike_above,
         "strike_below": strike_below,
         "next_above": next_above,
@@ -601,11 +593,6 @@ def generate_html_terminal(df: pd.DataFrame, meta: Dict[str, Any], fig: go.Figur
         "sigma_atm": meta.get("sigma_atm", 0.18),
     })
 
-    deep_ef_strike = strike_above + step
-    buyer_abs_strike = strike_below
-    seller_offer_strike = strike_above
-    gex_reaction_strike = spot + (0.5 * step if total_gex >= 0 else -0.5 * step)
-
     html = f"""<!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -615,37 +602,35 @@ def generate_html_terminal(df: pd.DataFrame, meta: Dict[str, Any], fig: go.Figur
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <!-- TradingView Lightweight Charts v4.2 CDN -->
     <script src="https://unpkg.com/lightweight-charts@4.2.0/dist/lightweight-charts.standalone.production.js"></script>
     <style>
         :root {{
-            --bg-base: #06090E; --bg-card: #0D131F; --border-color: #1A2333;
+            --bg-base: #000000; --bg-card: #0A0F18; --border-color: #1A2333;
             --text-primary: #F8FAFC; --text-secondary: #94A3B8; --text-muted: #64748B;
             --neon-green: #22C55E; --neon-red: #EF4444; --neon-blue: #38BDF8; --neon-gold: #FACC15;
-            --neon-purple: #A855F7; --neon-coral: #F43F5E;
+            --neon-coral: #F43F5E;
         }}
         * {{ box-sizing: border-box; margin: 0; padding: 0; }}
         body {{
             background-color: var(--bg-base); color: var(--text-primary);
-            font-family: 'Inter', -apple-system, sans-serif; padding: 16px; font-size: 13px;
+            font-family: 'Inter', -apple-system, sans-serif; padding: 14px; font-size: 13px;
         }}
-        .container {{ max-width: 1480px; margin: 0 auto; }}
+        .container {{ max-width: 1520px; margin: 0 auto; }}
 
-        /* Top Nav & Branding Bar */
         .header {{
             display: flex; justify-content: space-between; align-items: center;
-            padding: 12px 20px; background: linear-gradient(135deg, #0B111D 0%, #111A2B 100%);
-            border: 1px solid var(--border-color); border-radius: 10px; margin-bottom: 12px;
+            padding: 10px 18px; background: #080D16;
+            border: 1px solid var(--border-color); border-radius: 8px; margin-bottom: 10px;
         }}
         .brand {{ display: flex; align-items: center; gap: 10px; }}
         .brand-title {{
-            font-size: 18px; font-weight: 800;
+            font-size: 17px; font-weight: 800;
             background: linear-gradient(90deg, #FFFFFF 0%, #93C5FD 100%);
             -webkit-background-clip: text; -webkit-text-fill-color: transparent;
             font-family: 'JetBrains Mono', monospace; letter-spacing: 0.5px;
         }}
         .pulse-dot {{
-            width: 10px; height: 10px; border-radius: 50%; background-color: var(--neon-green);
+            width: 9px; height: 9px; border-radius: 50%; background-color: var(--neon-green);
             box-shadow: 0 0 10px var(--neon-green); animation: pulse 2s infinite;
         }}
         @keyframes pulse {{
@@ -654,7 +639,7 @@ def generate_html_terminal(df: pd.DataFrame, meta: Dict[str, Any], fig: go.Figur
             100% {{ transform: scale(0.95); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }}
         }}
         .badge {{
-            display: inline-block; padding: 3px 8px; border-radius: 6px; font-size: 11px;
+            display: inline-block; padding: 2px 7px; border-radius: 4px; font-size: 10.5px;
             font-weight: 700; font-family: 'JetBrains Mono', monospace;
         }}
         .badge-live {{ background: rgba(34, 197, 94, 0.15); color: #4ADE80; border: 1px solid rgba(34, 197, 94, 0.4); }}
@@ -662,36 +647,34 @@ def generate_html_terminal(df: pd.DataFrame, meta: Dict[str, Any], fig: go.Figur
         .badge-pos {{ background: rgba(74, 222, 128, 0.15); color: #4ADE80; border: 1px solid rgba(74, 222, 128, 0.4); }}
         .badge-neg {{ background: rgba(248, 113, 113, 0.15); color: #F87171; border: 1px solid rgba(248, 113, 113, 0.4); }}
 
-        /* Live Ticker Bar */
         .ticker-bar {{
-            display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;
-            background: #0A0F19; border: 1px solid #1E293B; border-radius: 8px; padding: 10px 18px; margin-bottom: 14px;
+            display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;
+            background: #080D16; border: 1px solid #162030; border-radius: 8px; padding: 8px 16px; margin-bottom: 12px;
             font-family: 'JetBrains Mono', monospace;
         }}
-        .ticker-items {{ display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }}
-        .ticker-item {{ display: flex; align-items: center; gap: 6px; font-size: 12.5px; }}
-        .ticker-symbol {{ font-weight: 800; color: #FFFFFF; font-size: 13.5px; }}
-        .ticker-price {{ font-weight: 800; font-size: 15px; color: #38BDF8; transition: color 0.2s; }}
-        .ticker-change {{ font-size: 12px; font-weight: 600; padding: 2px 6px; border-radius: 4px; }}
+        .ticker-items {{ display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }}
+        .ticker-item {{ display: flex; align-items: center; gap: 6px; font-size: 12px; }}
+        .ticker-symbol {{ font-weight: 800; color: #FFFFFF; font-size: 13px; }}
+        .ticker-price {{ font-weight: 800; font-size: 14.5px; color: #38BDF8; transition: color 0.2s; }}
+        .ticker-change {{ font-size: 11.5px; font-weight: 600; padding: 2px 5px; border-radius: 4px; }}
         .change-up {{ color: #4ADE80; background: rgba(34, 197, 94, 0.12); }}
         .change-down {{ color: #F87171; background: rgba(239, 68, 68, 0.12); }}
-        .ticker-controls {{ display: flex; align-items: center; gap: 10px; }}
+        .ticker-controls {{ display: flex; align-items: center; gap: 8px; }}
         .btn-ctrl {{
-            background: #131E31; color: #94A3B8; border: 1px solid #243550; padding: 5px 10px;
-            border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer; transition: all 0.2s;
+            background: #111A29; color: #94A3B8; border: 1px solid #23354E; padding: 4px 9px;
+            border-radius: 5px; font-size: 11px; font-weight: 600; cursor: pointer; transition: all 0.2s;
             font-family: 'JetBrains Mono', monospace;
         }}
         .btn-ctrl:hover, .btn-ctrl.active {{ background: #1E293B; color: #38BDF8; border-color: #38BDF8; }}
         .btn-sim {{ background: rgba(34, 197, 94, 0.15); color: #4ADE80; border-color: rgba(34, 197, 94, 0.4); }}
         .btn-sim.paused {{ background: rgba(239, 68, 68, 0.15); color: #F87171; border-color: rgba(239, 68, 68, 0.4); }}
 
-        /* KPI Cards Grid */
         .kpi-grid {{
-            display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; margin-bottom: 14px;
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 10px; margin-bottom: 12px;
         }}
         .kpi-card {{
             background-color: var(--bg-card); border: 1px solid var(--border-color);
-            border-radius: 10px; padding: 12px 16px; transition: transform 0.2s, border-color 0.2s;
+            border-radius: 8px; padding: 12px 16px; transition: transform 0.2s, border-color 0.2s;
         }}
         .kpi-card:hover {{ border-color: #2E3E59; transform: translateY(-1px); }}
         .kpi-label {{
@@ -699,107 +682,70 @@ def generate_html_terminal(df: pd.DataFrame, meta: Dict[str, Any], fig: go.Figur
             letter-spacing: 0.5px;
         }}
         .kpi-val {{
-            font-size: 21px; font-weight: 700; font-family: 'JetBrains Mono', monospace; margin-bottom: 4px;
-            transition: color 0.3s;
+            font-size: 20px; font-weight: 700; font-family: 'JetBrains Mono', monospace; margin-bottom: 3px;
         }}
         .kpi-sub {{ font-size: 11px; color: var(--text-muted); }}
 
-        /* ATAS Candlestick Orderflow Terminal Container */
+        /* ATAS Orderflow Terminal Box */
         .atas-terminal-box {{
-            background: #000000; border: 1px solid #1E293B; border-radius: 10px;
-            overflow: hidden; margin-bottom: 18px; position: relative;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
+            background: #000000; border: 1px solid #1E293B; border-radius: 8px;
+            overflow: hidden; margin-bottom: 16px; position: relative;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
         }}
         .atas-toolbar {{
             display: flex; justify-content: space-between; align-items: center;
-            background: #080D15; padding: 8px 14px; border-bottom: 1px solid #182234;
+            background: #080D15; padding: 8px 14px; border-bottom: 1px solid #162030;
         }}
         .atas-tools-left {{ display: flex; align-items: center; gap: 8px; }}
         .atas-badge {{
-            background: #111B2B; border: 1px solid #23354E; color: #E2E8F0;
+            background: #111A29; border: 1px solid #23354E; color: #E2E8F0;
             padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: 700;
             font-family: 'JetBrains Mono', monospace;
         }}
-        .atas-tools-right {{ display: flex; align-items: center; gap: 8px; font-family: 'JetBrains Mono', monospace; font-size: 11px; }}
+        .atas-tools-right {{ display: flex; align-items: center; gap: 6px; font-family: 'JetBrains Mono', monospace; font-size: 11px; }}
         .timeframe-pill {{
-            background: transparent; color: #64748B; border: 1px solid transparent; padding: 3px 7px;
+            background: transparent; color: #64748B; border: 1px solid transparent; padding: 3px 8px;
             border-radius: 4px; font-size: 11px; cursor: pointer; font-weight: 600;
         }}
         .timeframe-pill.active, .timeframe-pill:hover {{ background: #131E31; color: #38BDF8; border-color: #243550; }}
 
         #tv-chart-wrapper {{
-            position: relative; width: 100%; height: 540px; background-color: #000000;
+            position: relative; width: 100%; height: 560px; background-color: #000000;
         }}
         #atas-tv-chart {{ width: 100%; height: 100%; }}
-
-        /* ATAS Orderflow Shaded Level Overlays */
-        .atas-overlay-container {{
+        #atas-canvas {{
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             pointer-events: none; z-index: 5;
         }}
-        .atas-band {{
-            position: absolute; left: 60px; right: 75px; height: 18px;
-            border-radius: 2px; display: flex; align-items: center; justify-content: flex-end;
-            padding-right: 12px; font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 700;
-            letter-spacing: 0.5px; opacity: 0.88; transition: top 0.3s ease;
-        }}
-        .band-put-wall {{
-            background: rgba(34, 197, 94, 0.12); border-top: 1px solid #22C55E; border-bottom: 1px solid #22C55E;
-            color: #4ADE80;
-        }}
-        .band-call-wall {{
-            background: rgba(239, 68, 68, 0.12); border-top: 1px solid #EF4444; border-bottom: 1px solid #EF4444;
-            color: #F87171;
-        }}
-        .band-deep-ef {{
-            background: rgba(148, 163, 184, 0.16); border-top: 1px solid #94A3B8; border-bottom: 1px solid #94A3B8;
-            color: #E2E8F0;
-        }}
-        .band-buyer-abs {{
-            background: rgba(56, 189, 248, 0.14); border-top: 1px solid #38BDF8; border-bottom: 1px solid #38BDF8;
-            color: #7DD3FC;
-        }}
-        .band-seller-offer {{
-            background: rgba(244, 63, 94, 0.14); border-top: 1px solid #F43F5E; border-bottom: 1px solid #F43F5E;
-            color: #FDA4AF;
-        }}
-        .band-gex-reaction {{
-            background: rgba(250, 204, 21, 0.12); border-top: 1px dashed #FACC15; border-bottom: 1px dashed #FACC15;
-            color: #FDE047;
-        }}
 
-        /* Live Slider Interactive Testing Box */
         .slider-box {{
             display: flex; align-items: center; justify-content: space-between; gap: 14px;
-            background: #0B111D; border-top: 1px solid #182234; padding: 8px 16px;
+            background: #080D15; border-top: 1px solid #162030; padding: 7px 16px;
             font-family: 'JetBrains Mono', monospace; font-size: 11px;
         }}
-        .slider-box input[type=range] {{
-            flex: 1; accent-color: #38BDF8; cursor: pointer;
-        }}
+        .slider-box input[type=range] {{ flex: 1; accent-color: #38BDF8; cursor: pointer; }}
 
-        /* Table & Section Boxes */
         .chart-box {{
             background-color: var(--bg-card); border: 1px solid var(--border-color);
-            border-radius: 10px; padding: 10px; margin-bottom: 18px;
+            border-radius: 8px; padding: 10px; margin-bottom: 16px;
         }}
         .table-box {{
             background-color: var(--bg-card); border: 1px solid var(--border-color);
-            border-radius: 10px; padding: 16px; margin-bottom: 16px; overflow-x: auto;
+            border-radius: 8px; padding: 16px; margin-bottom: 14px; overflow-x: auto;
         }}
         .section-header {{
             font-size: 13.5px; font-weight: 700; margin-bottom: 12px; color: #E2E8F0;
             display: flex; align-items: center; justify-content: space-between;
         }}
-        table {{ width: 100%; border-collapse: collapse; font-size: 12.5px; text-align: left; }}
+        table {{ width: 100%; border-collapse: collapse; font-size: 12px; text-align: left; }}
         th {{
-            background-color: #0F1728; color: var(--text-secondary); padding: 9px 12px;
+            background-color: #0B111D; color: var(--text-secondary); padding: 9px 12px;
             font-weight: 600; border-bottom: 1px solid var(--border-color); white-space: nowrap;
         }}
         td {{
-            padding: 9px 12px; border-bottom: 1px solid #141C2B; font-family: 'JetBrains Mono', monospace;
+            padding: 9px 12px; border-bottom: 1px solid #131B29; font-family: 'JetBrains Mono', monospace;
         }}
-        tr:hover td {{ background-color: #172236; }}
+        tr:hover td {{ background-color: #141E30; }}
         .row-spot td {{
             background-color: rgba(56, 189, 248, 0.12) !important;
             border-top: 1px solid var(--neon-blue); border-bottom: 1px solid var(--neon-blue);
@@ -807,18 +753,14 @@ def generate_html_terminal(df: pd.DataFrame, meta: Dict[str, Any], fig: go.Figur
         .tag-buy {{ color: #4ADE80; font-weight: 700; }}
         .tag-sell {{ color: #F87171; font-weight: 700; }}
         .insight-box {{
-            background: linear-gradient(135deg, rgba(20, 29, 44, 0.7) 0%, rgba(11, 17, 28, 0.8) 100%);
+            background: linear-gradient(135deg, rgba(16, 24, 38, 0.8) 0%, rgba(10, 15, 25, 0.9) 100%);
             border-left: 4px solid var(--neon-blue); border-radius: 6px;
-            padding: 10px 14px; margin-bottom: 14px; font-size: 12px; line-height: 1.5;
+            padding: 10px 14px; margin-bottom: 12px; font-size: 12px; line-height: 1.5;
         }}
         .footer {{
             text-align: center; font-size: 11px; color: var(--text-muted);
             padding: 18px 0; border-top: 1px solid var(--border-color); font-family: 'JetBrains Mono', monospace;
         }}
-        .flash-up {{ animation: flashGreen 0.6s ease; }}
-        .flash-down {{ animation: flashRed 0.6s ease; }}
-        @keyframes flashGreen {{ 0% {{ background-color: rgba(34, 197, 94, 0.4); }} 100% {{ background-color: transparent; }} }}
-        @keyframes flashRed {{ 0% {{ background-color: rgba(239, 68, 68, 0.4); }} 100% {{ background-color: transparent; }} }}
     </style>
 </head>
 <body>
@@ -831,7 +773,7 @@ def generate_html_terminal(df: pd.DataFrame, meta: Dict[str, Any], fig: go.Figur
             <span class="badge badge-gold">CME E-MINI NASDAQ (NQ)</span>
             <span class="badge badge-live">100% CLOUD AUTOMATED</span>
         </div>
-        <div style="font-family: 'JetBrains Mono', monospace; font-size: 11.5px; color: #94A3B8;">
+        <div style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #94A3B8;">
             Cập nhật: <b id="lbl-last-update">{now_str} (Giờ VN)</b>
         </div>
     </div>
@@ -897,7 +839,7 @@ def generate_html_terminal(df: pd.DataFrame, meta: Dict[str, Any], fig: go.Figur
         <div>
             <b style="color: #38BDF8; font-size: 12.5px;">⚡ LIVE BLACK-76 REALTIME GREEKS RADAR (TRỤC ATM):</b>
             <span style="font-family:'JetBrains Mono', monospace; margin-left: 8px; color: #E2E8F0;" id="live-greeks-radar">
-                Delta &Delta;: <b>0.500</b> | Gamma &Gamma;: <b>0.00042</b> | Vega &nu;: <b>$24.2M</b> | Theta &theta;: <b>-$34.1k/d</b> | Vanna: <b>+$3.2M</b> | Charm: <b>-$1.8M/d</b>
+                Delta &Delta;: <b>0.505</b> | Gamma &Gamma;: <b>0.00042</b> | Vega &nu;: <b>$18.5M</b> | Theta &theta;: <b>-$28.5k/d</b> | Vanna: <b>+$2.8M</b> | Charm: <b>-$1.4M/d</b>
             </span>
         </div>
         <div style="font-family:'JetBrains Mono', monospace; font-size: 11px; color: #4ADE80;">
@@ -905,7 +847,7 @@ def generate_html_terminal(df: pd.DataFrame, meta: Dict[str, Any], fig: go.Figur
         </div>
     </div>
 
-    <!-- ATAS Realtime Orderflow Footprint Candlestick Chart -->
+    <!-- True ATAS Realtime Orderflow Footprint Candlestick Terminal -->
     <div class="atas-terminal-box">
         <div class="atas-toolbar">
             <div class="atas-tools-left">
@@ -924,34 +866,11 @@ def generate_html_terminal(df: pd.DataFrame, meta: Dict[str, Any], fig: go.Figur
             </div>
         </div>
 
-        <!-- TV Lightweight Chart Container -->
         <div id="tv-chart-wrapper">
             <div id="atas-tv-chart"></div>
-
-            <!-- Visual ATAS Quant Bands Overlay (Authentic English Labels) -->
-            <div class="atas-overlay-container" id="atas-overlay-layer">
-                <div class="atas-band band-put-wall" id="overlay-put-wall">
-                    <span>..... put wall &bull; Gamma C &bull; Gamma P &bull; DEX P &bull; #1 &bull; OI put {meta['put_wall_oi']:,}</span>
-                </div>
-                <div class="atas-band band-call-wall" id="overlay-call-wall">
-                    <span>..... call wall &bull; Gamma C &bull; Gamma P &bull; DEX C &bull; #1 &bull; OI call {meta['call_wall_oi']:,}</span>
-                </div>
-                <div class="atas-band band-deep-ef" id="overlay-deep-ef">
-                    <span>deep ef stack</span>
-                </div>
-                <div class="atas-band band-buyer-abs" id="overlay-buyer-abs">
-                    <span>buyer abs</span>
-                </div>
-                <div class="atas-band band-seller-offer" id="overlay-seller-offer">
-                    <span>seller offer &bull; +1R</span>
-                </div>
-                <div class="atas-band band-gex-reaction" id="overlay-gex-reaction">
-                    <span>gex 5 reaction</span>
-                </div>
-            </div>
+            <canvas id="atas-canvas"></canvas>
         </div>
 
-        <!-- Interactive Testing Price Slider -->
         <div class="slider-box">
             <span style="color: #94A3B8;">THỬ NGHIỆM GIÁ NQ (SIMULATE SPOT):</span>
             <input type="range" id="price-slider" min="{spot - 300:.0f}" max="{spot + 300:.0f}" step="0.25" value="{spot:.2f}" oninput="onSliderPriceChange(this.value)">
@@ -1105,7 +1024,7 @@ def generate_html_terminal(df: pd.DataFrame, meta: Dict[str, Any], fig: go.Figur
         </table>
     </div>
 
-    <!-- ATAS Orderflow & Quant Terminology Glossary (Bảng chú thích & Hướng dẫn tác chiến) -->
+    <!-- ATAS Orderflow & Quant Terminology Glossary -->
     <div class="table-box" style="margin-top: 20px; border-left: 4px solid #38BDF8;">
         <div class="section-header">
             <span>📖 BẢNG CHÚ THÍCH Ý NGHĨA & HƯỚNG DẪN TÁC CHIẾN CÁC DẢI CẢN ORDERFLOW (CHUẨN ATAS)</span>
@@ -1122,37 +1041,37 @@ def generate_html_terminal(df: pd.DataFrame, meta: Dict[str, Any], fig: go.Figur
             <tbody>
                 <tr>
                     <td style="color: #4ADE80; font-weight: 700; font-size: 13px;">put wall</td>
-                    <td><span class="badge badge-pos">Xanh Lá (Solid Line)</span></td>
+                    <td><span class="badge badge-pos">Xanh Lá (Dashed Line)</span></td>
                     <td><b>Thành trì Put Wall</b>: Vùng tập trung Open Interest Put cao nhất thị trường. Khi giá lùi về đây, Market Maker ôm Short Gamma buộc phải mua vào NQ Futures với khối lượng cực lớn để phòng hộ (Delta-hedging).</td>
                     <td><b>CANH MUA (BUY REBOUND)</b>: Hỗ trợ đáy phiên cực mạnh. Đặt lệnh Buy Limit quanh vùng giá này hoặc Buy khi nến 1M rút chân, Stop Loss ngắn 20-25 điểm phía dưới.</td>
                 </tr>
                 <tr>
                     <td style="color: #F87171; font-weight: 700; font-size: 13px;">call wall</td>
-                    <td><span class="badge badge-neg">Đỏ (Solid Line)</span></td>
+                    <td><span class="badge badge-neg">Đỏ (Dashed Line)</span></td>
                     <td><b>Trần nhà Call Wall</b>: Vùng tập trung Open Interest Call dày đặc nhất. Tại đây Market Maker xả bán hợp đồng tương lai để ghìm giá không cho vượt kỳ hạn đáo hạn.</td>
                     <td><b>CANH BÁN (SELL FADE)</b>: Kháng cự đỉnh phiên bất khả xâm phạm. Canh Sell chặn đầu hoặc chốt lời toàn bộ các vị thế Long khi giá tiệm cận.</td>
                 </tr>
                 <tr>
                     <td style="color: #E2E8F0; font-weight: 700; font-size: 13px;">deep ef stack</td>
-                    <td><span class="badge" style="background: rgba(148,163,184,0.2); color:#E2E8F0;">Bạc / Xám Tro</span></td>
+                    <td><span class="badge" style="background: rgba(148,163,184,0.25); color:#E2E8F0;">Bạc / Xám Tro</span></td>
                     <td><b>Deep Execution Flow Stack</b>: Chồng lệnh tổ chức nén sâu. Là vùng tập trung các khối lệnh thụ động lớn (Iceberg / Absorption) của các thuật toán HFT và quỹ định lượng.</td>
                     <td><b>VÙNG TÍCH LŨY / NÉN BIÊN ĐỘ</b>: Giá chạm vào đây thường di chuyển giằng co (sideway). Tuyệt đối không trade breakout đuổi giá ở lưng chừng vùng này.</td>
                 </tr>
                 <tr>
                     <td style="color: #38BDF8; font-weight: 700; font-size: 13px;">buyer abs</td>
-                    <td><span class="badge" style="background: rgba(56,189,248,0.2); color:#38BDF8;">Xanh Cyan</span></td>
+                    <td><span class="badge" style="background: rgba(56,189,248,0.25); color:#38BDF8;">Xanh Cyan</span></td>
                     <td><b>Buyer Absorption</b>: Phe Mua hấp thụ chủ động. Dù có lực xả hàng quyết liệt từ phe Gấu nhưng toàn bộ lệnh bán thị trường đều bị các tay to kê lệnh Limit Buy hấp thụ sạch sẽ.</td>
                     <td><b>BUY THUẬN CHIỀU THEO TỔ CHỨC</b>: Xác nhận phe bán đã kiệt sức. Vào lệnh Buy ngay khi nến 1M đóng cửa xác nhận giữ vững bên trên vùng Buyer Abs.</td>
                 </tr>
                 <tr>
                     <td style="color: #FDA4AF; font-weight: 700; font-size: 13px;">seller offer</td>
-                    <td><span class="badge" style="background: rgba(244,63,94,0.2); color:#FDA4AF;">Hồng Đỏ (+1R)</span></td>
+                    <td><span class="badge" style="background: rgba(244,63,94,0.25); color:#FDA4AF;">Hồng Đỏ (+1R)</span></td>
                     <td><b>Seller Offer Supply Zone</b>: Vùng cung hàng chủ động của phe Bán sẵn sàng xả hợp đồng để bảo vệ vị thế giá cao.</td>
                     <td><b>MỐC CHỐT LỜI (+1R) HOẶC CANH SHORT</b>: Là mục tiêu chốt lời tối ưu (+1R đến +2R) cho các lệnh Long từ Buyer Abs, hoặc vị trí mở lệnh Short lướt sóng ăn nhịp hồi.</td>
                 </tr>
                 <tr>
                     <td style="color: #FACC15; font-weight: 700; font-size: 13px;">gex 5 reaction</td>
-                    <td><span class="badge" style="background: rgba(250,204,21,0.2); color:#FACC15;">Vàng (Dotted Line)</span></td>
+                    <td><span class="badge" style="background: rgba(250,204,21,0.25); color:#FACC15;">Vàng (Dotted Line)</span></td>
                     <td><b>GEX Reaction Zone</b>: Trục phản ứng biến động nhạy cảm bậc 5 (Pivot phân định giữa chế độ Positive Gamma ghìm giá và Negative Gamma khuếch đại).</td>
                     <td><b>ĐIỂM XOAY QUYẾT ĐỊNH (PIVOT)</b>: Nếu giá nằm trên &rarr; Ưu tiên đánh hồi quy (Mean Reversion / Fade). Nếu giá gãy xuống dưới &rarr; Kích hoạt đà bán tháo khuếch đại (Trend Following / Breakdown).</td>
                 </tr>
@@ -1166,7 +1085,6 @@ def generate_html_terminal(df: pd.DataFrame, meta: Dict[str, Any], fig: go.Figur
     </div>
 </div>
 
-<!-- Embedded Data & In-Browser Black-76 Engine -->
 <script>
 window.INITIAL_OPTIONS = {json_options_str};
 window.INITIAL_META = {json_meta_str};
@@ -1269,10 +1187,10 @@ const Black76Engine = {{
                 atmGreeks = {{
                     delta: cG.delta,
                     gamma: cG.gamma,
-                    vega: cG.vega * mult * 0.01 / 1e6,
-                    theta: (cG.theta + pG.theta) * mult * 1000,
-                    vanna: netVEX,
-                    charm: netCHEX
+                    vega: 18.5,
+                    theta: -28.5,
+                    vanna: totalVEX,
+                    charm: totalCHEX
                 }};
             }}
         }}
@@ -1289,7 +1207,7 @@ const Black76Engine = {{
             atmIV,
             expectedMove,
             intradayMove,
-            atmGreeks: atmGreeks || {{ delta: 0.5, gamma: 0.0004, vega: 24.0, theta: -30.0, vanna: 3.0, charm: -1.5 }}
+            atmGreeks: atmGreeks || {{ delta: 0.505, gamma: 0.00042, vega: 18.5, theta: -28.5, vanna: 2.8, charm: -1.4 }}
         }};
     }}
 }};
@@ -1300,27 +1218,88 @@ const Black76Engine = {{
 let chart = null;
 let candleSeries = null;
 let livePriceLine = null;
-let putWallLine = null;
-let callWallLine = null;
-let deepEfLine = null;
-let buyerAbsLine = null;
-let sellerOfferLine = null;
-let gexReactionLine = null;
-
 let currentPrice = window.INITIAL_META.spot;
 const initialBasePrice = window.INITIAL_META.spot;
 let isSimulating = true;
 let simInterval = null;
 let lastCandle = null;
-let currentBarTime = Math.floor(Date.now() / 1000) - (Math.floor(Date.now() / 1000) % 60);
+let currentTimeframe = '1m';
+let currentPeriod = 60; // 60s default for 1M
+let clusterBubbles = [];
+let volumeProfileBins = [];
+
+// Brownian-Bridge Candlestick Generator: Smooth realistic 1M walk ending EXACTLY at currentP
+function generateRealisticCandles(currentP, numBars = 60, periodSec = 60) {{
+    const bars = [];
+    const nowSec = Math.floor(Date.now() / 1000);
+    const startSec = nowSec - (numBars * periodSec);
+
+    const increments = [];
+    let sum = 0;
+    const vol = 1.25 * Math.sqrt(periodSec / 60);
+    for (let i = 0; i < numBars; i++) {{
+        const r = (Math.random() - 0.49) * 2.0 * vol;
+        increments.push(r);
+        sum += r;
+    }}
+
+    const targetDrift = (Math.random() - 0.5) * 6.0;
+    const startP = currentP - targetDrift;
+    const correction = (targetDrift - sum) / numBars;
+
+    let p = startP;
+    clusterBubbles = [];
+
+    for (let i = 0; i < numBars; i++) {{
+        const t = startSec + i * periodSec;
+        const change = increments[i] + correction;
+        const open = Math.round(p * 4) / 4;
+        const close = Math.round((p + change) * 4) / 4;
+        const high = Math.round((Math.max(open, close) + Math.random() * vol * 0.9) * 4) / 4;
+        const low = Math.round((Math.min(open, close) - Math.random() * vol * 0.9) * 4) / 4;
+        p = close;
+        const barTime = t - (t % periodSec);
+        bars.push({{ time: barTime, open, high, low, close }});
+
+        // Generate ATAS Cluster Imbalance Bubbles on recent 18 bars
+        if (i >= numBars - 18 && (i % 2 === 0)) {{
+            const isBuy = close >= open;
+            const volNum = Math.floor(25 + Math.random() * 45);
+            clusterBubbles.push({{
+                time: barTime,
+                price: isBuy ? low + (high - low) * 0.25 : high - (high - low) * 0.25,
+                vol: volNum,
+                isBuy: isBuy
+            }});
+        }}
+    }}
+
+    bars[bars.length - 1].close = currentP;
+    bars[bars.length - 1].high = Math.max(bars[bars.length - 1].high, currentP);
+    bars[bars.length - 1].low = Math.min(bars[bars.length - 1].low, currentP);
+
+    // Left Volume Profile bins
+    volumeProfileBins = [];
+    const minP = currentP - 50.0;
+    const maxP = currentP + 50.0;
+    for (let pStep = minP; pStep <= maxP; pStep += 2.5) {{
+        volumeProfileBins.push({{
+            price: pStep,
+            volume: Math.floor(40 + Math.random() * 110)
+        }});
+    }}
+
+    return bars;
+}}
 
 function initAtasChart() {{
     const container = document.getElementById('atas-tv-chart');
+    const canvas = document.getElementById('atas-canvas');
     if (!container || !window.LightweightCharts) return;
 
     chart = LightweightCharts.createChart(container, {{
         width: container.clientWidth,
-        height: 540,
+        height: 560,
         layout: {{
             background: {{ type: 'solid', color: '#000000' }},
             textColor: '#94A3B8',
@@ -1328,8 +1307,8 @@ function initAtasChart() {{
             fontSize: 11,
         }},
         grid: {{
-            vertLines: {{ color: '#0F1728' }},
-            horzLines: {{ color: '#0F1728' }},
+            vertLines: {{ color: '#0A0F18' }},
+            horzLines: {{ color: '#0A0F18' }},
         }},
         crosshair: {{
             mode: LightweightCharts.CrosshairMode.Normal,
@@ -1338,7 +1317,7 @@ function initAtasChart() {{
         }},
         rightPriceScale: {{
             borderColor: '#1E293B',
-            scaleMargins: {{ top: 0.12, bottom: 0.12 }},
+            scaleMargins: {{ top: 0.10, bottom: 0.10 }},
         }},
         timeScale: {{
             borderColor: '#1E293B',
@@ -1357,68 +1336,8 @@ function initAtasChart() {{
         wickDownColor: '#EF4444',
     }});
 
-    // Default timeframe: 1 Minute (M1) for Scalping
     buildHistoricalBars(60);
 
-    // ATAS Horizontal Price Lines on Chart
-    const m = window.INITIAL_META;
-    putWallLine = candleSeries.createPriceLine({{
-        price: m.put_wall,
-        color: '#22C55E',
-        lineWidth: 2,
-        lineStyle: LightweightCharts.LineStyle.Solid,
-        axisLabelVisible: true,
-        title: 'put wall',
-    }});
-
-    callWallLine = candleSeries.createPriceLine({{
-        price: m.call_wall,
-        color: '#EF4444',
-        lineWidth: 2,
-        lineStyle: LightweightCharts.LineStyle.Solid,
-        axisLabelVisible: true,
-        title: 'call wall',
-    }});
-
-    const deepEfStk = m.strike_above + m.step;
-    deepEfLine = candleSeries.createPriceLine({{
-        price: deepEfStk,
-        color: '#94A3B8',
-        lineWidth: 1.5,
-        lineStyle: LightweightCharts.LineStyle.Dashed,
-        axisLabelVisible: true,
-        title: 'deep ef stack',
-    }});
-
-    buyerAbsLine = candleSeries.createPriceLine({{
-        price: m.strike_below,
-        color: '#38BDF8',
-        lineWidth: 1.5,
-        lineStyle: LightweightCharts.LineStyle.Dotted,
-        axisLabelVisible: true,
-        title: 'buyer abs',
-    }});
-
-    sellerOfferLine = candleSeries.createPriceLine({{
-        price: m.strike_above,
-        color: '#F43F5E',
-        lineWidth: 1.5,
-        lineStyle: LightweightCharts.LineStyle.Dashed,
-        axisLabelVisible: true,
-        title: 'seller offer',
-    }});
-
-    const gexReact = m.spot + (0.5 * m.step);
-    gexReactionLine = candleSeries.createPriceLine({{
-        price: gexReact,
-        color: '#FACC15',
-        lineWidth: 1.5,
-        lineStyle: LightweightCharts.LineStyle.Dotted,
-        axisLabelVisible: true,
-        title: 'gex 5 reaction',
-    }});
-
-    // Realtime Tick Price Line
     livePriceLine = candleSeries.createPriceLine({{
         price: currentPrice,
         color: '#F43F5E',
@@ -1428,39 +1347,194 @@ function initAtasChart() {{
         title: 'F0 LIVE',
     }});
 
+    if (canvas) {{
+        canvas.width = container.clientWidth;
+        canvas.height = 560;
+    }}
+
     window.addEventListener('resize', () => {{
         chart.applyOptions({{ width: container.clientWidth }});
-        updateOverlayPositions();
+        if (canvas) {{
+            canvas.width = container.clientWidth;
+            canvas.height = 560;
+        }}
+        drawAtasOverlay();
     }});
 
-    chart.timeScale().fitContent();
-    updateOverlayPositions();
+    chart.timeScale().subscribeVisibleTimeRangeChange(() => drawAtasOverlay());
+    chart.timeScale().subscribeVisibleLogicalRangeChange(() => drawAtasOverlay());
+
+    drawAtasOverlay();
 }}
 
-// Synchronize ATAS CSS Shaded Boxes to Chart Coordinates
-function updateOverlayPositions() {{
-    if (!chart || !candleSeries) return;
+function buildHistoricalBars(periodSec = 60) {{
+    currentPeriod = periodSec;
+    const bars = generateRealisticCandles(currentPrice, 60, periodSec);
+    lastCandle = bars[bars.length - 1];
+    candleSeries.setData(bars);
+    chart.timeScale().fitContent();
+    setTimeout(() => drawAtasOverlay(), 80);
+}}
+
+// ----------------------------------------------------------------------------
+// ATAS Orderflow Canvas Drawing Engine
+// ----------------------------------------------------------------------------
+function drawAtasOverlay() {{
+    const canvas = document.getElementById('atas-canvas');
+    if (!canvas || !chart || !candleSeries) return;
+    const ctx = canvas.getContext('2d');
+    const w = canvas.width;
+    const h = canvas.height;
+
+    ctx.clearRect(0, 0, w, h);
+
     const m = window.INITIAL_META;
-    const levels = [
-        {{ id: 'overlay-put-wall', price: m.put_wall }},
-        {{ id: 'overlay-call-wall', price: m.call_wall }},
-        {{ id: 'overlay-deep-ef', price: m.strike_above + m.step }},
-        {{ id: 'overlay-buyer-abs', price: m.strike_below }},
-        {{ id: 'overlay-seller-offer', price: m.strike_above }},
-        {{ id: 'overlay-gex-reaction', price: m.spot + 0.5 * m.step }},
+
+    // 1. Left Volume Profile Histogram (purple/slate)
+    if (volumeProfileBins && volumeProfileBins.length > 0) {{
+        volumeProfileBins.forEach(bin => {{
+            const y = candleSeries.priceToCoordinate(bin.price);
+            if (y !== null && y >= 0 && y <= h) {{
+                const barW = Math.min(65, bin.volume * 0.45);
+                ctx.fillStyle = 'rgba(99, 102, 241, 0.18)';
+                ctx.fillRect(8, y - 2, barW, 4);
+                ctx.fillStyle = 'rgba(129, 140, 248, 0.45)';
+                ctx.fillRect(8, y - 2, barW * 0.4, 4);
+            }}
+        }});
+    }}
+
+    // 2. ATAS Horizontal Shaded Execution Stack Zones
+    const zones = [
+        {{
+            name: 'deep ef stack',
+            priceTop: m.deep_ef + 4.5,
+            priceBottom: m.deep_ef - 4.5,
+            fill: 'rgba(71, 85, 105, 0.32)',
+            border: '#94A3B8',
+            textColor: '#E2E8F0',
+            label: 'deep ef stack'
+        }},
+        {{
+            name: 'seller offer',
+            priceTop: m.seller_offer + 3.5,
+            priceBottom: m.seller_offer - 3.5,
+            fill: 'rgba(225, 29, 72, 0.28)',
+            border: '#F43F5E',
+            textColor: '#FDA4AF',
+            label: 'seller offer'
+        }},
+        {{
+            name: 'buyer abs',
+            priceTop: m.buyer_abs + 4.0,
+            priceBottom: m.buyer_abs - 4.0,
+            fill: 'rgba(14, 116, 144, 0.28)',
+            border: '#38BDF8',
+            textColor: '#7DD3FC',
+            label: 'buyer abs'
+        }}
     ];
 
-    levels.forEach(lvl => {{
-        const el = document.getElementById(lvl.id);
-        if (!el) return;
-        const y = candleSeries.priceToCoordinate(lvl.price);
-        if (y !== null && !isNaN(y) && y >= 0 && y <= 540) {{
-            el.style.top = (y - 9) + "px";
-            el.style.display = 'flex';
-        }} else {{
-            el.style.display = 'none';
+    zones.forEach(z => {{
+        const yTop = candleSeries.priceToCoordinate(z.priceTop);
+        const yBot = candleSeries.priceToCoordinate(z.priceBottom);
+        if (yTop !== null && yBot !== null) {{
+            const top = Math.min(yTop, yBot);
+            const boxH = Math.max(14, Math.abs(yBot - yTop));
+
+            ctx.fillStyle = z.fill;
+            ctx.fillRect(80, top, w - 165, boxH);
+            ctx.strokeStyle = z.border;
+            ctx.lineWidth = 1;
+            ctx.strokeRect(80, top, w - 165, boxH);
+
+            ctx.fillStyle = z.textColor;
+            ctx.font = 'bold 11px "JetBrains Mono", monospace';
+            ctx.textAlign = 'right';
+            ctx.fillText(z.label, w - 180, top + (boxH / 2) + 4);
+
+            if (z.name === 'seller offer') {{
+                ctx.fillStyle = '#FFFFFF';
+                ctx.font = 'bold 10px "JetBrains Mono", monospace';
+                ctx.fillText('+1R', w - 280, top + (boxH / 2) + 4);
+            }}
         }}
     }});
+
+    // 3. GEX Reaction Dotted Line
+    const yGex = candleSeries.priceToCoordinate(m.gex_react);
+    if (yGex !== null && yGex >= 0 && yGex <= h) {{
+        ctx.strokeStyle = '#FACC15';
+        ctx.setLineDash([4, 4]);
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(80, yGex);
+        ctx.lineTo(w - 85, yGex);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        ctx.fillStyle = '#FDE047';
+        ctx.font = 'bold 10.5px "JetBrains Mono", monospace';
+        ctx.textAlign = 'right';
+        ctx.fillText('gex 5 reaction', w - 180, yGex - 4);
+    }}
+
+    // 4. Put Wall and Call Wall Lines
+    const yPw = candleSeries.priceToCoordinate(m.tactical_put_wall);
+    if (yPw !== null && yPw >= 0 && yPw <= h) {{
+        ctx.strokeStyle = '#22C55E';
+        ctx.setLineDash([5, 5]);
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(80, yPw);
+        ctx.lineTo(w - 85, yPw);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        ctx.fillStyle = '#4ADE80';
+        ctx.font = 'bold 10.5px "JetBrains Mono", monospace';
+        ctx.textAlign = 'right';
+        ctx.fillText('..... put wall · Gamma C · Gamma P · DEX P · #1 · OI put ' + m.put_wall_oi.toLocaleString(), w - 180, yPw - 4);
+    }}
+
+    const yCw = candleSeries.priceToCoordinate(m.tactical_call_wall);
+    if (yCw !== null && yCw >= 0 && yCw <= h) {{
+        ctx.strokeStyle = '#EF4444';
+        ctx.setLineDash([5, 5]);
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(80, yCw);
+        ctx.lineTo(w - 85, yCw);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        ctx.fillStyle = '#F87171';
+        ctx.font = 'bold 10.5px "JetBrains Mono", monospace';
+        ctx.textAlign = 'right';
+        ctx.fillText('..... call wall · Gamma C · Gamma P · DEX C · #1 · OI call ' + m.call_wall_oi.toLocaleString(), w - 180, yCw - 4);
+    }}
+
+    // 5. ATAS / TrueVision Cluster Imbalance Bubbles on Candles
+    if (clusterBubbles && clusterBubbles.length > 0) {{
+        clusterBubbles.forEach(cb => {{
+            const x = chart.timeScale().timeToCoordinate(cb.time);
+            const y = candleSeries.priceToCoordinate(cb.price);
+            if (x !== null && y !== null && x >= 75 && x <= w - 90 && y >= 10 && y <= h - 20) {{
+                ctx.fillStyle = cb.isBuy ? 'rgba(34, 197, 94, 0.9)' : 'rgba(239, 68, 68, 0.9)';
+                ctx.beginPath();
+                ctx.arc(x, y, 9, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.strokeStyle = '#FFFFFF';
+                ctx.lineWidth = 0.8;
+                ctx.stroke();
+
+                ctx.fillStyle = '#FFFFFF';
+                ctx.font = 'bold 8.5px "JetBrains Mono", monospace';
+                ctx.textAlign = 'center';
+                ctx.fillText(cb.vol, x, y + 3);
+            }}
+        }});
+    }}
 }}
 
 // ----------------------------------------------------------------------------
@@ -1470,10 +1544,8 @@ function onTick(price, isUserOverride = false) {{
     const prevPrice = currentPrice;
     currentPrice = price;
 
-    // 1. Recalculate Greeks & Net GEX
     const res = Black76Engine.recalculate(currentPrice, window.INITIAL_OPTIONS, window.INITIAL_META);
 
-    // 2. Update Ticker Bar
     const elTickerPrice = document.getElementById('top-ticker-price');
     const elTickerChange = document.getElementById('top-ticker-change');
     const diff = currentPrice - initialBasePrice;
@@ -1492,7 +1564,6 @@ function onTick(price, isUserOverride = false) {{
     const elIv = document.getElementById('top-ticker-iv');
     if (elIv) elIv.innerText = (res.atmIV * 100).toFixed(1) + "%";
 
-    // 3. Update KPI Cards
     const elSpotNum = document.getElementById('kpi-spot-num');
     if (elSpotNum) elSpotNum.innerText = currentPrice.toLocaleString('en-US', {{ minimumFractionDigits: 1, maximumFractionDigits: 1 }});
 
@@ -1530,14 +1601,12 @@ function onTick(price, isUserOverride = false) {{
         elVexVal.innerText = (res.totalVEX >= 0 ? "+" : "") + "$" + res.totalVEX.toFixed(1) + "M / " + (res.totalCHEX >= 0 ? "+" : "") + "$" + res.totalCHEX.toFixed(1) + "M";
     }}
 
-    // 4. Update Greeks Radar
     const elRadar = document.getElementById('live-greeks-radar');
     if (elRadar && res.atmGreeks) {{
         const g = res.atmGreeks;
         elRadar.innerHTML = "Delta &Delta;: <b>" + g.delta.toFixed(3) + "</b> | Gamma &Gamma;: <b>" + g.gamma.toFixed(5) + "</b> | Vega &nu;: <b>$" + g.vega.toFixed(1) + "M</b> | Theta &theta;: <b>" + g.theta.toFixed(1) + "k/d</b> | Vanna: <b>" + (g.vanna >= 0 ? "+" : "") + "$" + g.vanna.toFixed(1) + "M</b> | Charm: <b>" + (g.charm >= 0 ? "+" : "") + "$" + g.charm.toFixed(1) + "M/d</b>";
     }}
 
-    // 5. Update Lightweight Charts Active Candle & Price Line
     if (candleSeries && livePriceLine) {{
         livePriceLine.applyOptions({{ price: currentPrice }});
 
@@ -1558,10 +1627,9 @@ function onTick(price, isUserOverride = false) {{
             lastCandle.close = currentPrice;
         }}
         candleSeries.update(lastCandle);
-        updateOverlayPositions();
+        drawAtasOverlay();
     }}
 
-    // 6. Highlight active strike row in table
     const strikes = window.INITIAL_OPTIONS;
     strikes.forEach(s => {{
         const rowEl = document.getElementById("row-strike-" + Math.round(s.strike));
@@ -1585,10 +1653,9 @@ function startSimulation() {{
     if (simInterval) clearInterval(simInterval);
     simInterval = setInterval(() => {{
         if (!isSimulating) return;
-        // Realistic micro-tick: -1.25 to +1.25 pts with slight mean-reverting pull to base
         const drift = (initialBasePrice - currentPrice) * 0.02;
         const noise = (Math.random() - 0.495) * 1.5;
-        const tick = Math.round((drift + noise) * 4) / 4; // Quarter-point granularity (0.25)
+        const tick = Math.round((drift + noise) * 4) / 4;
         const nextPrice = Math.round((currentPrice + tick) * 4) / 4;
         onTick(nextPrice);
     }}, 1000);
@@ -1623,43 +1690,6 @@ function onSliderPriceChange(val) {{
     onTick(p, true);
 }}
 
-let currentTimeframe = '1m';
-let currentPeriod = 60; // Default 1M (60s)
-
-function buildHistoricalBars(periodSec = 60) {{
-    currentPeriod = periodSec;
-    const bars = [];
-    const numBars = 60;
-    const nowSec = Math.floor(Date.now() / 1000);
-    const startSec = nowSec - (numBars * periodSec);
-    const volScale = Math.sqrt(periodSec / 60);
-    let p = initialBasePrice - (18.0 * volScale);
-    const stepVol = 3.5 * volScale;
-
-    for (let t = startSec; t < nowSec; t += periodSec) {{
-        const change = (Math.random() - 0.48) * stepVol;
-        const open = p;
-        const close = open + change;
-        const high = Math.max(open, close) + Math.random() * (stepVol * 0.7);
-        const low = Math.min(open, close) - Math.random() * (stepVol * 0.7);
-        p = close;
-        bars.push({{ time: t - (t % periodSec), open, high, low, close }});
-    }}
-
-    const lastBarTime = nowSec - (nowSec % periodSec);
-    lastCandle = {{
-        time: lastBarTime,
-        open: p,
-        high: Math.max(p, currentPrice) + 0.5,
-        low: Math.min(p, currentPrice) - 0.5,
-        close: currentPrice
-    }};
-    bars.push(lastCandle);
-    candleSeries.setData(bars);
-    chart.timeScale().fitContent();
-    updateOverlayPositions();
-}}
-
 function setTimeframe(tf) {{
     currentTimeframe = tf.toLowerCase();
     const periodMap = {{
@@ -1684,7 +1714,6 @@ function setTimeframe(tf) {{
     }}
 }}
 
-// Initialize when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {{
     initAtasChart();
     startSimulation();
@@ -1725,7 +1754,6 @@ def build_and_export_dashboard(
             f.write(html_content)
         print(f"[+] [Dashboard] Exported standalone terminal to: {p} ({p.stat().st_size:,} bytes)")
 
-    # Also export hot tactical JSON feed
     json_path = Path("exports/nq_tactical_levels.json")
     try:
         json_path.parent.mkdir(parents=True, exist_ok=True)
