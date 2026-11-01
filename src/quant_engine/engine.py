@@ -27,6 +27,7 @@ def process_options_chain_black76(
     risk_free_rate: float = 0.045,
     dte_days: float = 1.0,
     basis_offset: float = 0.0,
+    underlying_price: Optional[float] = None,
 ) -> Tuple[pd.DataFrame, Dict[str, Any]]:
     """
     Compute full quantitative matrix for E-mini Nasdaq options chain using Black-76.
@@ -81,6 +82,7 @@ def process_options_chain_black76(
     s_implied = atm_strike + math.exp(r * T_years) * (c_mid_atm - p_mid_atm)
     if s_implied <= 0 or math.isnan(s_implied):
         s_implied = atm_strike
+    real_spot = float(underlying_price) if (underlying_price is not None and underlying_price > 0) else s_implied
 
     # 2. Implied Volatility Solver (Fix IV = 0.00% on 0DTE or illiquid strikes)
     strikes = df_clean["strike"].values.astype(float)
@@ -127,19 +129,19 @@ def process_options_chain_black76(
 
     # 4. GEX, VEX, CHEX ($M Exposure)
     # GEX: $M per 1% move in futures price
-    scale_gex = (s_implied ** 2) * 0.01 / 1e6
+    scale_gex = (real_spot ** 2) * 0.01 / 1e6
     df_clean["callGEX"] = df_clean["callGamma"] * df_clean["callOpenInterest"] * multiplier * scale_gex
     df_clean["putGEX"] = - (df_clean["putGamma"] * df_clean["putOpenInterest"] * multiplier * scale_gex)
     df_clean["netGEX"] = df_clean["callGEX"] + df_clean["putGEX"]
 
     # VEX: $M per 1% change in IV (Vanna Exposure)
-    scale_vex = s_implied * 0.01 / 1e6
+    scale_vex = real_spot * 0.01 / 1e6
     df_clean["callVEX"] = df_clean["callVanna"] * df_clean["callOpenInterest"] * multiplier * scale_vex
     df_clean["putVEX"] = - (df_clean["putVanna"] * df_clean["putOpenInterest"] * multiplier * scale_vex)
     df_clean["netVEX"] = df_clean["callVEX"] + df_clean["putVEX"]
 
     # CHEX: $M per day of calendar time decay (Charm Exposure)
-    scale_chex = s_implied / 1e6
+    scale_chex = real_spot / 1e6
     df_clean["callCHEX"] = (df_clean["callCharm"] / 365.0) * df_clean["callOpenInterest"] * multiplier * scale_chex
     df_clean["putCHEX"] = - ((df_clean["putCharm"] / 365.0) * df_clean["putOpenInterest"] * multiplier * scale_chex)
     df_clean["netCHEX"] = df_clean["callCHEX"] + df_clean["putCHEX"]
@@ -148,14 +150,14 @@ def process_options_chain_black76(
     atm_straddle = max(1.0, c_mid_atm + p_mid_atm)
     # Brenner-Subrahmanyam 1-Sigma Expected Move
     expected_move_1s = atm_straddle / BRENNER_SUBRAHMANYAM_CONST
-    sigma_atm = float(np.clip(atm_straddle / (BRENNER_SUBRAHMANYAM_CONST * s_implied * math.sqrt(T_years)), 0.01, 3.0))
+    sigma_atm = float(np.clip(atm_straddle / (BRENNER_SUBRAHMANYAM_CONST * real_spot * math.sqrt(T_years)), 0.01, 3.0))
     # Rule of 16 daily move
-    intraday_rule16_move = (sigma_atm / 16.0) * s_implied
+    intraday_rule16_move = (sigma_atm / 16.0) * real_spot
 
-    upper_band_1s = s_implied + expected_move_1s
-    lower_band_1s = s_implied - expected_move_1s
-    upper_band_2s = s_implied + 2.0 * expected_move_1s
-    lower_band_2s = s_implied - 2.0 * expected_move_1s
+    upper_band_1s = real_spot + expected_move_1s
+    lower_band_1s = real_spot - expected_move_1s
+    upper_band_2s = real_spot + 2.0 * expected_move_1s
+    lower_band_2s = real_spot - 2.0 * expected_move_1s
 
     # 6. Structural Walls & Market Regime
     call_wall_row = df_clean.loc[df_clean["callOpenInterest"].idxmax()]
@@ -192,20 +194,21 @@ def process_options_chain_black76(
     waterfall_trigger = put_wall - buffer_val
 
     # Dynamic tactical strikes (Decoded strictly dynamically)
-    strikes_above = strikes[strikes > s_implied]
+    strikes_above = strikes[strikes > real_spot]
     strike_above = float(strikes_above[0]) if len(strikes_above) > 0 else call_wall
     next_above = float(strikes_above[1]) if len(strikes_above) > 1 else strike_above + step
 
-    strikes_below = strikes[strikes <= s_implied]
+    strikes_below = strikes[strikes <= real_spot]
     strike_below = float(strikes_below[-1]) if len(strikes_below) > 0 else put_wall
     next_below = float(strikes_below[-2]) if len(strikes_below) > 1 else strike_below - step
     secondary_support = next_below
 
     # MT5 Spot price projection
-    spot_mt5 = s_implied - basis_offset
+    spot_mt5 = real_spot - basis_offset
 
     meta = {
-        "spot_price": round(s_implied, 2),
+        "spot_price": round(real_spot, 2),
+        "s_implied": round(s_implied, 2),
         "spot_mt5": round(spot_mt5, 2),
         "basis_offset": round(basis_offset, 2),
         "multiplier": multiplier,

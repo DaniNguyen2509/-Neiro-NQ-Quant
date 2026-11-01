@@ -58,6 +58,7 @@ def load_options_dataset(
     basis: float = 0.0,
     multiplier: float = 20.0,
     source: str = "yfinance",
+    spot_override: Optional[float] = None,
 ) -> Tuple[pd.DataFrame, Dict[str, Any]]:
     """
     Load options dataset from live yfinance (QQQ -> NQ, fast & free, default)
@@ -66,6 +67,7 @@ def load_options_dataset(
     df_raw = None
     eff_multiplier = multiplier
     eff_basis = basis
+    market_fut = spot_override
 
     # 1. Primary Source: Live yfinance (Fast, 100% Free, No Browser, Bypasses Cloudflare)
     if source == "yfinance":
@@ -74,6 +76,8 @@ def load_options_dataset(
             from src.collector.nasdaq_collector import NasdaqCollector
             collector = NasdaqCollector()
             df_live, prices = collector.fetch_standardized_nq_chain()
+            if market_fut is None and prices and "futures" in prices:
+                market_fut = float(prices["futures"])
             if not df_live.empty and len(df_live) >= 5:
                 df_raw = df_live
                 basis_ratio = max(1.0, float(prices.get("basis", 41.3)))
@@ -143,6 +147,7 @@ def load_options_dataset(
         risk_free_rate=0.045,
         dte_days=dte_val,
         basis_offset=eff_basis,
+        underlying_price=market_fut,
     )
     meta["raw_source"] = source
     meta["effective_multiplier"] = eff_multiplier
@@ -826,6 +831,7 @@ def build_and_export_dashboard(
     basis: float = 0.0,
     multiplier: float = 20.0,
     source: str = "yfinance",
+    spot: Optional[float] = None,
 ) -> str:
     """Build complete Plotly terminal and export to output HTML file paths."""
     if output_paths is None or len(output_paths) == 0:
@@ -836,6 +842,7 @@ def build_and_export_dashboard(
         basis=basis,
         multiplier=multiplier,
         source=source,
+        spot_override=spot,
     )
     fig = build_plotly_terminal(df_full, meta)
     html_content = generate_html_terminal(df_full, meta, fig)
@@ -873,6 +880,7 @@ def main():
     parser.add_argument("--input", default="data/options_prices_NQZ26.csv", help="Input options CSV dataset (if using csv/barchart)")
     parser.add_argument("--output", nargs="+", default=["exports/latest_nq_dashboard.html", "exports/index.html"], help="Output HTML file path(s)")
     parser.add_argument("--basis", type=float, default=0.0, help="MT5 Spot Basis offset (Spot_MT5 = Spot_Futures - basis)")
+    parser.add_argument("--spot", type=float, default=None, help="Explicit market futures price override (e.g. 28543.0 for exact CME Globex or 28525.0 for MT5)")
     parser.add_argument("--multiplier", type=float, default=20.0, help="Options multiplier (20 for NQ, 2 for MNQ)")
     args = parser.parse_args()
 
@@ -882,6 +890,7 @@ def main():
         basis=args.basis,
         multiplier=args.multiplier,
         source=args.source,
+        spot=args.spot,
     )
 
 
