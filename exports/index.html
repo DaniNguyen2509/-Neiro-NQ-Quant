@@ -3,32 +3,38 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NEIRO-NQ-QUANT: E-MINI NASDAQ TACTICAL TERMINAL</title>
+    <title>NEIRO-NQ-QUANT TERMINAL &bull; ATAS REALTIME QUANT ORDERFLOW</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- TradingView Lightweight Charts v4.2 CDN -->
+    <script src="https://unpkg.com/lightweight-charts@4.2.0/dist/lightweight-charts.standalone.production.js"></script>
     <style>
         :root {
-            --bg-base: #070B12; --bg-card: #0F172A; --border-color: #1E293B;
+            --bg-base: #06090E; --bg-card: #0D131F; --border-color: #1A2333;
             --text-primary: #F8FAFC; --text-secondary: #94A3B8; --text-muted: #64748B;
             --neon-green: #22C55E; --neon-red: #EF4444; --neon-blue: #38BDF8; --neon-gold: #FACC15;
+            --neon-purple: #A855F7; --neon-coral: #F43F5E;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
             background-color: var(--bg-base); color: var(--text-primary);
-            font-family: 'Inter', -apple-system, sans-serif; padding: 20px; font-size: 13.5px;
+            font-family: 'Inter', -apple-system, sans-serif; padding: 16px; font-size: 13px;
         }
-        .container { max-width: 1460px; margin: 0 auto; }
+        .container { max-width: 1480px; margin: 0 auto; }
+
+        /* Top Nav & Branding Bar */
         .header {
             display: flex; justify-content: space-between; align-items: center;
-            padding: 16px 24px; background: linear-gradient(135deg, #0F172A 0%, #131E35 100%);
-            border: 1px solid var(--border-color); border-radius: 12px; margin-bottom: 18px;
+            padding: 12px 20px; background: linear-gradient(135deg, #0B111D 0%, #111A2B 100%);
+            border: 1px solid var(--border-color); border-radius: 10px; margin-bottom: 12px;
         }
-        .brand { display: flex; align-items: center; gap: 12px; }
+        .brand { display: flex; align-items: center; gap: 10px; }
         .brand-title {
-            font-size: 20px; font-weight: 800;
+            font-size: 18px; font-weight: 800;
             background: linear-gradient(90deg, #FFFFFF 0%, #93C5FD 100%);
             -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            font-family: 'JetBrains Mono', monospace; letter-spacing: 0.5px;
         }
         .pulse-dot {
             width: 10px; height: 10px; border-radius: 50%; background-color: var(--neon-green);
@@ -47,42 +53,145 @@
         .badge-gold { background: rgba(250, 204, 21, 0.15); color: #FACC15; border: 1px solid rgba(250, 204, 21, 0.4); }
         .badge-pos { background: rgba(74, 222, 128, 0.15); color: #4ADE80; border: 1px solid rgba(74, 222, 128, 0.4); }
         .badge-neg { background: rgba(248, 113, 113, 0.15); color: #F87171; border: 1px solid rgba(248, 113, 113, 0.4); }
+
+        /* Live Ticker Bar */
+        .ticker-bar {
+            display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;
+            background: #0A0F19; border: 1px solid #1E293B; border-radius: 8px; padding: 10px 18px; margin-bottom: 14px;
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .ticker-items { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
+        .ticker-item { display: flex; align-items: center; gap: 6px; font-size: 12.5px; }
+        .ticker-symbol { font-weight: 800; color: #FFFFFF; font-size: 13.5px; }
+        .ticker-price { font-weight: 800; font-size: 15px; color: #38BDF8; transition: color 0.2s; }
+        .ticker-change { font-size: 12px; font-weight: 600; padding: 2px 6px; border-radius: 4px; }
+        .change-up { color: #4ADE80; background: rgba(34, 197, 94, 0.12); }
+        .change-down { color: #F87171; background: rgba(239, 68, 68, 0.12); }
+        .ticker-controls { display: flex; align-items: center; gap: 10px; }
+        .btn-ctrl {
+            background: #131E31; color: #94A3B8; border: 1px solid #243550; padding: 5px 10px;
+            border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer; transition: all 0.2s;
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .btn-ctrl:hover, .btn-ctrl.active { background: #1E293B; color: #38BDF8; border-color: #38BDF8; }
+        .btn-sim { background: rgba(34, 197, 94, 0.15); color: #4ADE80; border-color: rgba(34, 197, 94, 0.4); }
+        .btn-sim.paused { background: rgba(239, 68, 68, 0.15); color: #F87171; border-color: rgba(239, 68, 68, 0.4); }
+
+        /* KPI Cards Grid */
         .kpi-grid {
-            display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; margin-bottom: 18px;
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; margin-bottom: 14px;
         }
         .kpi-card {
             background-color: var(--bg-card); border: 1px solid var(--border-color);
-            border-radius: 12px; padding: 14px 18px; transition: transform 0.2s;
+            border-radius: 10px; padding: 12px 16px; transition: transform 0.2s, border-color 0.2s;
         }
-        .kpi-card:hover { transform: translateY(-2px); border-color: #334155; }
+        .kpi-card:hover { border-color: #2E3E59; transform: translateY(-1px); }
         .kpi-label {
             font-size: 11px; font-weight: 600; text-transform: uppercase; color: var(--text-secondary); margin-bottom: 4px;
+            letter-spacing: 0.5px;
         }
         .kpi-val {
-            font-size: 22px; font-weight: 700; font-family: 'JetBrains Mono', monospace; margin-bottom: 4px;
+            font-size: 21px; font-weight: 700; font-family: 'JetBrains Mono', monospace; margin-bottom: 4px;
+            transition: color 0.3s;
         }
-        .kpi-sub { font-size: 11.5px; color: var(--text-muted); }
+        .kpi-sub { font-size: 11px; color: var(--text-muted); }
+
+        /* ATAS Candlestick Orderflow Terminal Container */
+        .atas-terminal-box {
+            background: #000000; border: 1px solid #1E293B; border-radius: 10px;
+            overflow: hidden; margin-bottom: 18px; position: relative;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
+        }
+        .atas-toolbar {
+            display: flex; justify-content: space-between; align-items: center;
+            background: #080D15; padding: 8px 14px; border-bottom: 1px solid #182234;
+        }
+        .atas-tools-left { display: flex; align-items: center; gap: 8px; }
+        .atas-badge {
+            background: #111B2B; border: 1px solid #23354E; color: #E2E8F0;
+            padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: 700;
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .atas-tools-right { display: flex; align-items: center; gap: 8px; font-family: 'JetBrains Mono', monospace; font-size: 11px; }
+        .timeframe-pill {
+            background: transparent; color: #64748B; border: 1px solid transparent; padding: 3px 7px;
+            border-radius: 4px; font-size: 11px; cursor: pointer; font-weight: 600;
+        }
+        .timeframe-pill.active, .timeframe-pill:hover { background: #131E31; color: #38BDF8; border-color: #243550; }
+
+        #tv-chart-wrapper {
+            position: relative; width: 100%; height: 540px; background-color: #000000;
+        }
+        #atas-tv-chart { width: 100%; height: 100%; }
+
+        /* ATAS Orderflow Shaded Level Overlays */
+        .atas-overlay-container {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: 5;
+        }
+        .atas-band {
+            position: absolute; left: 60px; right: 75px; height: 18px;
+            border-radius: 2px; display: flex; align-items: center; justify-content: flex-end;
+            padding-right: 12px; font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 700;
+            letter-spacing: 0.5px; opacity: 0.88; transition: top 0.3s ease;
+        }
+        .band-put-wall {
+            background: rgba(34, 197, 94, 0.12); border-top: 1px solid #22C55E; border-bottom: 1px solid #22C55E;
+            color: #4ADE80;
+        }
+        .band-call-wall {
+            background: rgba(239, 68, 68, 0.12); border-top: 1px solid #EF4444; border-bottom: 1px solid #EF4444;
+            color: #F87171;
+        }
+        .band-deep-ef {
+            background: rgba(148, 163, 184, 0.16); border-top: 1px solid #94A3B8; border-bottom: 1px solid #94A3B8;
+            color: #E2E8F0;
+        }
+        .band-buyer-abs {
+            background: rgba(56, 189, 248, 0.14); border-top: 1px solid #38BDF8; border-bottom: 1px solid #38BDF8;
+            color: #7DD3FC;
+        }
+        .band-seller-offer {
+            background: rgba(244, 63, 94, 0.14); border-top: 1px solid #F43F5E; border-bottom: 1px solid #F43F5E;
+            color: #FDA4AF;
+        }
+        .band-gex-reaction {
+            background: rgba(250, 204, 21, 0.12); border-top: 1px dashed #FACC15; border-bottom: 1px dashed #FACC15;
+            color: #FDE047;
+        }
+
+        /* Live Slider Interactive Testing Box */
+        .slider-box {
+            display: flex; align-items: center; justify-content: space-between; gap: 14px;
+            background: #0B111D; border-top: 1px solid #182234; padding: 8px 16px;
+            font-family: 'JetBrains Mono', monospace; font-size: 11px;
+        }
+        .slider-box input[type=range] {
+            flex: 1; accent-color: #38BDF8; cursor: pointer;
+        }
+
+        /* Table & Section Boxes */
         .chart-box {
             background-color: var(--bg-card); border: 1px solid var(--border-color);
-            border-radius: 12px; padding: 10px; margin-bottom: 20px;
+            border-radius: 10px; padding: 10px; margin-bottom: 18px;
         }
         .table-box {
             background-color: var(--bg-card); border: 1px solid var(--border-color);
-            border-radius: 12px; padding: 16px; margin-bottom: 18px; overflow-x: auto;
+            border-radius: 10px; padding: 16px; margin-bottom: 16px; overflow-x: auto;
         }
         .section-header {
-            font-size: 14.5px; font-weight: 700; margin-bottom: 12px; color: #E2E8F0;
-            display: flex; align-items: center; gap: 8px;
+            font-size: 13.5px; font-weight: 700; margin-bottom: 12px; color: #E2E8F0;
+            display: flex; align-items: center; justify-content: space-between;
         }
         table { width: 100%; border-collapse: collapse; font-size: 12.5px; text-align: left; }
         th {
-            background-color: #111C33; color: var(--text-secondary); padding: 10px 12px;
+            background-color: #0F1728; color: var(--text-secondary); padding: 9px 12px;
             font-weight: 600; border-bottom: 1px solid var(--border-color); white-space: nowrap;
         }
         td {
-            padding: 10px 12px; border-bottom: 1px solid #162238; font-family: 'JetBrains Mono', monospace;
+            padding: 9px 12px; border-bottom: 1px solid #141C2B; font-family: 'JetBrains Mono', monospace;
         }
-        tr:hover td { background-color: #1E293B; }
+        tr:hover td { background-color: #172236; }
         .row-spot td {
             background-color: rgba(56, 189, 248, 0.12) !important;
             border-top: 1px solid var(--neon-blue); border-bottom: 1px solid var(--neon-blue);
@@ -90,14 +199,18 @@
         .tag-buy { color: #4ADE80; font-weight: 700; }
         .tag-sell { color: #F87171; font-weight: 700; }
         .insight-box {
-            background: linear-gradient(135deg, rgba(30, 41, 59, 0.6) 0%, rgba(15, 23, 42, 0.8) 100%);
-            border-left: 4px solid var(--neon-blue); border-radius: 8px;
-            padding: 12px 16px; margin-bottom: 18px; font-size: 12.5px; line-height: 1.55;
+            background: linear-gradient(135deg, rgba(20, 29, 44, 0.7) 0%, rgba(11, 17, 28, 0.8) 100%);
+            border-left: 4px solid var(--neon-blue); border-radius: 6px;
+            padding: 10px 14px; margin-bottom: 14px; font-size: 12px; line-height: 1.5;
         }
         .footer {
             text-align: center; font-size: 11px; color: var(--text-muted);
-            padding: 18px 0; border-top: 1px solid var(--border-color);
+            padding: 18px 0; border-top: 1px solid var(--border-color); font-family: 'JetBrains Mono', monospace;
         }
+        .flash-up { animation: flashGreen 0.6s ease; }
+        .flash-down { animation: flashRed 0.6s ease; }
+        @keyframes flashGreen { 0% { background-color: rgba(34, 197, 94, 0.4); } 100% { background-color: transparent; } }
+        @keyframes flashRed { 0% { background-color: rgba(239, 68, 68, 0.4); } 100% { background-color: transparent; } }
     </style>
 </head>
 <body>
@@ -110,8 +223,44 @@
             <span class="badge badge-gold">CME E-MINI NASDAQ (NQ)</span>
             <span class="badge badge-live">100% CLOUD AUTOMATED</span>
         </div>
-        <div style="font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #D6D3D1;">
-            Cập nhật: <b>01/11/2026 08:13:19 (Giờ VN)</b>
+        <div style="font-family: 'JetBrains Mono', monospace; font-size: 11.5px; color: #94A3B8;">
+            Cập nhật: <b id="lbl-last-update">01/11/2026 08:45:13 (Giờ VN)</b>
+        </div>
+    </div>
+
+    <!-- Live Ticker Realtime Bar -->
+    <div class="ticker-bar">
+        <div class="ticker-items">
+            <div class="ticker-item">
+                <span class="pulse-dot" style="width:7px; height:7px;"></span>
+                <span class="ticker-symbol">NQ=F</span>
+                <span class="ticker-price" id="top-ticker-price">28,543.00</span>
+                <span class="ticker-change change-up" id="top-ticker-change">+0.00 (+0.00%)</span>
+            </div>
+            <div class="ticker-item" style="color: #64748B;">|</div>
+            <div class="ticker-item">
+                <span style="color: #94A3B8;">ATM TRỤC:</span>
+                <b style="color: #F8FAFC;" id="top-ticker-atm">28,514 pts</b>
+            </div>
+            <div class="ticker-item" style="color: #64748B;">|</div>
+            <div class="ticker-item">
+                <span style="color: #94A3B8;">ATM IV:</span>
+                <b style="color: #FACC15;" id="top-ticker-iv">35.8%</b>
+            </div>
+            <div class="ticker-item" style="color: #64748B;">|</div>
+            <div class="ticker-item">
+                <span style="color: #94A3B8;">SOFR / T-Bill 13W (r):</span>
+                <b style="color: #38BDF8;" id="top-ticker-r">3.97%</b>
+            </div>
+            <div class="ticker-item" style="color: #64748B;">|</div>
+            <div class="ticker-item">
+                <span style="color: #94A3B8;">DTE:</span>
+                <b style="color: #A855F7;">1.0 ngày</b>
+            </div>
+        </div>
+        <div class="ticker-controls">
+            <button class="btn-ctrl btn-sim" id="btn-toggle-sim" onclick="toggleSimulation()">● SIMULATION: ON</button>
+            <button class="btn-ctrl" onclick="resetToLiveCME()">↺ RESET CME</button>
         </div>
     </div>
 
@@ -119,32 +268,94 @@
     <div class="kpi-grid">
         
         <div class="kpi-card">
-            <div class="kpi-label">E-MINI NASDAQ 100 FUTURES (NQ)</div>
-            <div class="kpi-val" style="color: #60A5FA;">NQ 28,543.0</div>
-            <div class="kpi-sub">Trục ATM Option Pivot: <b>28,514 pts</b> | Đồng bộ TV & MT5 Forward</div>
+            <div class="kpi-label">SPOT CME FUTURES (F0) &mdash; CME GLOBEX</div>
+            <div class="kpi-val" style="color: #60A5FA;" id="kpi-spot-display">NQ <span id="kpi-spot-num">28,543.0</span></div>
+            <div class="kpi-sub">Trục ATM Option Pivot: <b id="kpi-atm-num">28,514 pts</b> | Đồng bộ TV & MT5 Forward</div>
         </div>
         
-        <div class="kpi-card">
+        <div class="kpi-card" id="kpi-gex-card">
             <div class="kpi-label">Market Regime & Net GEX</div>
-            <div class="kpi-val" style="color: #F87171;">$-478.0M GEX</div>
-            <div class="kpi-sub"><span class="badge badge-neg">NEGATIVE GAMMA (KHUẾCH ĐẠI / BREAKOUT)</span></div>
+            <div class="kpi-val" style="color: #F87171;" id="kpi-gex-val">$-478.0M GEX</div>
+            <div class="kpi-sub" id="kpi-gex-sub"><span class="badge badge-neg" id="regime-badge">NEGATIVE GAMMA (KHUẾCH ĐẠI / BREAKOUT)</span></div>
         </div>
-        <div class="kpi-card">
+        <div class="kpi-card" id="kpi-move-card">
             <div class="kpi-label">Biên Độ 1-Sigma Expected Move</div>
-            <div class="kpi-val" style="color: var(--neon-gold);">±534.2 pts</div>
-            <div class="kpi-sub">Intraday (Rule of 16): <b>±637.9 pts</b> (27,905 &mdash; 29,181)</div>
+            <div class="kpi-val" style="color: var(--neon-gold);" id="kpi-move-val">±534.2 pts</div>
+            <div class="kpi-sub" id="kpi-move-sub">Intraday (Rule of 16): <b>±637.9 pts</b></div>
         </div>
-        <div class="kpi-card">
+        <div class="kpi-card" id="kpi-vex-card">
             <div class="kpi-label">Greeks Bậc 2 (Vanna & Charm)</div>
-            <div class="kpi-val" style="color: #38BDF8;">$-4.5M / $+35.1M</div>
+            <div class="kpi-val" style="color: #38BDF8;" id="kpi-vex-val">$-4.5M / $+34.4M</div>
             <div class="kpi-sub">Net VEX (1% IV) | Net CHEX (Ngày decay)</div>
         </div>
     </div>
 
-    <!-- 3-Panel Plotly Interactive Chart -->
-    <div class="chart-box">
-        <div style="height:740px; width:100%;">                        <script>window.PlotlyConfig = {MathJaxConfig: 'local'};</script>
-        <script charset="utf-8" src="https://cdn.plot.ly/plotly-3.7.0.min.js" integrity="sha256-jvTGqxNp8AGWEcvNLVuKr+8j5dGe9Yw51LQkmDH+IYA=" crossorigin="anonymous"></script>                <div id="c508026c-7add-480d-b8cf-9a8abdd3a802" class="plotly-graph-div" style="height:100%; width:100%;"></div>            <script>                window.PLOTLYENV=window.PLOTLYENV || {};                                if (document.getElementById("c508026c-7add-480d-b8cf-9a8abdd3a802")) {                    Plotly.newPlot(                        "c508026c-7add-480d-b8cf-9a8abdd3a802",                        [{"hovertemplate":"Strike: %{y:,.0f} pts\u003cbr\u003eNet GEX: $%{x:+.2f}M\u003cextra\u003e\u003c\u002fextra\u003e","marker":{"color":["#F87171","#F87171","#F87171","#F87171","#F87171","#F87171","#F87171","#F87171","#F87171","#F87171","#F87171","#F87171","#F87171","#F87171","#F87171","#F87171","#F87171","#4ADE80","#F87171","#4ADE80","#4ADE80"]},"name":"Net GEX ($M)","orientation":"h","x":{"dtype":"f8","bdata":"5TXxBiynnL+0GMGGKOegvxJGYAy006i\u002fQvVFCCNvqb+3q1N+KrjOvwPLk1aeOwLAfO\u002f8QwyPCMAcGSNwnhg3wDv3f\u002fbTy0HAPeDEs9slVMCCk9eW2VNOwLBzpUD7nWbATATvTrZ5S8DeQ4wDc9IUwNEaKsMGzxjA5ruHcnM+OMDgtLpQqMS+v34EjryQ2v4\u002frkAMFDlY3L+LS3BuESz1P1nqiV0XnPs\u002f"},"y":{"dtype":"f8","bdata":"AAAAAADU2UAAAAAAgAfaQAAAAABAO9pAAAAAAMBu2kAAAAAAgKLaQAAAAABA1tpAAAAAAMAJ20AAAAAAgD3bQAAAAABAcdtAAAAAAMCk20AAAAAAgNjbQAAAAAAADNxAAAAAAMA\u002f3EAAAAAAAErcQAAAAACAVNxAAAAAAMBe3EAAAAAAAGncQAAAAACAc9xAAAAAAMB93EAAAAAAAIjcQAAAAACAktxA"},"type":"bar","xaxis":"x","yaxis":"y"},{"hovertemplate":"Strike: %{y:,.0f}\u003cbr\u003eCall OI: %{x:,}\u003cextra\u003e\u003c\u002fextra\u003e","marker":{"color":"#86EFAC"},"name":"Call OI (N\u1ec1n t\u00edch l\u0169y)","opacity":0.5,"orientation":"h","x":{"dtype":"i2","bdata":"AAAAAAoAAgASAAQAMwALABgAGAAhAIYAiwANADcAGAB2AAcCVACJAT4C"},"y":{"dtype":"f8","bdata":"AAAAAADU2UAAAAAAgAfaQAAAAABAO9pAAAAAAMBu2kAAAAAAgKLaQAAAAABA1tpAAAAAAMAJ20AAAAAAgD3bQAAAAABAcdtAAAAAAMCk20AAAAAAgNjbQAAAAAAADNxAAAAAAMA\u002f3EAAAAAAAErcQAAAAACAVNxAAAAAAMBe3EAAAAAAAGncQAAAAACAc9xAAAAAAMB93EAAAAAAAIjcQAAAAACAktxA"},"type":"bar","xaxis":"x2","yaxis":"y2"},{"customdata":{"dtype":"i2","bdata":"tQNVA+0DFgJgBa0PIgchE5ANWxKwCvMhRRNLAuMD9xSQAWkHTwLlAn0C"},"hovertemplate":"Strike: %{y:,.0f}\u003cbr\u003ePut OI: %{customdata:,}\u003cextra\u003e\u003c\u002fextra\u003e","marker":{"color":"#FCA5A5"},"name":"Put OI (N\u1ec1n t\u00edch l\u0169y)","opacity":0.5,"orientation":"h","x":{"dtype":"i2","bdata":"S\u002fyr\u002fBP86v2g+lPw3vjf7HDype1Q9Q3eu+y1\u002fR38Cetw\u002fpf4sf0b\u002fYP9"},"y":{"dtype":"f8","bdata":"AAAAAADU2UAAAAAAgAfaQAAAAABAO9pAAAAAAMBu2kAAAAAAgKLaQAAAAABA1tpAAAAAAMAJ20AAAAAAgD3bQAAAAABAcdtAAAAAAMCk20AAAAAAgNjbQAAAAAAADNxAAAAAAMA\u002f3EAAAAAAAErcQAAAAACAVNxAAAAAAMBe3EAAAAAAAGncQAAAAACAc9xAAAAAAMB93EAAAAAAAIjcQAAAAACAktxA"},"type":"bar","xaxis":"x2","yaxis":"y2"},{"hovertemplate":"Strike: %{y:,.0f}\u003cbr\u003eCall Vol: %{x:,}\u003cextra\u003e\u003c\u002fextra\u003e","marker":{"color":"#16A34A"},"name":"Call Volume (L\u1ef1c Mua)","orientation":"h","x":{"dtype":"i4","bdata":"AAAAAAAAAAAyAAAACAAAAEkBAABDAAAAiAMAANEAAAA2BQAAJH0AADazAAASyAAAiooBAAopAAAIKQAA6iUAALQoAABEaAAAuBYAAIkeAACeEQAA"},"y":{"dtype":"f8","bdata":"AAAAAADU2UAAAAAAgAfaQAAAAABAO9pAAAAAAMBu2kAAAAAAgKLaQAAAAABA1tpAAAAAAMAJ20AAAAAAgD3bQAAAAABAcdtAAAAAAMCk20AAAAAAgNjbQAAAAAAADNxAAAAAAMA\u002f3EAAAAAAAErcQAAAAACAVNxAAAAAAMBe3EAAAAAAAGncQAAAAACAc9xAAAAAAMB93EAAAAAAAIjcQAAAAACAktxA"},"type":"bar","xaxis":"x2","yaxis":"y2"},{"customdata":{"dtype":"i4","bdata":"UgsAAIAgAADNQgAAvi4AAGFGAAD0WQAA4XUAAJ+zAAAasAAAnaAAAAyPAAACUQAAeR4AAJoCAAD2BAAAMRIAAGwBAACDBgAAfAEAAE4BAABGAQAA"},"hovertemplate":"Strike: %{y:,.0f}\u003cbr\u003ePut Vol: %{customdata:,}\u003cextra\u003e\u003c\u002fextra\u003e","marker":{"color":"#DC2626"},"name":"Put Volume (L\u1ef1c B\u00e1n)","orientation":"h","x":{"dtype":"i4","bdata":"rvT\u002f\u002f4Df\u002f\u002f8zvf\u002f\u002fQtH\u002f\u002f5+5\u002f\u002f8Mpv\u002f\u002fH4r\u002f\u002f2FM\u002f\u002f\u002fmT\u002f\u002f\u002fY1\u002f\u002f\u002f\u002fRw\u002f\u002f\u002f+rv\u002f\u002fh+H\u002f\u002f2b9\u002f\u002f8K+\u002f\u002f\u002fz+3\u002f\u002f5T+\u002f\u002f99+f\u002f\u002fhP7\u002f\u002f7L+\u002f\u002f+6\u002fv\u002f\u002f"},"y":{"dtype":"f8","bdata":"AAAAAADU2UAAAAAAgAfaQAAAAABAO9pAAAAAAMBu2kAAAAAAgKLaQAAAAABA1tpAAAAAAMAJ20AAAAAAgD3bQAAAAABAcdtAAAAAAMCk20AAAAAAgNjbQAAAAAAADNxAAAAAAMA\u002f3EAAAAAAAErcQAAAAACAVNxAAAAAAMBe3EAAAAAAAGncQAAAAACAc9xAAAAAAMB93EAAAAAAAIjcQAAAAACAktxA"},"type":"bar","xaxis":"x2","yaxis":"y2"},{"hovertemplate":"Strike: %{y:,.0f}\u003cbr\u003eNet VEX: $%{x:.2f}M\u003cextra\u003e\u003c\u002fextra\u003e","marker":{"color":"#FB923C"},"name":"Net VEX ($M \u002f 1% IV)","orientation":"h","x":{"dtype":"f8","bdata":"AOr33nS9dD97GK1KoR14P4tNDxvzVoM\u002fmkXlfCmPgT8p5jM8boKlP9JBkee6L9Q\u002ffrRW4MTV1j9g0yajT2oAQJiGbokNawFAeEQ6vhdjBUA1B9JrzEjPP0uUGe9lDBXAW+W0eRaXDsBFwpwJrnvav0PudtnrOuK\u002fMn44pd\u002fxA8AmyOEg+sapv\u002fgFPdmacLU\u002fCElZzhANs79yNNFoEi67P27LMoRzZ8Q\u002f"},"y":{"dtype":"f8","bdata":"AAAAAADU2UAAAAAAgAfaQAAAAABAO9pAAAAAAMBu2kAAAAAAgKLaQAAAAABA1tpAAAAAAMAJ20AAAAAAgD3bQAAAAABAcdtAAAAAAMCk20AAAAAAgNjbQAAAAAAADNxAAAAAAMA\u002f3EAAAAAAAErcQAAAAACAVNxAAAAAAMBe3EAAAAAAAGncQAAAAACAc9xAAAAAAMB93EAAAAAAAIjcQAAAAACAktxA"},"type":"bar","xaxis":"x3","yaxis":"y3"},{"hovertemplate":"Strike: %{y:,.0f}\u003cbr\u003eNet CHEX: $%{x:.2f}M\u003cextra\u003e\u003c\u002fextra\u003e","marker":{"color":"#22D3EE"},"name":"Net CHEX ($M \u002f ng\u00e0y)","orientation":"h","x":{"dtype":"f8","bdata":"JiR6Wbggu7\u002fZZjjrvr68v+BmGojuvcK\u002fW1769bfDwL9cjh4d2lvhv4GrjF69HxHA+TA12zR8EsAZNZyIQSs6wBxBnX2uLDvAYOtUTnwOQMDFBj8SeMcAwJX87r4TZE1ArJzejjbJQkDIaXMxrWwPQGzywXxjhRRAJsVouObGNUAgRqFfKRm+P9O4luDx6f+\u002flLI4Ivu03z\u002fEw8SxIe74v+f6TgsSRAHA"},"y":{"dtype":"f8","bdata":"AAAAAADU2UAAAAAAgAfaQAAAAABAO9pAAAAAAMBu2kAAAAAAgKLaQAAAAABA1tpAAAAAAMAJ20AAAAAAgD3bQAAAAABAcdtAAAAAAMCk20AAAAAAgNjbQAAAAAAADNxAAAAAAMA\u002f3EAAAAAAAErcQAAAAACAVNxAAAAAAMBe3EAAAAAAAGncQAAAAACAc9xAAAAAAMB93EAAAAAAAIjcQAAAAACAktxA"},"type":"bar","xaxis":"x3","yaxis":"y3"}],                        {"template":{"data":{"barpolar":[{"marker":{"line":{"color":"rgb(17,17,17)","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"barpolar"}],"bar":[{"error_x":{"color":"#f2f5fa"},"error_y":{"color":"#f2f5fa"},"marker":{"line":{"color":"rgb(17,17,17)","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"bar"}],"carpet":[{"aaxis":{"endlinecolor":"#A2B1C6","gridcolor":"#506784","linecolor":"#506784","minorgridcolor":"#506784","startlinecolor":"#A2B1C6"},"baxis":{"endlinecolor":"#A2B1C6","gridcolor":"#506784","linecolor":"#506784","minorgridcolor":"#506784","startlinecolor":"#A2B1C6"},"type":"carpet"}],"choropleth":[{"colorbar":{"outlinewidth":0,"ticks":""},"type":"choropleth"}],"contourcarpet":[{"colorbar":{"outlinewidth":0,"ticks":""},"type":"contourcarpet"}],"contour":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"contour"}],"heatmap":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"heatmap"}],"histogram2dcontour":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"histogram2dcontour"}],"histogram2d":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"histogram2d"}],"histogram":[{"marker":{"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"histogram"}],"mesh3d":[{"colorbar":{"outlinewidth":0,"ticks":""},"type":"mesh3d"}],"parcoords":[{"line":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"parcoords"}],"pie":[{"automargin":true,"type":"pie"}],"scatter3d":[{"line":{"colorbar":{"outlinewidth":0,"ticks":""}},"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatter3d"}],"scattercarpet":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattercarpet"}],"scattergeo":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattergeo"}],"scattergl":[{"marker":{"line":{"color":"#283442"}},"type":"scattergl"}],"scattermapbox":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattermapbox"}],"scattermap":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattermap"}],"scatterpolargl":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatterpolargl"}],"scatterpolar":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatterpolar"}],"scatter":[{"marker":{"line":{"color":"#283442"}},"type":"scatter"}],"scatterternary":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatterternary"}],"surface":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"surface"}],"table":[{"cells":{"fill":{"color":"#506784"},"line":{"color":"rgb(17,17,17)"}},"header":{"fill":{"color":"#2a3f5f"},"line":{"color":"rgb(17,17,17)"}},"type":"table"}]},"layout":{"annotationdefaults":{"arrowcolor":"#f2f5fa","arrowhead":0,"arrowwidth":1},"autotypenumbers":"strict","coloraxis":{"colorbar":{"outlinewidth":0,"ticks":""}},"colorscale":{"diverging":[[0,"#8e0152"],[0.1,"#c51b7d"],[0.2,"#de77ae"],[0.3,"#f1b6da"],[0.4,"#fde0ef"],[0.5,"#f7f7f7"],[0.6,"#e6f5d0"],[0.7,"#b8e186"],[0.8,"#7fbc41"],[0.9,"#4d9221"],[1,"#276419"]],"sequential":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"sequentialminus":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]},"colorway":["#636efa","#EF553B","#00cc96","#ab63fa","#FFA15A","#19d3f3","#FF6692","#B6E880","#FF97FF","#FECB52"],"font":{"color":"#f2f5fa"},"geo":{"bgcolor":"rgb(17,17,17)","lakecolor":"rgb(17,17,17)","landcolor":"rgb(17,17,17)","showlakes":true,"showland":true,"subunitcolor":"#506784"},"hoverlabel":{"align":"left"},"hovermode":"closest","mapbox":{"style":"dark"},"paper_bgcolor":"rgb(17,17,17)","plot_bgcolor":"rgb(17,17,17)","polar":{"angularaxis":{"gridcolor":"#506784","linecolor":"#506784","ticks":""},"bgcolor":"rgb(17,17,17)","radialaxis":{"gridcolor":"#506784","linecolor":"#506784","ticks":""}},"scene":{"xaxis":{"backgroundcolor":"rgb(17,17,17)","gridcolor":"#506784","gridwidth":2,"linecolor":"#506784","showbackground":true,"ticks":"","zerolinecolor":"#C8D4E3"},"yaxis":{"backgroundcolor":"rgb(17,17,17)","gridcolor":"#506784","gridwidth":2,"linecolor":"#506784","showbackground":true,"ticks":"","zerolinecolor":"#C8D4E3"},"zaxis":{"backgroundcolor":"rgb(17,17,17)","gridcolor":"#506784","gridwidth":2,"linecolor":"#506784","showbackground":true,"ticks":"","zerolinecolor":"#C8D4E3"}},"shapedefaults":{"line":{"color":"#f2f5fa"}},"sliderdefaults":{"bgcolor":"#C8D4E3","bordercolor":"rgb(17,17,17)","borderwidth":1,"tickwidth":0},"ternary":{"aaxis":{"gridcolor":"#506784","linecolor":"#506784","ticks":""},"baxis":{"gridcolor":"#506784","linecolor":"#506784","ticks":""},"bgcolor":"rgb(17,17,17)","caxis":{"gridcolor":"#506784","linecolor":"#506784","ticks":""}},"title":{"x":0.05},"updatemenudefaults":{"bgcolor":"#506784","borderwidth":0},"xaxis":{"automargin":true,"gridcolor":"#283442","linecolor":"#506784","ticks":"","title":{"standoff":15},"zerolinecolor":"#283442","zerolinewidth":2},"yaxis":{"automargin":true,"gridcolor":"#283442","linecolor":"#506784","ticks":"","title":{"standoff":15},"zerolinecolor":"#283442","zerolinewidth":2}}},"xaxis":{"anchor":"y","domain":[0.0,0.3348],"title":{"font":{"size":10},"text":"Net GEX ($M \u002f 1% Move)"},"gridcolor":"#1E293B"},"yaxis":{"anchor":"x","domain":[0.0,1.0],"title":{"font":{"size":11},"text":"E-mini Nasdaq Strike Ladder (NQ pts)"},"tickmode":"array","tickvals":[26448.0,26654.0,26861.0,27067.0,27274.0,27481.0,27687.0,27894.0,28101.0,28307.0,28514.0,28720.0,28927.0,28968.0,29010.0,29051.0,29092.0,29134.0,29175.0,29216.0,29258.0],"ticktext":["26,448","26,654","26,861","27,067","27,274","27,481","27,687","27,894","28,101","28,307","28,514","28,720","28,927","28,968","29,010","29,051","29,092","29,134","29,175","29,216","29,258"],"gridcolor":"#1E293B"},"xaxis2":{"anchor":"y2","domain":[0.3698,0.7046],"title":{"font":{"size":10},"text":"Put OI\u002fVol (-) | Call OI\u002fVol (+)"},"gridcolor":"#1E293B"},"yaxis2":{"anchor":"x2","domain":[0.0,1.0],"matches":"y","showticklabels":false,"tickmode":"array","tickvals":[26448.0,26654.0,26861.0,27067.0,27274.0,27481.0,27687.0,27894.0,28101.0,28307.0,28514.0,28720.0,28927.0,28968.0,29010.0,29051.0,29092.0,29134.0,29175.0,29216.0,29258.0],"gridcolor":"#1E293B"},"xaxis3":{"anchor":"y3","domain":[0.7396,1.0],"title":{"font":{"size":10},"text":"Greeks B\u1eadc 2 ($M Exposure)"},"range":[-129.3200757090797,129.3200757090797],"gridcolor":"#1E293B"},"yaxis3":{"anchor":"x3","domain":[0.0,1.0],"matches":"y","showticklabels":false,"tickmode":"array","tickvals":[26448.0,26654.0,26861.0,27067.0,27274.0,27481.0,27687.0,27894.0,28101.0,28307.0,28514.0,28720.0,28927.0,28968.0,29010.0,29051.0,29092.0,29134.0,29175.0,29216.0,29258.0],"gridcolor":"#1E293B"},"annotations":[{"font":{"size":16},"showarrow":false,"text":"\u003cb\u003ePanel 1: Net GEX ($M) & M\u1ed1c Chi\u1ebfn Thu\u1eadt\u003c\u002fb\u003e","x":0.1674,"xanchor":"center","xref":"paper","y":1.0,"yanchor":"bottom","yref":"paper"},{"font":{"size":16},"showarrow":false,"text":"\u003cb\u003ePanel 2: D\u00f2ng Ti\u1ec1n Volume vs Open Interest N\u00e9n\u003c\u002fb\u003e","x":0.5372,"xanchor":"center","xref":"paper","y":1.0,"yanchor":"bottom","yref":"paper"},{"font":{"size":16},"showarrow":false,"text":"\u003cb\u003ePanel 3: Greeks B\u1eadc 2 (Vanna & Charm)\u003c\u002fb\u003e","x":0.8698,"xanchor":"center","xref":"paper","y":1.0,"yanchor":"bottom","yref":"paper"},{"bgcolor":"#0284C7","bordercolor":"#38BDF8","borderpad":3,"borderwidth":1,"font":{"color":"#FFFFFF","family":"JetBrains Mono","size":9.5},"showarrow":false,"text":"\u25c6 NQ FUTURES: 28,543.0","x":0.98,"xanchor":"right","xref":"x domain","y":28543.0,"yref":"y"},{"align":"left","arrowcolor":"#EF4444","arrowhead":2,"ax":0,"ay":18,"bgcolor":"rgba(127, 29, 29, 0.92)","bordercolor":"#EF4444","borderwidth":1,"font":{"color":"#FEE2E2","size":8.5},"showarrow":true,"text":"\u003cb\u003e[PUT WALL 28,720] (8,691 OI)\u003c\u002fb\u003e &bull; Mua Rebound: 28,720-28,735 (SL: 28,700)","x":0.03,"xref":"x domain","y":28713.85,"yref":"y"},{"arrowcolor":"#22C55E","arrowhead":2,"ax":0,"ay":-16,"bgcolor":"rgba(20, 83, 45, 0.92)","bordercolor":"#22C55E","borderwidth":1,"font":{"color":"#DCFCE7","size":8.5},"showarrow":true,"text":"\u003cb\u003eC\u1eecA \u1ea2I 28,720\u003c\u002fb\u003e (Squeeze \u003e 28,726.2 -\u003e TP 28,927)","x":0.03,"xref":"x domain","y":28726.15,"yref":"y"},{"arrowcolor":"#38BDF8","arrowhead":2,"ax":0,"ay":16,"bgcolor":"rgba(12, 74, 110, 0.92)","bordercolor":"#38BDF8","borderwidth":1,"font":{"color":"#E0F2FE","size":8.5},"showarrow":true,"text":"\u003cb\u003eS\u00c0N \u0110\u1ee0 28,514\u003c\u002fb\u003e (Rebound: 28,504-28,524)","x":0.03,"xref":"x domain","y":28507.85,"yref":"y"},{"arrowcolor":"#F59E0B","arrowhead":2,"ax":0,"ay":16,"bgcolor":"rgba(180, 83, 9, 0.92)","bordercolor":"#F59E0B","borderwidth":1,"font":{"color":"#FEF3C7","size":8.5},"showarrow":true,"text":"\u003cb\u003eTR\u1ea0M NGH\u1ec8 28,307\u003c\u002fb\u003e (TP Short \u002f \u0110\u1ec7m n\u1ea5c 2 tr\u01b0\u1edbc Put Wall 28,720)","x":0.03,"xref":"x domain","y":28300.85,"yref":"y"},{"bgcolor":"#1C1917","bordercolor":"#FB923C","borderpad":2,"borderwidth":1,"font":{"color":"#FDBA74","size":8.5},"showarrow":false,"text":"\u25c6 \u0110\u1ec8NH VANNA (-5.3M): V-Rebound","x":-5.262107597290263,"xanchor":"right","xref":"x3","y":28729.02,"yref":"y3"},{"bgcolor":"#1C1917","bordercolor":"#22D3EE","borderpad":2,"borderwidth":1,"font":{"color":"#67E8F9","size":8.5},"showarrow":false,"text":"\u0110\u1ec8NH CHARM (+58.8M): Gh\u00ecm gi\u00e1 \u0111\u00eam","x":58.78185259503622,"xanchor":"left","xref":"x3","y":28710.98,"yref":"y3"}],"shapes":[{"line":{"color":"#475569","dash":"solid"},"type":"line","x0":0,"x1":0,"xref":"x","y0":0,"y1":1,"yref":"y domain"},{"line":{"color":"#38BDF8","width":2.2},"type":"line","x0":0,"x1":1,"xref":"x domain","y0":28543.0,"y1":28543.0,"yref":"y"},{"line":{"color":"#34D399","dash":"dash","width":1.8},"type":"line","x0":0,"x1":1,"xref":"x domain","y0":28720.0,"y1":28720.0,"yref":"y"},{"line":{"color":"#475569","dash":"solid"},"type":"line","x0":0,"x1":0,"xref":"x2","y0":0,"y1":1,"yref":"y2 domain"},{"line":{"color":"#475569","dash":"solid"},"type":"line","x0":0,"x1":0,"xref":"x3","y0":0,"y1":1,"yref":"y3 domain"}],"font":{"family":"Inter, sans-serif","color":"#F8FAFC"},"margin":{"l":75,"r":30,"t":115,"b":45},"legend":{"font":{"size":10},"orientation":"h","yanchor":"bottom","y":1.07,"xanchor":"center","x":0.5},"paper_bgcolor":"#0A0E17","plot_bgcolor":"#111827","height":740,"barmode":"relative"},                        {"responsive": true, "displayModeBar": true}                    )                };            </script>        </div>
+    <!-- Realtime ATM Greeks Live Radar -->
+    <div class="insight-box" style="border-left-color: #38BDF8; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+        <div>
+            <b style="color: #38BDF8; font-size: 12.5px;">⚡ LIVE BLACK-76 REALTIME GREEKS RADAR (TRỤC ATM):</b>
+            <span style="font-family:'JetBrains Mono', monospace; margin-left: 8px; color: #E2E8F0;" id="live-greeks-radar">
+                Delta &Delta;: <b>0.500</b> | Gamma &Gamma;: <b>0.00042</b> | Vega &nu;: <b>$24.2M</b> | Theta &theta;: <b>-$34.1k/d</b> | Vanna: <b>+$3.2M</b> | Charm: <b>-$1.8M/d</b>
+            </span>
+        </div>
+        <div style="font-family:'JetBrains Mono', monospace; font-size: 11px; color: #4ADE80;">
+            ● Recalculated Client-Side in 0.1ms
+        </div>
+    </div>
+
+    <!-- ATAS Realtime Orderflow Footprint Candlestick Chart -->
+    <div class="atas-terminal-box">
+        <div class="atas-toolbar">
+            <div class="atas-tools-left">
+                <span class="atas-badge">#NQZ6</span>
+                <span class="atas-badge" style="color: #38BDF8;">1 Lots</span>
+                <span class="atas-badge" style="color: #4ADE80;">CME GLOBEX</span>
+                <span style="color: #64748B; font-size: 11px; margin-left: 6px;">TradingPattern by Rithmic &bull; Powered by NEIRO-QUANT</span>
+            </div>
+            <div class="atas-tools-right">
+                <span style="color: #64748B;">Khung:</span>
+                <button class="timeframe-pill active" onclick="setTimeframe('1m')">1M</button>
+                <button class="timeframe-pill" onclick="setTimeframe('5m')">5M</button>
+                <button class="timeframe-pill" onclick="setTimeframe('15m')">15M</button>
+                <button class="timeframe-pill" onclick="setTimeframe('1h')">1H</button>
+                <button class="timeframe-pill" onclick="setTimeframe('D')">D</button>
+            </div>
+        </div>
+
+        <!-- TV Lightweight Chart Container -->
+        <div id="tv-chart-wrapper">
+            <div id="atas-tv-chart"></div>
+
+            <!-- Visual ATAS Quant Bands Overlay -->
+            <div class="atas-overlay-container" id="atas-overlay-layer">
+                <div class="atas-band band-put-wall" id="overlay-put-wall">
+                    <span>PUT WALL &bull; MAX GAMMA SUPPORT #28,720 (8,691 OI)</span>
+                </div>
+                <div class="atas-band band-call-wall" id="overlay-call-wall">
+                    <span>CALL WALL &bull; MAX GAMMA RESISTANCE #29,960 (9,649 OI)</span>
+                </div>
+                <div class="atas-band band-deep-ef" id="overlay-deep-ef">
+                    <span>DEEP EF STACK #28,761</span>
+                </div>
+                <div class="atas-band band-buyer-abs" id="overlay-buyer-abs">
+                    <span>BUYER ABS #28,514</span>
+                </div>
+                <div class="atas-band band-seller-offer" id="overlay-seller-offer">
+                    <span>SELLER OFFER #28,720 &bull; +1R</span>
+                </div>
+                <div class="atas-band band-gex-reaction" id="overlay-gex-reaction">
+                    <span>GEX REACTION #28,522</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Interactive Testing Price Slider -->
+        <div class="slider-box">
+            <span style="color: #94A3B8;">THỬ NGHIỆM GIÁ NQ (SIMULATE SPOT):</span>
+            <input type="range" id="price-slider" min="28243" max="28843" step="0.25" value="28543.00" oninput="onSliderPriceChange(this.value)">
+            <span style="color: #38BDF8; font-weight:700; width: 90px; text-align:right;" id="slider-price-val">28,543.00</span>
+            <button class="btn-ctrl" onclick="resetToLiveCME()">MẶC ĐỊNH</button>
+        </div>
     </div>
 
     <!-- 1-Sigma & Greeks Insights -->
@@ -158,7 +369,7 @@
     <div class="insight-box" style="border-left-color: #FB923C;">
         <b style="color: #FDBA74; font-size: 13px;">⚡ [Ý NGHĨA & HƯỚNG DẪN HÀNH ĐỘNG GREEKS BẬC 2 - VANNA & CHARM]:</b><br>
         • <b>ĐỈNH VANNA ($-4.5M):</b> <b>LỰC ĐẨY V-REBOUND</b> &rarr; Canh BUY lướt sóng khi IV hạ nhiệt sau tin tức hoặc đầu phiên Mỹ.<br>
-        • <b>ĐỈNH CHARM ($+35.1M/ngày):</b> <b>NAM CHÂM GHÌM GIÁ ĐÊM</b> &rarr; Canh CHỐT LỜI hoặc đánh hồi quy về trục này khi về đêm muộn (sau 01:30 sáng VN).
+        • <b>ĐỈNH CHARM ($+34.4M/ngày):</b> <b>NAM CHÂM GHÌM GIÁ ĐÊM</b> &rarr; Canh CHỐT LỜI hoặc đánh hồi quy về trục này khi về đêm muộn (sau 01:30 sáng VN).
     </div>
 
     <!-- Tactical Scalping Table -->
@@ -222,41 +433,50 @@
     <!-- Structural Swing Walls Table -->
     <div class="table-box">
         <div class="section-header">
-            <span>🏰 PHẦN 2: BẢNG TÁC CHIẾN PHỤC KÍCH THÀNH TRÌ (STRUCTURAL SWING WALLS - ĐÁNH SÓNG LỚN)</span>
+            <span>🏰 PHẦN 2: BẢNG PHỤC KÍCH THÀNH TRÌ CẤU TRÚC (STRUCTURAL SWING WALLS - ĂN 100-250 ĐIỂM NQ)</span>
         </div>
         <table>
             <thead>
                 <tr>
-                    <th>Chiến Lược</th>
+                    <th>Thành Trì</th>
                     <th>Vùng Kích Hoạt (NQ)</th>
                     <th>Entry NQ</th>
                     
                     <th>Hard SL (NQ)</th>
                     <th>Take Profit (TP)</th>
-                    <th>Ghi Chú Cấu Trúc Khối Lượng</th>
+                    <th>Bản Chất Dòng Tiền Lớn</th>
                 </tr>
             </thead>
             <tbody>
                 <tr>
-                    <td class="tag-sell">5. BÁN ĐỈNH CALL WALL (29,960)</td>
-                    <td>29,945.0 - 29,960.0</td>
-                    <td>29,957.0</td>
-                    
-                    <td style="color:#F87171;">29,985.0 (25p)</td>
-                    <td style="color:#4ADE80;">28,720.0 / 28,543.0</td>
-                    <td style="font-family: sans-serif; color: var(--text-secondary);">Call Wall 9,649 OI (Nóc nhà kiên cố cuối cùng của MM)</td>
-                </tr>
-                <tr>
-                    <td class="tag-buy">6. MUA ĐÁY PUT WALL (28,720)</td>
+                    <td class="tag-buy">THÀNH TRÌ PUT WALL (28,720)</td>
                     <td>28,720.0 - 28,735.0</td>
                     <td>28,723.0</td>
                     
                     <td style="color:#F87171;">28,695.0 (25p)</td>
-                    <td style="color:#4ADE80;">28,514.0 / 28,543.0</td>
-                    <td style="font-family: sans-serif; color: var(--text-secondary);">Major Put Wall 8,691 OI (Đáy bê tông cốt thép phòng ngự của cá mập)</td>
+                    <td style="color:#4ADE80;">28,543.0 &rarr; 28,720</td>
+                    <td style="font-family: sans-serif; color: var(--text-secondary);">8,691 HĐ bảo hiểm bảo vệ. MM buộc phải gom Long đỡ thị trường.</td>
+                </tr>
+                <tr>
+                    <td class="tag-sell">THÀNH TRÌ CALL WALL (29,960)</td>
+                    <td>29,945.0 - 29,960.0</td>
+                    <td>29,957.0</td>
+                    
+                    <td style="color:#F87171;">29,985.0 (25p)</td>
+                    <td style="color:#4ADE80;">28,543.0 &rarr; 28,514</td>
+                    <td style="font-family: sans-serif; color: var(--text-secondary);">9,649 HĐ chặn trần. Tường thành bất khả xâm phạm nếu không có tin Black Swan.</td>
                 </tr>
             </tbody>
         </table>
+    </div>
+
+    <!-- 3-Panel Plotly Interactive Chart -->
+    <div class="chart-box">
+        <div class="section-header" style="padding: 6px 10px;">
+            <span>📈 BIỂU ĐỒ ĐỊNH LƯỢNG 3 PANEL CHUYÊN SÂU (NET GEX &bull; VOLUME/OI &bull; VANNA/CHARM)</span>
+        </div>
+        <div style="height:740px; width:100%;">                        <script>window.PlotlyConfig = {MathJaxConfig: 'local'};</script>
+        <script charset="utf-8" src="https://cdn.plot.ly/plotly-3.7.0.min.js" integrity="sha256-jvTGqxNp8AGWEcvNLVuKr+8j5dGe9Yw51LQkmDH+IYA=" crossorigin="anonymous"></script>                <div id="b7cc62a3-15e6-494e-bd1d-4c26b344ecb9" class="plotly-graph-div" style="height:100%; width:100%;"></div>            <script>                window.PLOTLYENV=window.PLOTLYENV || {};                                if (document.getElementById("b7cc62a3-15e6-494e-bd1d-4c26b344ecb9")) {                    Plotly.newPlot(                        "b7cc62a3-15e6-494e-bd1d-4c26b344ecb9",                        [{"hovertemplate":"Strike: %{y:,.0f} pts\u003cbr\u003eNet GEX: $%{x:+.2f}M\u003cextra\u003e\u003c\u002fextra\u003e","marker":{"color":["#F87171","#F87171","#F87171","#F87171","#F87171","#F87171","#F87171","#F87171","#F87171","#F87171","#F87171","#F87171","#F87171","#F87171","#F87171","#F87171","#F87171","#4ADE80","#F87171","#4ADE80","#4ADE80"]},"name":"Net GEX ($M)","orientation":"h","x":{"dtype":"f8","bdata":"9npHS0ennL8RsZacOOegv2YroKzL06i\u002fbPhvPDtvqb8KaxG6R7jOv+X8ZrCvOwLAfUTnoiOPCMDUerxqtBg3wAov8eXky0HAv18e4O4lVMAcuB5z9lNOwI9fisYQnmbACc5kdNB5S8AfuyPUhtIUwPOh9l4ezxjAa1m\u002fhIo+OMBAlVuYxcS+v7sCCBmu2v4\u002fRegxUjjK279raU7\u002fKCz1P9FdcU40nPs\u002f"},"y":{"dtype":"f8","bdata":"AAAAAADU2UAAAAAAgAfaQAAAAABAO9pAAAAAAMBu2kAAAAAAgKLaQAAAAABA1tpAAAAAAMAJ20AAAAAAgD3bQAAAAABAcdtAAAAAAMCk20AAAAAAgNjbQAAAAAAADNxAAAAAAMA\u002f3EAAAAAAAErcQAAAAACAVNxAAAAAAMBe3EAAAAAAAGncQAAAAACAc9xAAAAAAMB93EAAAAAAAIjcQAAAAACAktxA"},"type":"bar","xaxis":"x","yaxis":"y"},{"hovertemplate":"Strike: %{y:,.0f}\u003cbr\u003eCall OI: %{x:,}\u003cextra\u003e\u003c\u002fextra\u003e","marker":{"color":"#86EFAC"},"name":"Call OI (N\u1ec1n t\u00edch l\u0169y)","opacity":0.5,"orientation":"h","x":{"dtype":"i2","bdata":"AAAAAAoAAgASAAQAMwALABgAGAAhAIYAiwANADcAGAB2AAcCVACJAT4C"},"y":{"dtype":"f8","bdata":"AAAAAADU2UAAAAAAgAfaQAAAAABAO9pAAAAAAMBu2kAAAAAAgKLaQAAAAABA1tpAAAAAAMAJ20AAAAAAgD3bQAAAAABAcdtAAAAAAMCk20AAAAAAgNjbQAAAAAAADNxAAAAAAMA\u002f3EAAAAAAAErcQAAAAACAVNxAAAAAAMBe3EAAAAAAAGncQAAAAACAc9xAAAAAAMB93EAAAAAAAIjcQAAAAACAktxA"},"type":"bar","xaxis":"x2","yaxis":"y2"},{"customdata":{"dtype":"i2","bdata":"tQNVA+0DFgJgBa0PIgchE5ANWxKwCvMhRRNLAuMD9xSQAWkHTwLlAn0C"},"hovertemplate":"Strike: %{y:,.0f}\u003cbr\u003ePut OI: %{customdata:,}\u003cextra\u003e\u003c\u002fextra\u003e","marker":{"color":"#FCA5A5"},"name":"Put OI (N\u1ec1n t\u00edch l\u0169y)","opacity":0.5,"orientation":"h","x":{"dtype":"i2","bdata":"S\u002fyr\u002fBP86v2g+lPw3vjf7HDype1Q9Q3eu+y1\u002fR38Cetw\u002fpf4sf0b\u002fYP9"},"y":{"dtype":"f8","bdata":"AAAAAADU2UAAAAAAgAfaQAAAAABAO9pAAAAAAMBu2kAAAAAAgKLaQAAAAABA1tpAAAAAAMAJ20AAAAAAgD3bQAAAAABAcdtAAAAAAMCk20AAAAAAgNjbQAAAAAAADNxAAAAAAMA\u002f3EAAAAAAAErcQAAAAACAVNxAAAAAAMBe3EAAAAAAAGncQAAAAACAc9xAAAAAAMB93EAAAAAAAIjcQAAAAACAktxA"},"type":"bar","xaxis":"x2","yaxis":"y2"},{"hovertemplate":"Strike: %{y:,.0f}\u003cbr\u003eCall Vol: %{x:,}\u003cextra\u003e\u003c\u002fextra\u003e","marker":{"color":"#16A34A"},"name":"Call Volume (L\u1ef1c Mua)","orientation":"h","x":{"dtype":"i4","bdata":"AAAAAAAAAAAyAAAACAAAAEkBAABDAAAAiAMAANEAAAA2BQAAJH0AADazAAASyAAAiooBAAopAAAIKQAA6iUAALQoAABEaAAAuBYAAIkeAACeEQAA"},"y":{"dtype":"f8","bdata":"AAAAAADU2UAAAAAAgAfaQAAAAABAO9pAAAAAAMBu2kAAAAAAgKLaQAAAAABA1tpAAAAAAMAJ20AAAAAAgD3bQAAAAABAcdtAAAAAAMCk20AAAAAAgNjbQAAAAAAADNxAAAAAAMA\u002f3EAAAAAAAErcQAAAAACAVNxAAAAAAMBe3EAAAAAAAGncQAAAAACAc9xAAAAAAMB93EAAAAAAAIjcQAAAAACAktxA"},"type":"bar","xaxis":"x2","yaxis":"y2"},{"customdata":{"dtype":"i4","bdata":"UgsAAIAgAADNQgAAvi4AAGFGAAD0WQAA4XUAAJ+zAAAasAAAnaAAAAyPAAACUQAAeR4AAJoCAAD2BAAAMRIAAGwBAACDBgAAfAEAAE4BAABGAQAA"},"hovertemplate":"Strike: %{y:,.0f}\u003cbr\u003ePut Vol: %{customdata:,}\u003cextra\u003e\u003c\u002fextra\u003e","marker":{"color":"#DC2626"},"name":"Put Volume (L\u1ef1c B\u00e1n)","orientation":"h","x":{"dtype":"i4","bdata":"rvT\u002f\u002f4Df\u002f\u002f8zvf\u002f\u002fQtH\u002f\u002f5+5\u002f\u002f8Mpv\u002f\u002fH4r\u002f\u002f2FM\u002f\u002f\u002fmT\u002f\u002f\u002fY1\u002f\u002f\u002f\u002fRw\u002f\u002f\u002f+rv\u002f\u002fh+H\u002f\u002f2b9\u002f\u002f8K+\u002f\u002f\u002fz+3\u002f\u002f5T+\u002f\u002f99+f\u002f\u002fhP7\u002f\u002f7L+\u002f\u002f+6\u002fv\u002f\u002f"},"y":{"dtype":"f8","bdata":"AAAAAADU2UAAAAAAgAfaQAAAAABAO9pAAAAAAMBu2kAAAAAAgKLaQAAAAABA1tpAAAAAAMAJ20AAAAAAgD3bQAAAAABAcdtAAAAAAMCk20AAAAAAgNjbQAAAAAAADNxAAAAAAMA\u002f3EAAAAAAAErcQAAAAACAVNxAAAAAAMBe3EAAAAAAAGncQAAAAACAc9xAAAAAAMB93EAAAAAAAIjcQAAAAACAktxA"},"type":"bar","xaxis":"x2","yaxis":"y2"},{"hovertemplate":"Strike: %{y:,.0f}\u003cbr\u003eNet VEX: $%{x:.2f}M\u003cextra\u003e\u003c\u002fextra\u003e","marker":{"color":"#FB923C"},"name":"Net VEX ($M \u002f 1% IV)","orientation":"h","x":{"dtype":"f8","bdata":"UDWVm4i9dD9HAak9uB14PyCIgoIFV4M\u002fEkubMjqPgT\u002f3QUO0goKlP5q0Tx3OL9Q\u002fZ2JSm9rV1j9hny1CX2oAQGrExxweawFAuTd3GCxjBUAKmDIx6kjPP4BV1vZ5DBXA0kL4lTOXDsBaLVQ9x3vav2hFoDL9OuK\u002fS7QZoPLxA8DUFqOoEsepvya\u002fVUCvcLU\u002fOxtjPYXRsr+WpR2rMy67P4fWuNaJZ8Q\u002f"},"y":{"dtype":"f8","bdata":"AAAAAADU2UAAAAAAgAfaQAAAAABAO9pAAAAAAMBu2kAAAAAAgKLaQAAAAABA1tpAAAAAAMAJ20AAAAAAgD3bQAAAAABAcdtAAAAAAMCk20AAAAAAgNjbQAAAAAAADNxAAAAAAMA\u002f3EAAAAAAAErcQAAAAACAVNxAAAAAAMBe3EAAAAAAAGncQAAAAACAc9xAAAAAAMB93EAAAAAAAIjcQAAAAACAktxA"},"type":"bar","xaxis":"x3","yaxis":"y3"},{"hovertemplate":"Strike: %{y:,.0f}\u003cbr\u003eNet CHEX: $%{x:.2f}M\u003cextra\u003e\u003c\u002fextra\u003e","marker":{"color":"#22D3EE"},"name":"Net CHEX ($M \u002f ng\u00e0y)","orientation":"h","x":{"dtype":"f8","bdata":"8TrM238ju79Sa3DrAsK8v9ncx5GkwMK\u002fv+X5RTjGwL9SW9Bn7F7hv5XZSm02IxHA0NbwceqAEsABNZAN\u002fzM6wO+ED+MfOjvAm5hp0q4dQMAVjmmGjn4BwBtZez3DQU1A28HjY36+QkDJIF1EL1wPQNxXmItCexRAFXEQdKC8NUAIyhDrS\u002fO9P8UT4Ml85v+\u002f3HsUCVID3z9oh5RTd+n4vz0+i1lZQAHA"},"y":{"dtype":"f8","bdata":"AAAAAADU2UAAAAAAgAfaQAAAAABAO9pAAAAAAMBu2kAAAAAAgKLaQAAAAABA1tpAAAAAAMAJ20AAAAAAgD3bQAAAAABAcdtAAAAAAMCk20AAAAAAgNjbQAAAAAAADNxAAAAAAMA\u002f3EAAAAAAAErcQAAAAACAVNxAAAAAAMBe3EAAAAAAAGncQAAAAACAc9xAAAAAAMB93EAAAAAAAIjcQAAAAACAktxA"},"type":"bar","xaxis":"x3","yaxis":"y3"}],                        {"template":{"data":{"barpolar":[{"marker":{"line":{"color":"rgb(17,17,17)","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"barpolar"}],"bar":[{"error_x":{"color":"#f2f5fa"},"error_y":{"color":"#f2f5fa"},"marker":{"line":{"color":"rgb(17,17,17)","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"bar"}],"carpet":[{"aaxis":{"endlinecolor":"#A2B1C6","gridcolor":"#506784","linecolor":"#506784","minorgridcolor":"#506784","startlinecolor":"#A2B1C6"},"baxis":{"endlinecolor":"#A2B1C6","gridcolor":"#506784","linecolor":"#506784","minorgridcolor":"#506784","startlinecolor":"#A2B1C6"},"type":"carpet"}],"choropleth":[{"colorbar":{"outlinewidth":0,"ticks":""},"type":"choropleth"}],"contourcarpet":[{"colorbar":{"outlinewidth":0,"ticks":""},"type":"contourcarpet"}],"contour":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"contour"}],"heatmap":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"heatmap"}],"histogram2dcontour":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"histogram2dcontour"}],"histogram2d":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"histogram2d"}],"histogram":[{"marker":{"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"histogram"}],"mesh3d":[{"colorbar":{"outlinewidth":0,"ticks":""},"type":"mesh3d"}],"parcoords":[{"line":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"parcoords"}],"pie":[{"automargin":true,"type":"pie"}],"scatter3d":[{"line":{"colorbar":{"outlinewidth":0,"ticks":""}},"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatter3d"}],"scattercarpet":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattercarpet"}],"scattergeo":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattergeo"}],"scattergl":[{"marker":{"line":{"color":"#283442"}},"type":"scattergl"}],"scattermapbox":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattermapbox"}],"scattermap":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattermap"}],"scatterpolargl":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatterpolargl"}],"scatterpolar":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatterpolar"}],"scatter":[{"marker":{"line":{"color":"#283442"}},"type":"scatter"}],"scatterternary":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatterternary"}],"surface":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"surface"}],"table":[{"cells":{"fill":{"color":"#506784"},"line":{"color":"rgb(17,17,17)"}},"header":{"fill":{"color":"#2a3f5f"},"line":{"color":"rgb(17,17,17)"}},"type":"table"}]},"layout":{"annotationdefaults":{"arrowcolor":"#f2f5fa","arrowhead":0,"arrowwidth":1},"autotypenumbers":"strict","coloraxis":{"colorbar":{"outlinewidth":0,"ticks":""}},"colorscale":{"diverging":[[0,"#8e0152"],[0.1,"#c51b7d"],[0.2,"#de77ae"],[0.3,"#f1b6da"],[0.4,"#fde0ef"],[0.5,"#f7f7f7"],[0.6,"#e6f5d0"],[0.7,"#b8e186"],[0.8,"#7fbc41"],[0.9,"#4d9221"],[1,"#276419"]],"sequential":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"sequentialminus":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]},"colorway":["#636efa","#EF553B","#00cc96","#ab63fa","#FFA15A","#19d3f3","#FF6692","#B6E880","#FF97FF","#FECB52"],"font":{"color":"#f2f5fa"},"geo":{"bgcolor":"rgb(17,17,17)","lakecolor":"rgb(17,17,17)","landcolor":"rgb(17,17,17)","showlakes":true,"showland":true,"subunitcolor":"#506784"},"hoverlabel":{"align":"left"},"hovermode":"closest","mapbox":{"style":"dark"},"paper_bgcolor":"rgb(17,17,17)","plot_bgcolor":"rgb(17,17,17)","polar":{"angularaxis":{"gridcolor":"#506784","linecolor":"#506784","ticks":""},"bgcolor":"rgb(17,17,17)","radialaxis":{"gridcolor":"#506784","linecolor":"#506784","ticks":""}},"scene":{"xaxis":{"backgroundcolor":"rgb(17,17,17)","gridcolor":"#506784","gridwidth":2,"linecolor":"#506784","showbackground":true,"ticks":"","zerolinecolor":"#C8D4E3"},"yaxis":{"backgroundcolor":"rgb(17,17,17)","gridcolor":"#506784","gridwidth":2,"linecolor":"#506784","showbackground":true,"ticks":"","zerolinecolor":"#C8D4E3"},"zaxis":{"backgroundcolor":"rgb(17,17,17)","gridcolor":"#506784","gridwidth":2,"linecolor":"#506784","showbackground":true,"ticks":"","zerolinecolor":"#C8D4E3"}},"shapedefaults":{"line":{"color":"#f2f5fa"}},"sliderdefaults":{"bgcolor":"#C8D4E3","bordercolor":"rgb(17,17,17)","borderwidth":1,"tickwidth":0},"ternary":{"aaxis":{"gridcolor":"#506784","linecolor":"#506784","ticks":""},"baxis":{"gridcolor":"#506784","linecolor":"#506784","ticks":""},"bgcolor":"rgb(17,17,17)","caxis":{"gridcolor":"#506784","linecolor":"#506784","ticks":""}},"title":{"x":0.05},"updatemenudefaults":{"bgcolor":"#506784","borderwidth":0},"xaxis":{"automargin":true,"gridcolor":"#283442","linecolor":"#506784","ticks":"","title":{"standoff":15},"zerolinecolor":"#283442","zerolinewidth":2},"yaxis":{"automargin":true,"gridcolor":"#283442","linecolor":"#506784","ticks":"","title":{"standoff":15},"zerolinecolor":"#283442","zerolinewidth":2}}},"xaxis":{"anchor":"y","domain":[0.0,0.3348],"title":{"font":{"size":10},"text":"Net GEX ($M \u002f 1% Move)"},"gridcolor":"#1E293B"},"yaxis":{"anchor":"x","domain":[0.0,1.0],"title":{"font":{"size":11},"text":"E-mini Nasdaq Strike Ladder (NQ pts)"},"tickmode":"array","tickvals":[26448.0,26654.0,26861.0,27067.0,27274.0,27481.0,27687.0,27894.0,28101.0,28307.0,28514.0,28720.0,28927.0,28968.0,29010.0,29051.0,29092.0,29134.0,29175.0,29216.0,29258.0],"ticktext":["26,448","26,654","26,861","27,067","27,274","27,481","27,687","27,894","28,101","28,307","28,514","28,720","28,927","28,968","29,010","29,051","29,092","29,134","29,175","29,216","29,258"],"gridcolor":"#1E293B"},"xaxis2":{"anchor":"y2","domain":[0.3698,0.7046],"title":{"font":{"size":10},"text":"Put OI\u002fVol (-) | Call OI\u002fVol (+)"},"gridcolor":"#1E293B"},"yaxis2":{"anchor":"x2","domain":[0.0,1.0],"matches":"y","showticklabels":false,"tickmode":"array","tickvals":[26448.0,26654.0,26861.0,27067.0,27274.0,27481.0,27687.0,27894.0,28101.0,28307.0,28514.0,28720.0,28927.0,28968.0,29010.0,29051.0,29092.0,29134.0,29175.0,29216.0,29258.0],"gridcolor":"#1E293B"},"xaxis3":{"anchor":"y3","domain":[0.7396,1.0],"title":{"font":{"size":10},"text":"Greeks B\u1eadc 2 ($M Exposure)"},"range":[-128.73029566526682,128.73029566526682],"gridcolor":"#1E293B"},"yaxis3":{"anchor":"x3","domain":[0.0,1.0],"matches":"y","showticklabels":false,"tickmode":"array","tickvals":[26448.0,26654.0,26861.0,27067.0,27274.0,27481.0,27687.0,27894.0,28101.0,28307.0,28514.0,28720.0,28927.0,28968.0,29010.0,29051.0,29092.0,29134.0,29175.0,29216.0,29258.0],"gridcolor":"#1E293B"},"annotations":[{"font":{"size":16},"showarrow":false,"text":"\u003cb\u003ePanel 1: Net GEX ($M) & M\u1ed1c Chi\u1ebfn Thu\u1eadt\u003c\u002fb\u003e","x":0.1674,"xanchor":"center","xref":"paper","y":1.0,"yanchor":"bottom","yref":"paper"},{"font":{"size":16},"showarrow":false,"text":"\u003cb\u003ePanel 2: D\u00f2ng Ti\u1ec1n Volume vs Open Interest N\u00e9n\u003c\u002fb\u003e","x":0.5372,"xanchor":"center","xref":"paper","y":1.0,"yanchor":"bottom","yref":"paper"},{"font":{"size":16},"showarrow":false,"text":"\u003cb\u003ePanel 3: Greeks B\u1eadc 2 (Vanna & Charm)\u003c\u002fb\u003e","x":0.8698,"xanchor":"center","xref":"paper","y":1.0,"yanchor":"bottom","yref":"paper"},{"bgcolor":"#0284C7","bordercolor":"#38BDF8","borderpad":3,"borderwidth":1,"font":{"color":"#FFFFFF","family":"JetBrains Mono","size":9.5},"showarrow":false,"text":"\u25c6 NQ FUTURES: 28,543.0","x":0.98,"xanchor":"right","xref":"x domain","y":28543.0,"yref":"y"},{"align":"left","arrowcolor":"#EF4444","arrowhead":2,"ax":0,"ay":18,"bgcolor":"rgba(127, 29, 29, 0.92)","bordercolor":"#EF4444","borderwidth":1,"font":{"color":"#FEE2E2","size":8.5},"showarrow":true,"text":"\u003cb\u003e[PUT WALL 28,720] (8,691 OI)\u003c\u002fb\u003e &bull; Mua Rebound: 28,720-28,735 (SL: 28,700)","x":0.03,"xref":"x domain","y":28713.85,"yref":"y"},{"arrowcolor":"#22C55E","arrowhead":2,"ax":0,"ay":-16,"bgcolor":"rgba(20, 83, 45, 0.92)","bordercolor":"#22C55E","borderwidth":1,"font":{"color":"#DCFCE7","size":8.5},"showarrow":true,"text":"\u003cb\u003eC\u1eecA \u1ea2I 28,720\u003c\u002fb\u003e (Squeeze \u003e 28,726.2 -\u003e TP 28,927)","x":0.03,"xref":"x domain","y":28726.15,"yref":"y"},{"arrowcolor":"#38BDF8","arrowhead":2,"ax":0,"ay":16,"bgcolor":"rgba(12, 74, 110, 0.92)","bordercolor":"#38BDF8","borderwidth":1,"font":{"color":"#E0F2FE","size":8.5},"showarrow":true,"text":"\u003cb\u003eS\u00c0N \u0110\u1ee0 28,514\u003c\u002fb\u003e (Rebound: 28,504-28,524)","x":0.03,"xref":"x domain","y":28507.85,"yref":"y"},{"arrowcolor":"#F59E0B","arrowhead":2,"ax":0,"ay":16,"bgcolor":"rgba(180, 83, 9, 0.92)","bordercolor":"#F59E0B","borderwidth":1,"font":{"color":"#FEF3C7","size":8.5},"showarrow":true,"text":"\u003cb\u003eTR\u1ea0M NGH\u1ec8 28,307\u003c\u002fb\u003e (TP Short \u002f \u0110\u1ec7m n\u1ea5c 2 tr\u01b0\u1edbc Put Wall 28,720)","x":0.03,"xref":"x domain","y":28300.85,"yref":"y"},{"bgcolor":"#1C1917","bordercolor":"#FB923C","borderpad":2,"borderwidth":1,"font":{"color":"#FDBA74","size":8.5},"showarrow":false,"text":"\u25c6 \u0110\u1ec8NH VANNA (-5.3M): V-Rebound","x":-5.262184006530674,"xanchor":"right","xref":"x3","y":28729.02,"yref":"y3"},{"bgcolor":"#1C1917","bordercolor":"#22D3EE","borderpad":2,"borderwidth":1,"font":{"color":"#67E8F9","size":8.5},"showarrow":false,"text":"\u0110\u1ec8NH CHARM (+58.5M): Gh\u00ecm gi\u00e1 \u0111\u00eam","x":58.51377075693946,"xanchor":"left","xref":"x3","y":28710.98,"yref":"y3"}],"shapes":[{"line":{"color":"#475569","dash":"solid"},"type":"line","x0":0,"x1":0,"xref":"x","y0":0,"y1":1,"yref":"y domain"},{"line":{"color":"#38BDF8","width":2.2},"type":"line","x0":0,"x1":1,"xref":"x domain","y0":28543.0,"y1":28543.0,"yref":"y"},{"line":{"color":"#34D399","dash":"dash","width":1.8},"type":"line","x0":0,"x1":1,"xref":"x domain","y0":28720.0,"y1":28720.0,"yref":"y"},{"line":{"color":"#475569","dash":"solid"},"type":"line","x0":0,"x1":0,"xref":"x2","y0":0,"y1":1,"yref":"y2 domain"},{"line":{"color":"#475569","dash":"solid"},"type":"line","x0":0,"x1":0,"xref":"x3","y0":0,"y1":1,"yref":"y3 domain"}],"font":{"family":"Inter, sans-serif","color":"#F8FAFC"},"margin":{"l":75,"r":30,"t":115,"b":45},"legend":{"font":{"size":10},"orientation":"h","yanchor":"bottom","y":1.07,"xanchor":"center","x":0.5},"paper_bgcolor":"#0A0E17","plot_bgcolor":"#111827","height":740,"barmode":"relative"},                        {"responsive": true, "displayModeBar": true}                    )                };            </script>        </div>
     </div>
 
     <!-- Microstructure Strike Table -->
@@ -280,40 +500,40 @@
             </thead>
             <tbody>
                 
-        <tr >
+        <tr  id="row-strike-28720">
             <td><b>28,720 pts</b></td>
             
-            <td style="color: #F87171; font-weight: 600;">$-180.94M</td>
+            <td style="color: #F87171; font-weight: 600;" id="cell-gex-28720">$-180.94M</td>
             <td>134</td>
             <td>8,691</td>
             <td>51,218</td>
             <td>20,738</td>
-            <td style="color: #FB923C;">$-5.26M</td>
-            <td style="color: #22D3EE;">$+58.78M</td>
+            <td style="color: #FB923C;" id="cell-vex-28720">$-5.26M</td>
+            <td style="color: #22D3EE;" id="cell-chex-28720">$+58.51M</td>
         </tr>
         
-        <tr >
+        <tr  id="row-strike-28514">
             <td><b>28,514 pts</b></td>
             
-            <td style="color: #F87171; font-weight: 600;">$-60.66M</td>
+            <td style="color: #F87171; font-weight: 600;" id="cell-gex-28514">$-60.66M</td>
             <td>33</td>
             <td>2,736</td>
             <td>45,878</td>
             <td>36,620</td>
-            <td style="color: #FB923C;">$+0.24M</td>
-            <td style="color: #22D3EE;">$-2.10M</td>
+            <td style="color: #FB923C;" id="cell-vex-28514">$+0.24M</td>
+            <td style="color: #22D3EE;" id="cell-chex-28514">$-2.19M</td>
         </tr>
         
-        <tr >
+        <tr  id="row-strike-28307">
             <td><b>28,307 pts</b></td>
             
-            <td style="color: #F87171; font-weight: 600;">$-80.59M</td>
+            <td style="color: #F87171; font-weight: 600;" id="cell-gex-28307">$-80.59M</td>
             <td>24</td>
             <td>4,699</td>
             <td>32,036</td>
             <td>41,117</td>
-            <td style="color: #FB923C;">$+2.67M</td>
-            <td style="color: #22D3EE;">$-32.11M</td>
+            <td style="color: #FB923C;" id="cell-vex-28307">$+2.67M</td>
+            <td style="color: #22D3EE;" id="cell-chex-28307">$-32.23M</td>
         </tr>
         
             </tbody>
@@ -325,5 +545,504 @@
         NEIRO-NQ-QUANT TERMINAL &bull; 100% Cloud-Native &bull; Zero-Touch Automation &bull; Zero-Waste (&lt; 15MB)
     </div>
 </div>
+
+<!-- Embedded Data & In-Browser Black-76 Engine -->
+<script>
+window.INITIAL_OPTIONS = [{"strike": 18596.0, "c_oi": 0, "p_oi": 582, "c_vol": 0, "p_vol": 2719, "c_iv": 0.18, "p_iv": 1.6875, "c_delta": 0.9999, "p_delta": -0.0, "c_gamma": 0.0, "p_gamma": 0.0, "c_vega": 0.0, "p_vega": 0.0, "c_vanna": -0.0, "p_vanna": -7e-06, "c_charm": 0.039696, "p_charm": 0.002191, "netGEX": -0.0, "netVEX": 0.0, "netCHEX": -0.0}, {"strike": 18803.0, "c_oi": 0, "p_oi": 595, "c_vol": 0, "p_vol": 6341, "c_iv": 0.18, "p_iv": 1.625, "c_delta": 0.9999, "p_delta": -0.0, "c_gamma": 0.0, "p_gamma": 0.0, "c_vega": 0.0, "p_vega": 0.0, "c_vanna": -0.0, "p_vanna": -6e-06, "c_charm": 0.039696, "p_charm": 0.001693, "netGEX": -0.0, "netVEX": 0.0, "netCHEX": -0.0}, {"strike": 19009.0, "c_oi": 0, "p_oi": 625, "c_vol": 0, "p_vol": 1573, "c_iv": 0.18, "p_iv": 1.5938, "c_delta": 0.9999, "p_delta": -0.0, "c_gamma": 0.0, "p_gamma": 0.0, "c_vega": 0.0, "p_vega": 0.0, "c_vanna": -0.0, "p_vanna": -7e-06, "c_charm": 0.039696, "p_charm": 0.002001, "netGEX": -0.0, "netVEX": 0.0, "netCHEX": -0.0}, {"strike": 19216.0, "c_oi": 0, "p_oi": 1173, "c_vol": 0, "p_vol": 79, "c_iv": 0.18, "p_iv": 1.5625, "c_delta": 0.9999, "p_delta": -0.0, "c_gamma": 0.0, "p_gamma": 0.0, "c_vega": 0.0, "p_vega": 0.0, "c_vanna": -0.0, "p_vanna": -8e-06, "c_charm": 0.039696, "p_charm": 0.002367, "netGEX": -0.0, "netVEX": 0.0, "netCHEX": -0.001}, {"strike": 19422.0, "c_oi": 0, "p_oi": 2344, "c_vol": 0, "p_vol": 3438, "c_iv": 0.18, "p_iv": 1.5, "c_delta": 0.9999, "p_delta": -0.0, "c_gamma": 0.0, "p_gamma": 0.0, "c_vega": 0.0, "p_vega": 0.0, "c_vanna": -0.0, "p_vanna": -6e-06, "c_charm": 0.039696, "p_charm": 0.001752, "netGEX": -0.0, "netVEX": 0.0, "netCHEX": -0.001}, {"strike": 19629.0, "c_oi": 0, "p_oi": 2879, "c_vol": 0, "p_vol": 3701, "c_iv": 0.18, "p_iv": 1.4688, "c_delta": 0.9999, "p_delta": -0.0, "c_gamma": 0.0, "p_gamma": 0.0, "c_vega": 0.0, "p_vega": 0.0, "c_vanna": -0.0, "p_vanna": -8e-06, "c_charm": 0.039696, "p_charm": 0.002061, "netGEX": -0.0, "netVEX": 0.0, "netCHEX": -0.001}, {"strike": 19836.0, "c_oi": 0, "p_oi": 3914, "c_vol": 0, "p_vol": 2598, "c_iv": 0.18, "p_iv": 1.4375, "c_delta": 0.9999, "p_delta": -0.0, "c_gamma": 0.0, "p_gamma": 0.0, "c_vega": 0.0, "p_vega": 0.0, "c_vanna": -0.0, "p_vanna": -9e-06, "c_charm": 0.039696, "p_charm": 0.002422, "netGEX": -0.0, "netVEX": 0.0, "netCHEX": -0.002}, {"strike": 20042.0, "c_oi": 0, "p_oi": 1984, "c_vol": 0, "p_vol": 744, "c_iv": 0.18, "p_iv": 1.4063, "c_delta": 0.9999, "p_delta": -0.0, "c_gamma": 0.0, "p_gamma": 0.0, "c_vega": 0.0, "p_vega": 0.0, "c_vanna": -0.0, "p_vanna": -1.1e-05, "c_charm": 0.039696, "p_charm": 0.002833, "netGEX": -0.0, "netVEX": 0.0, "netCHEX": -0.001}, {"strike": 20249.0, "c_oi": 0, "p_oi": 470, "c_vol": 0, "p_vol": 1022, "c_iv": 0.18, "p_iv": 1.375, "c_delta": 0.9999, "p_delta": -0.0, "c_gamma": 0.0, "p_gamma": 0.0, "c_vega": 0.0, "p_vega": 0.0001, "c_vanna": -0.0, "p_vanna": -1.3e-05, "c_charm": 0.039696, "p_charm": 0.003322, "netGEX": -0.0, "netVEX": 0.0, "netCHEX": -0.0}, {"strike": 20456.0, "c_oi": 0, "p_oi": 378, "c_vol": 0, "p_vol": 1238, "c_iv": 0.18, "p_iv": 1.3125, "c_delta": 0.9999, "p_delta": -0.0, "c_gamma": 0.0, "p_gamma": 0.0, "c_vega": 0.0, "p_vega": 0.0, "c_vanna": -0.0, "p_vanna": -1e-05, "c_charm": 0.039696, "p_charm": 0.002321, "netGEX": -0.0, "netVEX": 0.0, "netCHEX": -0.0}, {"strike": 20662.0, "c_oi": 0, "p_oi": 108, "c_vol": 0, "p_vol": 814, "c_iv": 0.18, "p_iv": 1.2813, "c_delta": 0.9999, "p_delta": -0.0, "c_gamma": 0.0, "p_gamma": 0.0, "c_vega": 0.0, "p_vega": 0.0, "c_vanna": -0.0, "p_vanna": -1.2e-05, "c_charm": 0.039696, "p_charm": 0.002695, "netGEX": -0.0, "netVEX": 0.0, "netCHEX": -0.0}, {"strike": 20869.0, "c_oi": 0, "p_oi": 2100, "c_vol": 0, "p_vol": 2854, "c_iv": 0.18, "p_iv": 1.25, "c_delta": 0.9999, "p_delta": -0.0, "c_gamma": 0.0, "p_gamma": 0.0, "c_vega": 0.0, "p_vega": 0.0001, "c_vanna": -0.0, "p_vanna": -1.4e-05, "c_charm": 0.039696, "p_charm": 0.003136, "netGEX": -0.0, "netVEX": 0.0, "netCHEX": -0.001}, {"strike": 21075.0, "c_oi": 0, "p_oi": 816, "c_vol": 0, "p_vol": 1419, "c_iv": 0.18, "p_iv": 1.2188, "c_delta": 0.9999, "p_delta": -0.0, "c_gamma": 0.0, "p_gamma": 0.0, "c_vega": 0.0, "p_vega": 0.0001, "c_vanna": -0.0, "p_vanna": -1.6e-05, "c_charm": 0.039696, "p_charm": 0.003635, "netGEX": -0.0, "netVEX": 0.0, "netCHEX": -0.001}, {"strike": 21282.0, "c_oi": 0, "p_oi": 734, "c_vol": 0, "p_vol": 466, "c_iv": 0.18, "p_iv": 1.1875, "c_delta": 0.9999, "p_delta": -0.0, "c_gamma": 0.0, "p_gamma": 0.0, "c_vega": 0.0, "p_vega": 0.0001, "c_vanna": -0.0, "p_vanna": -2e-05, "c_charm": 0.039696, "p_charm": 0.004225, "netGEX": -0.0, "netVEX": 0.0, "netCHEX": -0.001}, {"strike": 21489.0, "c_oi": 0, "p_oi": 273, "c_vol": 0, "p_vol": 2121, "c_iv": 0.18, "p_iv": 1.125, "c_delta": 0.9999, "p_delta": -0.0, "c_gamma": 0.0, "p_gamma": 0.0, "c_vega": 0.0, "p_vega": 0.0, "c_vanna": -0.0, "p_vanna": -1.3e-05, "c_charm": 0.039696, "p_charm": 0.002717, "netGEX": -0.0, "netVEX": 0.0, "netCHEX": -0.0}, {"strike": 21902.0, "c_oi": 0, "p_oi": 4269, "c_vol": 0, "p_vol": 21, "c_iv": 0.18, "p_iv": 1.1563, "c_delta": 0.9999, "p_delta": -0.0, "c_gamma": 0.0, "p_gamma": 0.0, "c_vega": 0.0, "p_vega": 0.0004, "c_vanna": -0.0, "p_vanna": -9.1e-05, "c_charm": 0.039696, "p_charm": 0.019235, "netGEX": -0.001, "netVEX": 0.0, "netCHEX": -0.016}, {"strike": 22108.0, "c_oi": 0, "p_oi": 138, "c_vol": 0, "p_vol": 389, "c_iv": 0.18, "p_iv": 1.125, "c_delta": 0.9999, "p_delta": -0.0, "c_gamma": 0.0, "p_gamma": 0.0, "c_vega": 0.0, "p_vega": 0.0004, "c_vanna": -0.0, "p_vanna": -0.00011, "c_charm": 0.039696, "p_charm": 0.022556, "netGEX": -0.0, "netVEX": 0.0, "netCHEX": -0.001}, {"strike": 22315.0, "c_oi": 0, "p_oi": 246, "c_vol": 0, "p_vol": 112, "c_iv": 0.18, "p_iv": 1.0859, "c_delta": 0.9999, "p_delta": -0.0, "c_gamma": 0.0, "p_gamma": 0.0, "c_vega": 0.0, "p_vega": 0.0004, "c_vanna": -0.0, "p_vanna": -0.000118, "c_charm": 0.039696, "p_charm": 0.023413, "netGEX": -0.0, "netVEX": 0.0, "netCHEX": -0.001}, {"strike": 22522.0, "c_oi": 0, "p_oi": 54, "c_vol": 0, "p_vol": 1, "c_iv": 0.18, "p_iv": 1.0469, "c_delta": 0.9999, "p_delta": -0.0, "c_gamma": 0.0, "p_gamma": 0.0, "c_vega": 0.0, "p_vega": 0.0005, "c_vanna": -0.0, "p_vanna": -0.000127, "c_charm": 0.039696, "p_charm": 0.024203, "netGEX": -0.0, "netVEX": 0.0, "netCHEX": -0.0}, {"strike": 22728.0, "c_oi": 0, "p_oi": 5184, "c_vol": 0, "p_vol": 46, "c_iv": 0.18, "p_iv": 1.0078, "c_delta": 0.9999, "p_delta": -0.0, "c_gamma": 0.0, "p_gamma": 0.0, "c_vega": 0.0, "p_vega": 0.0005, "c_vanna": -0.0, "p_vanna": -0.000135, "c_charm": 0.039696, "p_charm": 0.024824, "netGEX": -0.002, "netVEX": 0.0, "netCHEX": -0.024}, {"strike": 23142.0, "c_oi": 0, "p_oi": 16, "c_vol": 0, "p_vol": 196, "c_iv": 0.18, "p_iv": 0.9375, "c_delta": 0.9999, "p_delta": -0.0, "c_gamma": 0.0, "p_gamma": 0.0, "c_vega": 0.0, "p_vega": 0.0006, "c_vanna": -0.0, "p_vanna": -0.000175, "c_charm": 0.039696, "p_charm": 0.029957, "netGEX": -0.0, "netVEX": 0.0, "netCHEX": -0.0}, {"strike": 23348.0, "c_oi": 0, "p_oi": 1402, "c_vol": 0, "p_vol": 19, "c_iv": 0.18, "p_iv": 0.9219, "c_delta": 0.9999, "p_delta": -0.0, "c_gamma": 0.0, "p_gamma": 0.0, "c_vega": 0.0, "p_vega": 0.0009, "c_vanna": -0.0, "p_vanna": -0.000279, "c_charm": 0.039696, "p_charm": 0.046849, "netGEX": -0.001, "netVEX": 0.0, "netCHEX": -0.012}, {"strike": 23555.0, "c_oi": 0, "p_oi": 81, "c_vol": 0, "p_vol": 172, "c_iv": 0.18, "p_iv": 0.8828, "c_delta": 0.9999, "p_delta": -0.0, "c_gamma": 0.0, "p_gamma": 0.0, "c_vega": 0.0, "p_vega": 0.001, "c_vanna": -0.0, "p_vanna": -0.0003, "c_charm": 0.039696, "p_charm": 0.048338, "netGEX": -0.0, "netVEX": 0.0, "netCHEX": -0.001}, {"strike": 23761.0, "c_oi": 0, "p_oi": 0, "c_vol": 2, "p_vol": 0, "c_iv": 1.3516, "p_iv": 0.18, "c_delta": 0.9956, "p_delta": 0.0, "c_gamma": 6e-06, "p_gamma": 0.0, "c_vega": 0.1889, "p_vega": 0.0, "c_vanna": -0.023919, "p_vanna": -0.0, "c_charm": 5.932344, "p_charm": 0.0, "netGEX": 0.0, "netVEX": 0.0, "netCHEX": 0.0}, {"strike": 23968.0, "c_oi": 0, "p_oi": 4565, "c_vol": 0, "p_vol": 325, "c_iv": 0.18, "p_iv": 0.8125, "c_delta": 0.9999, "p_delta": -0.0, "c_gamma": 0.0, "p_gamma": 0.0, "c_vega": 0.0, "p_vega": 0.0012, "c_vanna": -0.0, "p_vanna": -0.000399, "c_charm": 0.039696, "p_charm": 0.059017, "netGEX": -0.006, "netVEX": 0.001, "netCHEX": -0.051}, {"strike": 24175.0, "c_oi": 0, "p_oi": 345, "c_vol": 0, "p_vol": 61, "c_iv": 0.18, "p_iv": 0.7734, "c_delta": 0.9999, "p_delta": -0.0, "c_gamma": 0.0, "p_gamma": 0.0, "c_vega": 0.0, "p_vega": 0.0012, "c_vanna": -0.0, "p_vanna": -0.000429, "c_charm": 0.039696, "p_charm": 0.06043, "netGEX": -0.0, "netVEX": 0.0, "netCHEX": -0.004}, {"strike": 24381.0, "c_oi": 0, "p_oi": 1302, "c_vol": 0, "p_vol": 70, "c_iv": 0.18, "p_iv": 0.7344, "c_delta": 0.9999, "p_delta": -0.0, "c_gamma": 0.0, "p_gamma": 0.0, "c_vega": 0.0, "p_vega": 0.0012, "c_vanna": -0.0, "p_vanna": -0.000458, "c_charm": 0.039696, "p_charm": 0.06129, "netGEX": -0.002, "netVEX": 0.0, "netCHEX": -0.015}, {"strike": 24588.0, "c_oi": 0, "p_oi": 77, "c_vol": 0, "p_vol": 656, "c_iv": 0.18, "p_iv": 0.7148, "c_delta": 0.9999, "p_delta": -0.0, "c_gamma": 0.0, "p_gamma": 0.0, "c_vega": 0.0, "p_vega": 0.002, "c_vanna": -0.0, "p_vanna": -0.000728, "c_charm": 0.039696, "p_charm": 0.094843, "netGEX": -0.0, "netVEX": 0.0, "netCHEX": -0.001}, {"strike": 24795.0, "c_oi": 0, "p_oi": 823, "c_vol": 0, "p_vol": 593, "c_iv": 3.5, "p_iv": 0.6797, "c_delta": 0.805, "p_delta": -0.0, "c_gamma": 5.3e-05, "p_gamma": 0.0, "c_vega": 4.1173, "p_vega": 0.0022, "c_vanna": -0.053291, "p_vanna": -0.000858, "c_charm": 34.011872, "p_charm": 0.106287, "netGEX": -0.002, "netVEX": 0.0, "netCHEX": -0.017}, {"strike": 25001.0, "c_oi": 0, "p_oi": 665, "c_vol": 0, "p_vol": 1326, "c_iv": 0.18, "p_iv": 0.6406, "c_delta": 0.9999, "p_delta": -0.0, "c_gamma": 0.0, "p_gamma": 0.0, "c_vega": 0.0, "p_vega": 0.0023, "c_vanna": -0.0, "p_vanna": -0.000933, "c_charm": 0.039696, "p_charm": 0.108932, "netGEX": -0.002, "netVEX": 0.0, "netCHEX": -0.014}, {"strike": 25208.0, "c_oi": 0, "p_oi": 364, "c_vol": 0, "p_vol": 529, "c_iv": 0.18, "p_iv": 0.6172, "c_delta": 0.9999, "p_delta": -0.0001, "c_gamma": 0.0, "p_gamma": 0.0, "c_vega": 0.0, "p_vega": 0.0034, "c_vanna": -0.0, "p_vanna": -0.001427, "c_charm": 0.039696, "p_charm": 0.160441, "netGEX": -0.002, "netVEX": 0.0, "netCHEX": -0.011}, {"strike": 25414.0, "c_oi": 0, "p_oi": 417, "c_vol": 0, "p_vol": 860, "c_iv": 0.18, "p_iv": 0.5781, "c_delta": 0.9999, "p_delta": -0.0001, "c_gamma": 0.0, "p_gamma": 0.0, "c_vega": 0.0, "p_vega": 0.0036, "c_vanna": -0.0, "p_vanna": -0.001581, "c_charm": 0.039696, "p_charm": 0.166449, "netGEX": -0.002, "netVEX": 0.0, "netCHEX": -0.013}, {"strike": 25621.0, "c_oi": 0, "p_oi": 36, "c_vol": 0, "p_vol": 768, "c_iv": 0.18, "p_iv": 0.543, "c_delta": 0.9999, "p_delta": -0.0001, "c_gamma": 0.0, "p_gamma": 0.0, "c_vega": 0.0, "p_vega": 0.0041, "c_vanna": -0.0, "p_vanna": -0.001928, "c_charm": 0.039696, "p_charm": 0.190642, "netGEX": -0.0, "netVEX": 0.0, "netCHEX": -0.001}, {"strike": 25828.0, "c_oi": 0, "p_oi": 250, "c_vol": 0, "p_vol": 1131, "c_iv": 0.18, "p_iv": 0.5078, "c_delta": 0.9999, "p_delta": -0.0001, "c_gamma": 0.0, "p_gamma": 0.0, "c_vega": 0.0, "p_vega": 0.0048, "c_vanna": -0.0, "p_vanna": -0.00238, "c_charm": 0.039696, "p_charm": 0.220063, "netGEX": -0.002, "netVEX": 0.0, "netCHEX": -0.01}, {"strike": 26034.0, "c_oi": 0, "p_oi": 353, "c_vol": 0, "p_vol": 863, "c_iv": 0.18, "p_iv": 0.4961, "c_delta": 0.9999, "p_delta": -0.0002, "c_gamma": 0.0, "p_gamma": 1e-06, "c_vega": 0.0, "p_vega": 0.0107, "c_vanna": -0.0, "p_vanna": -0.005091, "c_charm": 0.039696, "p_charm": 0.459869, "netGEX": -0.007, "netVEX": 0.001, "netCHEX": -0.031}, {"strike": 26241.0, "c_oi": 0, "p_oi": 786, "c_vol": 0, "p_vol": 3154, "c_iv": 0.18, "p_iv": 0.459, "c_delta": 0.9999, "p_delta": -0.0002, "c_gamma": 0.0, "p_gamma": 1e-06, "c_vega": 0.0, "p_vega": 0.0125, "c_vanna": -0.0, "p_vanna": -0.006355, "c_charm": 0.039696, "p_charm": 0.530978, "netGEX": -0.019, "netVEX": 0.003, "netCHEX": -0.079}, {"strike": 26448.0, "c_oi": 0, "p_oi": 949, "c_vol": 0, "p_vol": 2898, "c_iv": 3.5, "p_iv": 0.4199, "c_delta": 0.6941, "p_delta": -0.0003, "c_gamma": 6.7e-05, "p_gamma": 1e-06, "c_vega": 5.2389, "p_vega": 0.014, "c_vanna": -0.032513, "p_vanna": -0.007725, "c_charm": 20.719065, "p_charm": 0.590307, "netGEX": -0.028, "netVEX": 0.005, "netCHEX": -0.106}, {"strike": 26654.0, "c_oi": 0, "p_oi": 853, "c_vol": 0, "p_vol": 8320, "c_iv": 2.4146, "p_iv": 0.3828, "c_delta": 0.7273, "p_delta": -0.0003, "c_gamma": 9.2e-05, "p_gamma": 2e-06, "c_vega": 4.963, "p_vega": 0.0168, "c_vanna": -0.065844, "p_vanna": -0.009993, "c_charm": 28.939074, "p_charm": 0.695926, "netGEX": -0.033, "netVEX": 0.006, "netCHEX": -0.112}, {"strike": 26861.0, "c_oi": 10, "p_oi": 1005, "c_vol": 50, "p_vol": 17101, "c_iv": 0.6223, "p_iv": 0.3516, "c_delta": 0.9699, "p_delta": -0.0005, "c_gamma": 7.3e-05, "p_gamma": 3e-06, "c_vega": 1.0163, "p_vega": 0.0249, "c_vanna": -0.202034, "p_vanna": -0.015614, "c_charm": 22.901249, "p_charm": 0.998207, "netGEX": -0.048, "netVEX": 0.009, "netCHEX": -0.147}, {"strike": 27067.0, "c_oi": 2, "p_oi": 534, "c_vol": 8, "p_vol": 11966, "c_iv": 0.593, "p_iv": 0.3184, "c_delta": 0.9577, "p_delta": -0.0007, "c_gamma": 0.000102, "p_gamma": 5e-06, "c_vega": 1.3435, "p_vega": 0.0362, "c_vanna": -0.257044, "p_vanna": -0.024208, "c_charm": 27.742007, "p_charm": 1.40075, "netGEX": -0.05, "netVEX": 0.009, "netCHEX": -0.131}, {"strike": 27274.0, "c_oi": 18, "p_oi": 1376, "c_vol": 329, "p_vol": 18017, "c_iv": 0.6384, "p_iv": 0.293, "c_delta": 0.9157, "p_delta": -0.0015, "c_gamma": 0.000162, "p_gamma": 1.1e-05, "c_vega": 2.3073, "p_vega": 0.0717, "c_vanna": -0.325163, "p_vanna": -0.048457, "c_charm": 37.738861, "p_charm": 2.578394, "netGEX": -0.24, "netVEX": 0.042, "netCHEX": -0.543}, {"strike": 27481.0, "c_oi": 4, "p_oi": 4013, "c_vol": 67, "p_vol": 23028, "c_iv": 0.4753, "p_iv": 0.2739, "c_delta": 0.9377, "p_delta": -0.004, "c_gamma": 0.000173, "p_gamma": 2.9e-05, "c_vega": 1.8308, "p_vega": 0.1772, "c_vanna": -0.389665, "p_vanna": -0.114183, "c_charm": 33.645458, "p_charm": 5.675307, "netGEX": -2.279, "netVEX": 0.315, "netCHEX": -4.284}, {"strike": 27687.0, "c_oi": 51, "p_oi": 1826, "c_vol": 904, "p_vol": 30177, "c_iv": 0.3792, "p_iv": 0.2666, "c_delta": 0.9386, "p_delta": -0.0143, "c_gamma": 0.000214, "p_gamma": 9.1e-05, "c_vega": 1.809, "p_vega": 0.543, "c_vanna": -0.486788, "p_vanna": -0.296494, "c_charm": 33.478881, "p_charm": 14.322293, "netGEX": -3.07, "netVEX": 0.357, "netCHEX": -4.626}, {"strike": 27894.0, "c_oi": 11, "p_oi": 4897, "c_vol": 209, "p_vol": 45983, "c_iv": 0.3422, "p_iv": 0.2581, "c_delta": 0.9019, "p_delta": -0.0437, "c_gamma": 0.000338, "p_gamma": 0.00024, "c_vega": 2.5828, "p_vega": 1.3824, "c_vanna": -0.644301, "p_vanna": -0.608096, "c_charm": 39.886626, "p_charm": 28.365635, "netGEX": -23.097, "netVEX": 2.052, "netCHEX": -26.203}, {"strike": 28101.0, "c_oi": 24, "p_oi": 3472, "c_vol": 1334, "p_vol": 45082, "c_iv": 0.3153, "p_iv": 0.254, "c_delta": 0.8298, "p_delta": -0.1189, "c_gamma": 0.000537, "p_gamma": 0.000524, "c_vega": 3.7813, "p_vega": 2.9695, "c_vanna": -0.752406, "p_vanna": -0.91311, "c_charm": 42.721227, "p_charm": 41.735016, "netGEX": -35.593, "netVEX": 2.177, "netCHEX": -27.227}, {"strike": 28307.0, "c_oi": 24, "p_oi": 4699, "c_vol": 32036, "p_vol": 41117, "c_iv": 0.2938, "p_iv": 0.2479, "c_delta": 0.7079, "p_delta": -0.259, "c_gamma": 0.000782, "p_gamma": 0.000874, "c_vega": 5.13, "p_vega": 4.8364, "c_vanna": -0.621872, "p_vanna": -0.826869, "c_charm": 32.489052, "p_charm": 36.413287, "netGEX": -80.593, "netVEX": 2.673, "netCHEX": -32.232}, {"strike": 28514.0, "c_oi": 33, "p_oi": 2736, "c_vol": 45878, "p_vol": 36620, "c_iv": 0.2763, "p_iv": 0.2341, "c_delta": 0.5308, "p_delta": -0.4645, "c_gamma": 0.000964, "p_gamma": 0.001136, "c_vega": 5.9417, "p_vega": 5.936, "c_vanna": -0.090799, "p_vanna": -0.130429, "c_charm": 3.506877, "p_charm": 4.265947, "netGEX": -60.656, "netVEX": 0.244, "netCHEX": -2.187}, {"strike": 28720.0, "c_oi": 134, "p_oi": 8691, "c_vol": 51218, "p_vol": 20738, "c_iv": 0.2571, "p_iv": 0.2152, "c_delta": 0.3254, "p_delta": -0.7064, "c_gamma": 0.000937, "p_gamma": 0.00107, "c_vega": 5.3792, "p_vega": 5.1423, "c_vanna": 0.652823, "p_vanna": 0.886661, "c_charm": -31.678761, "p_charm": -36.066647, "netGEX": -180.94, "netVEX": -5.262, "netCHEX": 58.514}, {"strike": 28927.0, "c_oi": 139, "p_oi": 4933, "c_vol": 101002, "p_vol": 7801, "c_iv": 0.2474, "p_iv": 0.1941, "c_delta": 0.1526, "p_delta": -0.9049, "c_gamma": 0.000638, "p_gamma": 0.000583, "c_vega": 3.5231, "p_vega": 2.5258, "c_vanna": 0.989496, "p_vanna": 1.150133, "c_charm": -45.400959, "p_charm": -41.437992, "netGEX": -54.952, "netVEX": -3.824, "netCHEX": 37.488}, {"strike": 28968.0, "c_oi": 13, "p_oi": 587, "c_vol": 10506, "p_vol": 666, "c_iv": 0.2456, "p_iv": 0.1878, "c_delta": 0.1265, "p_delta": -0.933, "c_gamma": 0.000566, "p_gamma": 0.000462, "c_vega": 3.1003, "p_vega": 1.9376, "c_vanna": 0.976776, "p_vanna": 1.042244, "c_charm": -44.419167, "p_charm": -36.273199, "netGEX": -5.206, "netVEX": -0.414, "netCHEX": 3.92}, {"strike": 29010.0, "c_oi": 55, "p_oi": 995, "c_vol": 10504, "p_vol": 1270, "c_iv": 0.2456, "p_iv": 0.1812, "c_delta": 0.1046, "p_delta": -0.956, "c_gamma": 0.000494, "p_gamma": 0.000343, "c_vega": 2.7083, "p_vega": 1.3889, "c_vanna": 0.93644, "p_vanna": 0.88071, "c_charm": -42.530969, "p_charm": -29.545026, "netGEX": -6.202, "netVEX": -0.57, "netCHEX": 5.12}, {"strike": 29051.0, "c_oi": 24, "p_oi": 5367, "c_vol": 9706, "p_vol": 4657, "c_iv": 0.2456, "p_iv": 0.1724, "c_delta": 0.086, "p_delta": -0.9744, "c_gamma": 0.000428, "p_gamma": 0.000231, "c_vega": 2.3451, "p_vega": 0.8889, "c_vanna": 0.881053, "p_vanna": 0.676479, "c_charm": -39.973936, "p_charm": -21.581047, "netGEX": -24.244, "netVEX": -2.493, "netCHEX": 21.737}, {"strike": 29092.0, "c_oi": 118, "p_oi": 400, "c_vol": 10420, "p_vol": 364, "c_iv": 0.2456, "p_iv": 0.1589, "c_delta": 0.07, "p_delta": -0.9888, "c_gamma": 0.000366, "p_gamma": 0.000123, "c_vega": 2.0066, "p_vega": 0.4371, "c_vanna": 0.813899, "p_vanna": 0.422328, "c_charm": -36.894487, "p_charm": -12.429478, "netGEX": -0.12, "netVEX": -0.05, "netCHEX": 0.117}, {"strike": 29134.0, "c_oi": 519, "p_oi": 1897, "c_vol": 26692, "p_vol": 1667, "c_iv": 0.2439, "p_iv": 0.1362, "c_delta": 0.0549, "p_delta": -0.9978, "c_gamma": 0.000305, "p_gamma": 3.2e-05, "c_vega": 1.6598, "p_vega": 0.0969, "c_vanna": 0.734137, "p_vanna": 0.136934, "c_charm": -33.021573, "p_charm": -3.480394, "netGEX": 1.928, "netVEX": 0.084, "netCHEX": -1.994}, {"strike": 29175.0, "c_oi": 84, "p_oi": 591, "c_vol": 5816, "p_vol": 380, "c_iv": 0.2444, "p_iv": 0.1686, "c_delta": 0.044, "p_delta": -0.9933, "c_gamma": 0.000255, "p_gamma": 7.4e-05, "c_vega": 1.3915, "p_vega": 0.2766, "c_vanna": 0.654912, "p_vanna": 0.273161, "c_charm": -29.497429, "p_charm": -8.525359, "netGEX": -0.434, "netVEX": -0.074, "netCHEX": 0.485}, {"strike": 29216.0, "c_oi": 393, "p_oi": 741, "c_vol": 7817, "p_vol": 334, "c_iv": 0.2459, "p_iv": 0.1504, "c_delta": 0.0356, "p_delta": -0.9983, "c_gamma": 0.000213, "p_gamma": 2.2e-05, "c_vega": 1.1698, "p_vega": 0.0755, "c_vanna": 0.578802, "p_vanna": 0.099532, "c_charm": -26.21039, "p_charm": -2.797405, "netGEX": 1.323, "netVEX": 0.106, "netCHEX": -1.557}, {"strike": 29258.0, "c_oi": 574, "p_oi": 637, "c_vol": 4510, "p_vol": 326, "c_iv": 0.2468, "p_iv": 0.1588, "c_delta": 0.0282, "p_delta": -0.9984, "c_gamma": 0.000175, "p_gamma": 2e-05, "c_vega": 0.9644, "p_vega": 0.0721, "c_vanna": 0.5025, "p_vanna": 0.090494, "c_charm": -22.833426, "p_charm": -2.68602, "netGEX": 1.726, "netVEX": 0.159, "netCHEX": -2.156}, {"strike": 29299.0, "c_oi": 237, "p_oi": 735, "c_vol": 5648, "p_vol": 365, "c_iv": 0.2493, "p_iv": 0.167, "c_delta": 0.0229, "p_delta": -0.9985, "c_gamma": 0.000146, "p_gamma": 1.9e-05, "c_vega": 0.8113, "p_vega": 0.0691, "c_vanna": 0.437911, "p_vanna": 0.082899, "c_charm": -20.086106, "p_charm": -2.587591, "netGEX": 0.413, "netVEX": 0.03, "netCHEX": -0.541}, {"strike": 29340.0, "c_oi": 1373, "p_oi": 2211, "c_vol": 24303, "p_vol": 1384, "c_iv": 0.2507, "p_iv": 0.1752, "c_delta": 0.0182, "p_delta": -0.9985, "c_gamma": 0.000119, "p_gamma": 1.7e-05, "c_vega": 0.6684, "p_vega": 0.0663, "c_vanna": 0.375574, "p_vanna": 0.076274, "c_charm": -17.320898, "p_charm": -2.497067, "netGEX": 2.493, "netVEX": 0.24, "netCHEX": -3.456}, {"strike": 29382.0, "c_oi": 231, "p_oi": 611, "c_vol": 5024, "p_vol": 220, "c_iv": 0.2524, "p_iv": 0.1835, "c_delta": 0.0144, "p_delta": -0.9986, "c_gamma": 9.7e-05, "p_gamma": 1.6e-05, "c_vega": 0.5466, "p_vega": 0.0638, "c_vanna": 0.318726, "p_vanna": 0.070356, "c_charm": -14.793677, "p_charm": -2.412816, "netGEX": 0.254, "netVEX": 0.021, "netCHEX": -0.368}, {"strike": 29423.0, "c_oi": 783, "p_oi": 737, "c_vol": 4197, "p_vol": 299, "c_iv": 0.2549, "p_iv": 0.1915, "c_delta": 0.0116, "p_delta": -0.9986, "c_gamma": 8e-05, "p_gamma": 1.4e-05, "c_vega": 0.4539, "p_vega": 0.0615, "c_vanna": 0.272084, "p_vanna": 0.065242, "c_charm": -12.746594, "p_charm": -2.336041, "netGEX": 1.022, "netVEX": 0.114, "netCHEX": -1.563}, {"strike": 29464.0, "c_oi": 821, "p_oi": 1875, "c_vol": 19004, "p_vol": 353, "c_iv": 0.2564, "p_iv": 0.1995, "c_delta": 0.0091, "p_delta": -0.9987, "c_gamma": 6.4e-05, "p_gamma": 1.3e-05, "c_vega": 0.3679, "p_vega": 0.0594, "c_vanna": 0.228007, "p_vanna": 0.06073, "c_charm": -10.739746, "p_charm": -2.266001, "netGEX": 0.548, "netVEX": 0.051, "netCHEX": -0.865}, {"strike": 29506.0, "c_oi": 826, "p_oi": 1447, "c_vol": 2035, "p_vol": 271, "c_iv": 0.2612, "p_iv": 0.2077, "c_delta": 0.0078, "p_delta": -0.9987, "c_gamma": 5.5e-05, "p_gamma": 1.2e-05, "c_vega": 0.3189, "p_vega": 0.0574, "c_vanna": 0.198851, "p_vanna": 0.056589, "c_charm": -9.542094, "p_charm": -2.198452, "netGEX": 0.537, "netVEX": 0.057, "netCHEX": -0.89}, {"strike": 29547.0, "c_oi": 1611, "p_oi": 3259, "c_vol": 24596, "p_vol": 649, "c_iv": 0.2632, "p_iv": 0.3911, "c_delta": 0.0062, "p_delta": -0.9533, "c_gamma": 4.4e-05, "p_gamma": 0.000167, "c_vega": 0.2602, "p_vega": 1.4571, "c_vanna": 0.166492, "p_vanna": 0.423636, "c_charm": -8.046959, "p_charm": -30.465782, "netGEX": -9.317, "netVEX": -0.768, "netCHEX": 16.336}, {"strike": 29588.0, "c_oi": 752, "p_oi": 501, "c_vol": 1597, "p_vol": 147, "c_iv": 0.2666, "p_iv": 0.2235, "c_delta": 0.0051, "p_delta": -0.9988, "c_gamma": 3.7e-05, "p_gamma": 1.1e-05, "c_vega": 0.2194, "p_vega": 0.054, "c_vanna": 0.142344, "p_vanna": 0.049761, "c_charm": -6.967482, "p_charm": -2.081901, "netGEX": 0.44, "netVEX": 0.057, "netCHEX": -0.794}, {"strike": 29630.0, "c_oi": 649, "p_oi": 261, "c_vol": 2502, "p_vol": 93, "c_iv": 0.2695, "p_iv": 0.408, "c_delta": 0.0041, "p_delta": -0.9589, "c_gamma": 3e-05, "p_gamma": 0.000144, "c_vega": 0.1817, "p_vega": 1.3124, "c_vanna": 0.119846, "p_vanna": 0.379179, "c_charm": -5.929387, "p_charm": -28.432606, "netGEX": -0.355, "netVEX": -0.015, "netCHEX": 0.676}, {"strike": 29671.0, "c_oi": 987, "p_oi": 417, "c_vol": 4105, "p_vol": 133, "c_iv": 0.2715, "p_iv": 0.3809, "c_delta": 0.0033, "p_delta": -0.9734, "c_gamma": 2.4e-05, "p_gamma": 0.000108, "c_vega": 0.1473, "p_vega": 0.9179, "c_vanna": 0.099323, "p_vanna": 0.315247, "c_charm": -4.94859, "p_charm": -22.073148, "netGEX": -0.415, "netVEX": -0.023, "netCHEX": 0.818}, {"strike": 29712.0, "c_oi": 330, "p_oi": 227, "c_vol": 3849, "p_vol": 48, "c_iv": 0.273, "p_iv": 0.2472, "c_delta": 0.0025, "p_delta": -0.9989, "c_gamma": 1.9e-05, "p_gamma": 9e-06, "c_vega": 0.1175, "p_vega": 0.0495, "c_vanna": 0.081142, "p_vanna": 0.041654, "c_charm": -4.063791, "p_charm": -1.929143, "netGEX": 0.085, "netVEX": 0.012, "netCHEX": -0.171}, {"strike": 29753.0, "c_oi": 3057, "p_oi": 1446, "c_vol": 9068, "p_vol": 358, "c_iv": 0.2774, "p_iv": 0.255, "c_delta": 0.0022, "p_delta": -0.9989, "c_gamma": 1.6e-05, "p_gamma": 8e-06, "c_vega": 0.1019, "p_vega": 0.0482, "c_vanna": 0.070502, "p_vanna": 0.039443, "c_charm": -3.587126, "p_charm": -1.884818, "netGEX": 0.75, "netVEX": 0.109, "netCHEX": -1.559}, {"strike": 29795.0, "c_oi": 413, "p_oi": 438, "c_vol": 2797, "p_vol": 78, "c_iv": 0.2808, "p_iv": 0.4439, "c_delta": 0.0018, "p_delta": -0.9667, "c_gamma": 1.4e-05, "p_gamma": 0.000111, "c_vega": 0.0854, "p_vega": 1.1043, "c_vanna": 0.059646, "p_vanna": 0.309648, "c_charm": -3.071638, "p_charm": -25.247206, "netGEX": -0.852, "netVEX": -0.077, "netCHEX": 1.853}, {"strike": 29836.0, "c_oi": 1273, "p_oi": 486, "c_vol": 1369, "p_vol": 37, "c_iv": 0.2842, "p_iv": 0.3887, "c_delta": 0.0015, "p_delta": -0.9848, "c_gamma": 1.1e-05, "p_gamma": 6.6e-05, "c_vega": 0.0722, "p_vega": 0.5689, "c_vanna": 0.050773, "p_vanna": 0.214335, "c_charm": -2.646123, "p_charm": -15.317003, "netGEX": -0.343, "netVEX": -0.027, "netCHEX": 0.771}, {"strike": 29877.0, "c_oi": 587, "p_oi": 312, "c_vol": 1313, "p_vol": 64, "c_iv": 0.2861, "p_iv": 0.4622, "c_delta": 0.0012, "p_delta": -0.9696, "c_gamma": 9e-06, "p_gamma": 9.9e-05, "c_vega": 0.0583, "p_vega": 1.0254, "c_vanna": 0.041669, "p_vanna": 0.282211, "c_charm": -2.186255, "p_charm": -23.954171, "netGEX": -0.506, "netVEX": -0.044, "netCHEX": 1.171}, {"strike": 29919.0, "c_oi": 1747, "p_oi": 288, "c_vol": 1145, "p_vol": 42, "c_iv": 0.2891, "p_iv": 0.4724, "c_delta": 0.001, "p_delta": -0.9706, "c_gamma": 7e-06, "p_gamma": 9.4e-05, "c_vega": 0.0482, "p_vega": 0.9958, "c_vanna": 0.034797, "p_vanna": 0.270382, "c_charm": -1.844166, "p_charm": -23.456813, "netGEX": -0.279, "netVEX": -0.012, "netCHEX": 0.669}, {"strike": 29960.0, "c_oi": 9649, "p_oi": 456, "c_vol": 6070, "p_vol": 122, "c_iv": 0.29, "p_iv": 0.4827, "c_delta": 0.0007, "p_delta": -0.9715, "c_gamma": 6e-06, "p_gamma": 9e-05, "c_vega": 0.0375, "p_vega": 0.9706, "c_vanna": 0.027684, "p_vanna": 0.259836, "c_charm": -1.47192, "p_charm": -23.028919, "netGEX": 0.292, "netVEX": 0.103, "netCHEX": -0.7}, {"strike": 30001.0, "c_oi": 4016, "p_oi": 244, "c_vol": 1038, "p_vol": 47, "c_iv": 0.2969, "p_iv": 0.4788, "c_delta": 0.0007, "p_delta": -0.9758, "c_gamma": 5e-06, "p_gamma": 7.9e-05, "c_vega": 0.0358, "p_vega": 0.8468, "c_vanna": 0.025955, "p_vanna": 0.236845, "c_charm": -1.412365, "p_charm": -20.822789, "netGEX": 0.047, "netVEX": 0.032, "netCHEX": -0.112}, {"strike": 30043.0, "c_oi": 753, "p_oi": 119, "c_vol": 2183, "p_vol": 12, "c_iv": 0.2969, "p_iv": 0.5232, "c_delta": 0.0005, "p_delta": -0.9682, "c_gamma": 4e-06, "p_gamma": 9.1e-05, "c_vega": 0.0268, "p_vega": 1.0635, "c_vanna": 0.019926, "p_vanna": 0.256326, "c_charm": -1.084155, "p_charm": -24.616592, "netGEX": -0.154, "netVEX": -0.011, "netCHEX": 0.4}, {"strike": 30084.0, "c_oi": 509, "p_oi": 127, "c_vol": 4456, "p_vol": 71, "c_iv": 0.2949, "p_iv": 0.5103, "c_delta": 0.0003, "p_delta": -0.9746, "c_gamma": 3e-06, "p_gamma": 7.7e-05, "c_vega": 0.0185, "p_vega": 0.8809, "c_vanna": 0.014338, "p_vanna": 0.229044, "c_charm": -0.774898, "p_charm": -21.455449, "netGEX": -0.165, "netVEX": -0.015, "netCHEX": 0.441}, {"strike": 30125.0, "c_oi": 624, "p_oi": 89, "c_vol": 390, "p_vol": 31, "c_iv": 0.3027, "p_iv": 0.5435, "c_delta": 0.0003, "p_delta": -0.97, "c_gamma": 3e-06, "p_gamma": 8.4e-05, "c_vega": 0.0186, "p_vega": 1.0139, "c_vanna": 0.014063, "p_vanna": 0.238581, "c_charm": -0.780114, "p_charm": -23.796105, "netGEX": -0.113, "netVEX": -0.009, "netCHEX": 0.309}, {"strike": 30167.0, "c_oi": 3285, "p_oi": 45, "c_vol": 2534, "p_vol": 132, "c_iv": 0.3086, "p_iv": 0.5537, "c_delta": 0.0003, "p_delta": -0.9708, "c_gamma": 3e-06, "p_gamma": 8e-05, "c_vega": 0.0173, "p_vega": 0.9899, "c_vanna": 0.012905, "p_vanna": 0.230202, "c_charm": -0.729654, "p_charm": -23.391939, "netGEX": 0.092, "netVEX": 0.022, "netCHEX": -0.254}, {"strike": 30208.0, "c_oi": 790, "p_oi": 1, "c_vol": 566, "p_vol": 68, "c_iv": 0.3164, "p_iv": 0.5425, "c_delta": 0.0003, "p_delta": -0.9762, "c_gamma": 2e-06, "p_gamma": 6.9e-05, "c_vega": 0.0175, "p_vega": 0.8352, "c_vanna": 0.012698, "p_vanna": 0.207221, "c_charm": -0.736047, "p_charm": -20.632534, "netGEX": 0.037, "netVEX": 0.007, "netCHEX": -0.106}, {"strike": 30249.0, "c_oi": 899, "p_oi": 1, "c_vol": 1508, "p_vol": 8, "c_iv": 0.3125, "p_iv": 0.5523, "c_delta": 0.0002, "p_delta": -0.9768, "c_gamma": 2e-06, "p_gamma": 6.6e-05, "c_vega": 0.0113, "p_vega": 0.8166, "c_vanna": 0.008604, "p_vanna": 0.200186, "c_charm": -0.492554, "p_charm": -20.289735, "netGEX": 0.027, "netVEX": 0.005, "netCHEX": -0.08}, {"strike": 30291.0, "c_oi": 528, "p_oi": 9, "c_vol": 815, "p_vol": 1, "c_iv": 0.3184, "p_iv": 0.5837, "c_delta": 0.0002, "p_delta": -0.9731, "c_gamma": 1e-06, "p_gamma": 7.1e-05, "c_vega": 0.0106, "p_vega": 0.9254, "c_vanna": 0.007969, "p_vanna": 0.208032, "c_charm": -0.464717, "p_charm": -22.281508, "netGEX": 0.003, "netVEX": 0.002, "netCHEX": -0.008}, {"strike": 30332.0, "c_oi": 587, "p_oi": 2, "c_vol": 1219, "p_vol": 12, "c_iv": 0.3242, "p_iv": 0.5715, "c_delta": 0.0002, "p_delta": -0.9781, "c_gamma": 1e-06, "p_gamma": 6.1e-05, "c_vega": 0.01, "p_vega": 0.7792, "c_vanna": 0.007447, "p_vanna": 0.186813, "c_charm": -0.442231, "p_charm": -19.593666, "netGEX": 0.014, "netVEX": 0.003, "netCHEX": -0.042}, {"strike": 30373.0, "c_oi": 1104, "p_oi": 19, "c_vol": 2310, "p_vol": 6, "c_iv": 0.332, "p_iv": 0.5798, "c_delta": 0.0002, "p_delta": -0.9788, "c_gamma": 1e-06, "p_gamma": 5.8e-05, "c_vega": 0.0103, "p_vega": 0.7556, "c_vanna": 0.007437, "p_vanna": 0.179922, "c_charm": -0.452205, "p_charm": -19.144416, "netGEX": 0.008, "netVEX": 0.003, "netCHEX": -0.026}, {"strike": 30415.0, "c_oi": 1652, "p_oi": 0, "c_vol": 1105, "p_vol": 2, "c_iv": 0.3379, "p_iv": 0.5906, "c_delta": 0.0002, "p_delta": -0.9792, "c_gamma": 1e-06, "p_gamma": 5.6e-05, "c_vega": 0.0097, "p_vega": 0.7447, "c_vanna": 0.006933, "p_vanna": 0.174739, "c_charm": -0.429011, "p_charm": -18.936455, "netGEX": 0.042, "netVEX": 0.008, "netCHEX": -0.134}, {"strike": 30456.0, "c_oi": 649, "p_oi": 3, "c_vol": 345, "p_vol": 5, "c_iv": 0.3281, "p_iv": 0.6231, "c_delta": 0.0001, "p_delta": -0.9756, "c_gamma": 1e-06, "p_gamma": 6.1e-05, "c_vega": 0.0049, "p_vega": 0.8512, "c_vanna": 0.003795, "p_vanna": 0.183386, "c_charm": -0.228013, "p_charm": -20.960356, "netGEX": 0.005, "netVEX": 0.001, "netCHEX": -0.016}, {"strike": 30497.0, "c_oi": 315, "p_oi": 2, "c_vol": 349, "p_vol": 5, "c_iv": 0.3359, "p_iv": 0.6326, "c_delta": 0.0001, "p_delta": -0.9762, "c_gamma": 1e-06, "p_gamma": 5.9e-05, "c_vega": 0.0051, "p_vega": 0.8338, "c_vanna": 0.00386, "p_vanna": 0.177899, "c_charm": -0.23741, "p_charm": -20.643116, "netGEX": 0.002, "netVEX": 0.001, "netCHEX": -0.006}, {"strike": 30539.0, "c_oi": 869, "p_oi": 0, "c_vol": 185, "p_vol": 85, "c_iv": 0.3399, "p_iv": 0.6423, "c_delta": 0.0001, "p_delta": -0.9768, "c_gamma": 1e-06, "p_gamma": 5.7e-05, "c_vega": 0.0045, "p_vega": 0.8169, "c_vanna": 0.003387, "p_vanna": 0.17257, "c_charm": -0.210713, "p_charm": -20.333123, "netGEX": 0.01, "netVEX": 0.002, "netCHEX": -0.035}, {"strike": 30580.0, "c_oi": 9530, "p_oi": 3, "c_vol": 961, "p_vol": 7, "c_iv": 0.3477, "p_iv": 0.6284, "c_delta": 0.0001, "p_delta": -0.9811, "c_gamma": 1e-06, "p_gamma": 4.9e-05, "c_vega": 0.0047, "p_vega": 0.6861, "c_vanna": 0.003452, "p_vanna": 0.15436, "c_charm": -0.219713, "p_charm": -17.797477, "netGEX": 0.111, "netVEX": 0.022, "netCHEX": -0.386}, {"strike": 30621.0, "c_oi": 984, "p_oi": 0, "c_vol": 420, "p_vol": 0, "c_iv": 0.3535, "p_iv": 0.4137, "c_delta": 0.0001, "p_delta": -0.9993, "c_gamma": 1e-06, "p_gamma": 3e-06, "c_vega": 0.0046, "p_vega": 0.0318, "c_vanna": 0.003284, "p_vanna": 0.016778, "c_charm": -0.212513, "p_charm": -1.310171, "netGEX": 0.011, "netVEX": 0.002, "netCHEX": -0.04}, {"strike": 30663.0, "c_oi": 2943, "p_oi": 0, "c_vol": 75, "p_vol": 41, "c_iv": 0.3594, "p_iv": 0.6709, "c_delta": 0.0001, "p_delta": -0.9783, "c_gamma": 1e-06, "p_gamma": 5.1e-05, "c_vega": 0.0044, "p_vega": 0.7706, "c_vanna": 0.00311, "p_vanna": 0.158208, "c_charm": -0.204569, "p_charm": -19.468129, "netGEX": 0.032, "netVEX": 0.006, "netCHEX": -0.114}, {"strike": 30704.0, "c_oi": 276, "p_oi": 0, "c_vol": 51, "p_vol": 0, "c_iv": 0.3672, "p_iv": 0.6565, "c_delta": 0.0001, "p_delta": -0.9823, "c_gamma": 1e-06, "p_gamma": 4.4e-05, "c_vega": 0.0046, "p_vega": 0.6479, "c_vanna": 0.003172, "p_vanna": 0.141429, "c_charm": -0.21322, "p_charm": -17.033875, "netGEX": 0.003, "netVEX": 0.001, "netCHEX": -0.011}, {"strike": 30745.0, "c_oi": 290, "p_oi": 0, "c_vol": 337, "p_vol": 1, "c_iv": 0.3711, "p_iv": 0.6899, "c_delta": 0.0001, "p_delta": -0.9792, "c_gamma": 0.0, "p_gamma": 4.8e-05, "c_vega": 0.0041, "p_vega": 0.7443, "c_vanna": 0.002837, "p_vanna": 0.149887, "c_charm": -0.19267, "p_charm": -18.966609, "netGEX": 0.003, "netVEX": 0.001, "netCHEX": -0.011}, {"strike": 30787.0, "c_oi": 3268, "p_oi": 0, "c_vol": 2356, "p_vol": 0, "c_iv": 0.3789, "p_iv": 0.6992, "c_delta": 0.0001, "p_delta": -0.9797, "c_gamma": 1e-06, "p_gamma": 4.7e-05, "c_vega": 0.0043, "p_vega": 0.7296, "c_vanna": 0.002881, "p_vanna": 0.145693, "c_charm": -0.199825, "p_charm": -18.683425, "netGEX": 0.032, "netVEX": 0.007, "netCHEX": -0.124}, {"strike": 30828.0, "c_oi": 421, "p_oi": 0, "c_vol": 24, "p_vol": 1, "c_iv": 0.4004, "p_iv": 0.6841, "c_delta": 0.0001, "p_delta": -0.9834, "c_gamma": 1e-06, "p_gamma": 4e-05, "c_vega": 0.0072, "p_vega": 0.6129, "c_vanna": 0.004461, "p_vanna": 0.130054, "c_charm": -0.326878, "p_charm": -16.321149, "netGEX": 0.007, "netVEX": 0.001, "netCHEX": -0.026}, {"strike": 30869.0, "c_oi": 466, "p_oi": 0, "c_vol": 90, "p_vol": 1, "c_iv": 0.4063, "p_iv": 0.718, "c_delta": 0.0001, "p_delta": -0.9805, "c_gamma": 1e-06, "p_gamma": 4.4e-05, "c_vega": 0.007, "p_vega": 0.7057, "c_vanna": 0.004259, "p_vanna": 0.13837, "c_charm": -0.316667, "p_charm": -18.220602, "netGEX": 0.007, "netVEX": 0.001, "netCHEX": -0.028}, {"strike": 30911.0, "c_oi": 352, "p_oi": 0, "c_vol": 101, "p_vol": 4, "c_iv": 0.3945, "p_iv": 0.7022, "c_delta": 0.0001, "p_delta": -0.9841, "c_gamma": 0.0, "p_gamma": 3.8e-05, "c_vega": 0.0036, "p_vega": 0.5906, "c_vanna": 0.002373, "p_vanna": 0.123117, "c_charm": -0.171347, "p_charm": -15.858243, "netGEX": 0.003, "netVEX": 0.001, "netCHEX": -0.011}, {"strike": 30952.0, "c_oi": 441, "p_oi": 0, "c_vol": 163, "p_vol": 0, "c_iv": 0.4023, "p_iv": 0.18, "c_delta": 0.0001, "p_delta": -0.9999, "c_gamma": 0.0, "p_gamma": 0.0, "c_vega": 0.0038, "p_vega": 0.0, "c_vanna": 0.002432, "p_vanna": 0.0, "c_charm": -0.179018, "p_charm": -0.039696, "netGEX": 0.004, "netVEX": 0.001, "netCHEX": -0.015}, {"strike": 30993.0, "c_oi": 1963, "p_oi": 0, "c_vol": 982, "p_vol": 10, "c_iv": 0.4063, "p_iv": 0.7234, "c_delta": 0.0001, "p_delta": -0.9843, "c_gamma": 0.0, "p_gamma": 3.6e-05, "c_vega": 0.0034, "p_vega": 0.5833, "c_vanna": 0.0022, "p_vanna": 0.118404, "c_charm": -0.163556, "p_charm": -15.711571, "netGEX": 0.015, "netVEX": 0.003, "netCHEX": -0.061}, {"strike": 31035.0, "c_oi": 176, "p_oi": 0, "c_vol": 115, "p_vol": 0, "c_iv": 0.4141, "p_iv": 0.18, "c_delta": 0.0001, "p_delta": -0.9999, "c_gamma": 0.0, "p_gamma": 0.0, "c_vega": 0.0036, "p_vega": 0.0, "c_vanna": 0.002244, "p_vanna": 0.0, "c_charm": -0.170042, "p_charm": -0.039696, "netGEX": 0.001, "netVEX": 0.0, "netCHEX": -0.006}, {"strike": 31076.0, "c_oi": 711, "p_oi": 0, "c_vol": 31, "p_vol": 0, "c_iv": 0.418, "p_iv": 0.18, "c_delta": 0.0001, "p_delta": -0.9999, "c_gamma": 0.0, "p_gamma": 0.0, "c_vega": 0.0033, "p_vega": 0.0, "c_vanna": 0.002038, "p_vanna": 0.0, "c_charm": -0.155863, "p_charm": -0.039696, "netGEX": 0.005, "netVEX": 0.001, "netCHEX": -0.021}, {"strike": 31117.0, "c_oi": 208, "p_oi": 0, "c_vol": 379, "p_vol": 0, "c_iv": 0.3984, "p_iv": 0.18, "c_delta": 0.0, "p_delta": -0.9999, "c_gamma": 0.0, "p_gamma": 0.0, "c_vega": 0.0012, "p_vega": 0.0, "c_vanna": 0.000823, "p_vanna": 0.0, "c_charm": -0.059999, "p_charm": -0.039696, "netGEX": 0.001, "netVEX": 0.0, "netCHEX": -0.002}, {"strike": 31159.0, "c_oi": 337, "p_oi": 0, "c_vol": 401, "p_vol": 0, "c_iv": 0.4297, "p_iv": 0.18, "c_delta": 0.0001, "p_delta": -0.9999, "c_gamma": 0.0, "p_gamma": 0.0, "c_vega": 0.0031, "p_vega": 0.0, "c_vanna": 0.001896, "p_vanna": 0.0, "c_charm": -0.149078, "p_charm": -0.039696, "netGEX": 0.002, "netVEX": 0.0, "netCHEX": -0.01}, {"strike": 31200.0, "c_oi": 266, "p_oi": 0, "c_vol": 368, "p_vol": 0, "c_iv": 0.4375, "p_iv": 0.7664, "c_delta": 0.0001, "p_delta": -0.9859, "c_gamma": 0.0, "p_gamma": 3.1e-05, "c_vega": 0.0033, "p_vega": 0.5313, "c_vanna": 0.001948, "p_vanna": 0.103896, "c_charm": -0.155945, "p_charm": -14.605311, "netGEX": 0.002, "netVEX": 0.0, "netCHEX": -0.008}, {"strike": 31241.0, "c_oi": 311, "p_oi": 0, "c_vol": 156, "p_vol": 0, "c_iv": 0.4414, "p_iv": 0.18, "c_delta": 0.0, "p_delta": -0.9999, "c_gamma": 0.0, "p_gamma": 0.0, "c_vega": 0.003, "p_vega": 0.0, "c_vanna": 0.001781, "p_vanna": 0.0, "c_charm": -0.143798, "p_charm": -0.039696, "netGEX": 0.002, "netVEX": 0.0, "netCHEX": -0.008}, {"strike": 31282.0, "c_oi": 64, "p_oi": 0, "c_vol": 90, "p_vol": 0, "c_iv": 0.4219, "p_iv": 0.18, "c_delta": 0.0, "p_delta": -0.9999, "c_gamma": 0.0, "p_gamma": 0.0, "c_vega": 0.0011, "p_vega": 0.0, "c_vanna": 0.000751, "p_vanna": 0.0, "c_charm": -0.057968, "p_charm": -0.039696, "netGEX": 0.0, "netVEX": 0.0, "netCHEX": -0.001}, {"strike": 31324.0, "c_oi": 117, "p_oi": 0, "c_vol": 26, "p_vol": 0, "c_iv": 0.4531, "p_iv": 0.18, "c_delta": 0.0, "p_delta": -0.9999, "c_gamma": 0.0, "p_gamma": 0.0, "c_vega": 0.0029, "p_vega": 0.0, "c_vanna": 0.00167, "p_vanna": 0.0, "c_charm": -0.138425, "p_charm": -0.039696, "netGEX": 0.001, "netVEX": 0.0, "netCHEX": -0.003}, {"strike": 31365.0, "c_oi": 186, "p_oi": 0, "c_vol": 20, "p_vol": 0, "c_iv": 0.4609, "p_iv": 0.18, "c_delta": 0.0, "p_delta": -0.9999, "c_gamma": 0.0, "p_gamma": 0.0, "c_vega": 0.003, "p_vega": 0.0, "c_vanna": 0.001718, "p_vanna": 0.0, "c_charm": -0.144853, "p_charm": -0.039696, "netGEX": 0.001, "netVEX": 0.0, "netCHEX": -0.005}, {"strike": 31406.0, "c_oi": 613, "p_oi": 0, "c_vol": 135, "p_vol": 3, "c_iv": 0.4648, "p_iv": 0.8101, "c_delta": 0.0, "p_delta": -0.9871, "c_gamma": 0.0, "p_gamma": 2.7e-05, "c_vega": 0.0028, "p_vega": 0.4923, "c_vanna": 0.001579, "p_vanna": 0.092576, "c_charm": -0.134286, "p_charm": -13.756076, "netGEX": 0.003, "netVEX": 0.001, "netCHEX": -0.016}, {"strike": 31448.0, "c_oi": 63, "p_oi": 0, "c_vol": 6, "p_vol": 0, "c_iv": 0.4727, "p_iv": 0.18, "c_delta": 0.0, "p_delta": -0.9999, "c_gamma": 0.0, "p_gamma": 0.0, "c_vega": 0.0029, "p_vega": 0.0, "c_vanna": 0.001618, "p_vanna": 0.0, "c_charm": -0.139869, "p_charm": -0.039696, "netGEX": 0.0, "netVEX": 0.0, "netCHEX": -0.002}, {"strike": 31489.0, "c_oi": 107, "p_oi": 0, "c_vol": 55, "p_vol": 0, "c_iv": 0.4766, "p_iv": 0.18, "c_delta": 0.0, "p_delta": -0.9999, "c_gamma": 0.0, "p_gamma": 0.0, "c_vega": 0.0027, "p_vega": 0.0, "c_vanna": 0.001491, "p_vanna": 0.0, "c_charm": -0.129987, "p_charm": -0.039696, "netGEX": 0.001, "netVEX": 0.0, "netCHEX": -0.003}, {"strike": 31530.0, "c_oi": 270, "p_oi": 0, "c_vol": 4, "p_vol": 0, "c_iv": 0.4531, "p_iv": 0.18, "c_delta": 0.0, "p_delta": -0.9999, "c_gamma": 0.0, "p_gamma": 0.0, "c_vega": 0.0009, "p_vega": 0.0, "c_vanna": 0.000584, "p_vanna": 0.0, "c_charm": -0.048417, "p_charm": -0.039696, "netGEX": 0.0, "netVEX": 0.0, "netCHEX": -0.002}, {"strike": 31572.0, "c_oi": 32, "p_oi": 0, "c_vol": 12, "p_vol": 0, "c_iv": 0.4883, "p_iv": 0.18, "c_delta": 0.0, "p_delta": -0.9999, "c_gamma": 0.0, "p_gamma": 0.0, "c_vega": 0.0026, "p_vega": 0.0, "c_vanna": 0.001413, "p_vanna": 0.0, "c_charm": -0.126146, "p_charm": -0.039696, "netGEX": 0.0, "netVEX": 0.0, "netCHEX": -0.001}, {"strike": 31613.0, "c_oi": 362, "p_oi": 0, "c_vol": 5, "p_vol": 0, "c_iv": 0.4609, "p_iv": 0.855, "c_delta": 0.0, "p_delta": -0.988, "c_gamma": 0.0, "p_gamma": 2.4e-05, "c_vega": 0.0008, "p_vega": 0.4632, "c_vanna": 0.000495, "p_vanna": 0.083587, "c_charm": -0.041704, "p_charm": -13.109204, "netGEX": 0.001, "netVEX": 0.0, "netCHEX": -0.003}, {"strike": 31654.0, "c_oi": 48, "p_oi": 0, "c_vol": 12, "p_vol": 0, "c_iv": 0.5, "p_iv": 0.18, "c_delta": 0.0, "p_delta": -0.9999, "c_gamma": 0.0, "p_gamma": 0.0, "c_vega": 0.0025, "p_vega": 0.0, "c_vanna": 0.001348, "p_vanna": 0.0, "c_charm": -0.123257, "p_charm": -0.039696, "netGEX": 0.0, "netVEX": 0.0, "netCHEX": -0.001}, {"strike": 31696.0, "c_oi": 49, "p_oi": 0, "c_vol": 6, "p_vol": 0, "c_iv": 0.5039, "p_iv": 0.18, "c_delta": 0.0, "p_delta": -0.9999, "c_gamma": 0.0, "p_gamma": 0.0, "c_vega": 0.0024, "p_vega": 0.0, "c_vanna": 0.001244, "p_vanna": 0.0, "c_charm": -0.114673, "p_charm": -0.039696, "netGEX": 0.0, "netVEX": 0.0, "netCHEX": -0.001}, {"strike": 31737.0, "c_oi": 26, "p_oi": 0, "c_vol": 6, "p_vol": 0, "c_iv": 0.5117, "p_iv": 0.18, "c_delta": 0.0, "p_delta": -0.9999, "c_gamma": 0.0, "p_gamma": 0.0, "c_vega": 0.0025, "p_vega": 0.0, "c_vanna": 0.001284, "p_vanna": 0.0, "c_charm": -0.120153, "p_charm": -0.039696, "netGEX": 0.0, "netVEX": 0.0, "netCHEX": -0.001}, {"strike": 31778.0, "c_oi": 25, "p_oi": 0, "c_vol": 2, "p_vol": 0, "c_iv": 0.5156, "p_iv": 0.18, "c_delta": 0.0, "p_delta": -0.9999, "c_gamma": 0.0, "p_gamma": 0.0, "c_vega": 0.0023, "p_vega": 0.0, "c_vanna": 0.001193, "p_vanna": 0.0, "c_charm": -0.112517, "p_charm": -0.039696, "netGEX": 0.0, "netVEX": 0.0, "netCHEX": -0.001}, {"strike": 31820.0, "c_oi": 180, "p_oi": 0, "c_vol": 4, "p_vol": 0, "c_iv": 0.4922, "p_iv": 0.18, "c_delta": 0.0, "p_delta": -0.9999, "c_gamma": 0.0, "p_gamma": 0.0, "c_vega": 0.0009, "p_vega": 0.0, "c_vanna": 0.000495, "p_vanna": 0.0, "c_charm": -0.044511, "p_charm": -0.039696, "netGEX": 0.0, "netVEX": 0.0, "netCHEX": -0.002}, {"strike": 31861.0, "c_oi": 9, "p_oi": 0, "c_vol": 9, "p_vol": 0, "c_iv": 0.5273, "p_iv": 0.18, "c_delta": 0.0, "p_delta": -0.9999, "c_gamma": 0.0, "p_gamma": 0.0, "c_vega": 0.0023, "p_vega": 0.0, "c_vanna": 0.001142, "p_vanna": 0.0, "c_charm": -0.11013, "p_charm": -0.039696, "netGEX": 0.0, "netVEX": 0.0, "netCHEX": -0.0}, {"strike": 31944.0, "c_oi": 1, "p_oi": 0, "c_vol": 0, "p_vol": 0, "c_iv": 0.5078, "p_iv": 0.9224, "c_delta": 0.0, "p_delta": -0.9894, "c_gamma": 0.0, "p_gamma": 2e-05, "c_vega": 0.0008, "p_vega": 0.4158, "c_vanna": 0.00045, "p_vanna": 0.071091, "c_charm": -0.041753, "p_charm": -12.028997, "netGEX": 0.0, "netVEX": 0.0, "netCHEX": -0.0}, {"strike": 31985.0, "c_oi": 2, "p_oi": 0, "c_vol": 0, "p_vol": 0, "c_iv": 0.5156, "p_iv": 0.18, "c_delta": 0.0, "p_delta": -0.9999, "c_gamma": 0.0, "p_gamma": 0.0, "c_vega": 0.0009, "p_vega": 0.0, "c_vanna": 0.000474, "p_vanna": 0.0, "c_charm": -0.04465, "p_charm": -0.039696, "netGEX": 0.0, "netVEX": 0.0, "netCHEX": -0.0}, {"strike": 32026.0, "c_oi": 34, "p_oi": 0, "c_vol": 1, "p_vol": 0, "c_iv": 0.5156, "p_iv": 0.18, "c_delta": 0.0, "p_delta": -0.9999, "c_gamma": 0.0, "p_gamma": 0.0, "c_vega": 0.0007, "p_vega": 0.0, "c_vanna": 0.000392, "p_vanna": 0.0, "c_charm": -0.036939, "p_charm": -0.039696, "netGEX": 0.0, "netVEX": 0.0, "netCHEX": -0.0}, {"strike": 32233.0, "c_oi": 422, "p_oi": 0, "c_vol": 3, "p_vol": 0, "c_iv": 0.5469, "p_iv": 0.18, "c_delta": 0.0, "p_delta": -0.9999, "c_gamma": 0.0, "p_gamma": 0.0, "c_vega": 0.0008, "p_vega": 0.0, "c_vanna": 0.0004, "p_vanna": 0.0, "c_charm": -0.039955, "p_charm": -0.039696, "netGEX": 0.001, "netVEX": 0.0, "netCHEX": -0.003}, {"strike": 32440.0, "c_oi": 51, "p_oi": 0, "c_vol": 9, "p_vol": 0, "c_iv": 0.5703, "p_iv": 0.18, "c_delta": 0.0, "p_delta": -0.9999, "c_gamma": 0.0, "p_gamma": 0.0, "c_vega": 0.0006, "p_vega": 0.0, "c_vanna": 0.000327, "p_vanna": 0.0, "c_charm": -0.034126, "p_charm": -0.039696, "netGEX": 0.0, "netVEX": 0.0, "netCHEX": -0.0}, {"strike": 32646.0, "c_oi": 10, "p_oi": 0, "c_vol": 4, "p_vol": 0, "c_iv": 0.5938, "p_iv": 0.18, "c_delta": 0.0, "p_delta": -0.9999, "c_gamma": 0.0, "p_gamma": 0.0, "c_vega": 0.0006, "p_vega": 0.0, "c_vanna": 0.000274, "p_vanna": 0.0, "c_charm": -0.029754, "p_charm": -0.039696, "netGEX": 0.0, "netVEX": 0.0, "netCHEX": -0.0}, {"strike": 32853.0, "c_oi": 162, "p_oi": 0, "c_vol": 50, "p_vol": 0, "c_iv": 0.6172, "p_iv": 0.18, "c_delta": 0.0, "p_delta": -0.9999, "c_gamma": 0.0, "p_gamma": 0.0, "c_vega": 0.0005, "p_vega": 0.0, "c_vanna": 0.000232, "p_vanna": 0.0, "c_charm": -0.026222, "p_charm": -0.039696, "netGEX": 0.0, "netVEX": 0.0, "netCHEX": -0.001}, {"strike": 33059.0, "c_oi": 211, "p_oi": 0, "c_vol": 1, "p_vol": 0, "c_iv": 0.6094, "p_iv": 0.18, "c_delta": 0.0, "p_delta": -0.9999, "c_gamma": 0.0, "p_gamma": 0.0, "c_vega": 0.0002, "p_vega": 0.0, "c_vanna": 8.1e-05, "p_vanna": 0.0, "c_charm": -0.009006, "p_charm": -0.039696, "netGEX": 0.0, "netVEX": 0.0, "netCHEX": -0.0}, {"strike": 33266.0, "c_oi": 106, "p_oi": 0, "c_vol": 405, "p_vol": 0, "c_iv": 0.625, "p_iv": 0.18, "c_delta": 0.0, "p_delta": -0.9999, "c_gamma": 0.0, "p_gamma": 0.0, "c_vega": 0.0001, "p_vega": 0.0, "c_vanna": 5.7e-05, "p_vanna": 0.0, "c_charm": -0.006462, "p_charm": -0.039696, "netGEX": 0.0, "netVEX": 0.0, "netCHEX": -0.0}, {"strike": 33473.0, "c_oi": 97, "p_oi": 0, "c_vol": 80, "p_vol": 0, "c_iv": 0.6563, "p_iv": 0.18, "c_delta": 0.0, "p_delta": -0.9999, "c_gamma": 0.0, "p_gamma": 0.0, "c_vega": 0.0001, "p_vega": 0.0, "c_vanna": 6.5e-05, "p_vanna": 0.0, "c_charm": -0.007824, "p_charm": -0.039696, "netGEX": 0.0, "netVEX": 0.0, "netCHEX": -0.0}, {"strike": 33679.0, "c_oi": 129, "p_oi": 0, "c_vol": 7, "p_vol": 0, "c_iv": 0.6875, "p_iv": 0.18, "c_delta": 0.0, "p_delta": -0.9999, "c_gamma": 0.0, "p_gamma": 0.0, "c_vega": 0.0002, "p_vega": 0.0, "c_vanna": 7.5e-05, "p_vanna": 0.0, "c_charm": -0.009374, "p_charm": -0.039696, "netGEX": 0.0, "netVEX": 0.0, "netCHEX": -0.0}, {"strike": 33886.0, "c_oi": 269, "p_oi": 0, "c_vol": 0, "p_vol": 0, "c_iv": 0.7031, "p_iv": 0.18, "c_delta": 0.0, "p_delta": -0.9999, "c_gamma": 0.0, "p_gamma": 0.0, "c_vega": 0.0001, "p_vega": 0.0, "c_vanna": 5.5e-05, "p_vanna": 0.0, "c_charm": -0.007078, "p_charm": -0.039696, "netGEX": 0.0, "netVEX": 0.0, "netCHEX": -0.0}, {"strike": 34093.0, "c_oi": 218, "p_oi": 0, "c_vol": 0, "p_vol": 0, "c_iv": 0.7188, "p_iv": 0.18, "c_delta": 0.0, "p_delta": -0.9999, "c_gamma": 0.0, "p_gamma": 0.0, "c_vega": 0.0001, "p_vega": 0.0, "c_vanna": 4.1e-05, "p_vanna": 0.0, "c_charm": -0.005414, "p_charm": -0.039696, "netGEX": 0.0, "netVEX": 0.0, "netCHEX": -0.0}, {"strike": 34299.0, "c_oi": 13, "p_oi": 0, "c_vol": 0, "p_vol": 0, "c_iv": 0.75, "p_iv": 0.18, "c_delta": 0.0, "p_delta": -0.9999, "c_gamma": 0.0, "p_gamma": 0.0, "c_vega": 0.0001, "p_vega": 0.0, "c_vanna": 4.8e-05, "p_vanna": 0.0, "c_charm": -0.006597, "p_charm": -0.039696, "netGEX": 0.0, "netVEX": 0.0, "netCHEX": -0.0}, {"strike": 34506.0, "c_oi": 10, "p_oi": 0, "c_vol": 0, "p_vol": 0, "c_iv": 0.7813, "p_iv": 0.18, "c_delta": 0.0, "p_delta": -0.9999, "c_gamma": 0.0, "p_gamma": 0.0, "c_vega": 0.0001, "p_vega": 0.0, "c_vanna": 5.5e-05, "p_vanna": 0.0, "c_charm": -0.007907, "p_charm": -0.039696, "netGEX": 0.0, "netVEX": 0.0, "netCHEX": -0.0}, {"strike": 34712.0, "c_oi": 40, "p_oi": 0, "c_vol": 0, "p_vol": 0, "c_iv": 0.7969, "p_iv": 0.18, "c_delta": 0.0, "p_delta": -0.9999, "c_gamma": 0.0, "p_gamma": 0.0, "c_vega": 0.0001, "p_vega": 0.0, "c_vanna": 4.3e-05, "p_vanna": 0.0, "c_charm": -0.006299, "p_charm": -0.039696, "netGEX": 0.0, "netVEX": 0.0, "netCHEX": -0.0}, {"strike": 35126.0, "c_oi": 10, "p_oi": 0, "c_vol": 0, "p_vol": 0, "c_iv": 0.8438, "p_iv": 0.18, "c_delta": 0.0, "p_delta": -0.9999, "c_gamma": 0.0, "p_gamma": 0.0, "c_vega": 0.0001, "p_vega": 0.0, "c_vanna": 4e-05, "p_vanna": 0.0, "c_charm": -0.006119, "p_charm": -0.039696, "netGEX": 0.0, "netVEX": 0.0, "netCHEX": -0.0}, {"strike": 35332.0, "c_oi": 197, "p_oi": 0, "c_vol": 0, "p_vol": 0, "c_iv": 0.8594, "p_iv": 0.18, "c_delta": 0.0, "p_delta": -0.9999, "c_gamma": 0.0, "p_gamma": 0.0, "c_vega": 0.0001, "p_vega": 0.0, "c_vanna": 3.2e-05, "p_vanna": 0.0, "c_charm": -0.00502, "p_charm": -0.039696, "netGEX": 0.0, "netVEX": 0.0, "netCHEX": -0.0}, {"strike": 35539.0, "c_oi": 98, "p_oi": 0, "c_vol": 0, "p_vol": 0, "c_iv": 0.875, "p_iv": 0.18, "c_delta": 0.0, "p_delta": -0.9999, "c_gamma": 0.0, "p_gamma": 0.0, "c_vega": 0.0001, "p_vega": 0.0, "c_vanna": 2.6e-05, "p_vanna": 0.0, "c_charm": -0.004142, "p_charm": -0.039696, "netGEX": 0.0, "netVEX": 0.0, "netCHEX": -0.0}];
+window.INITIAL_META = {"spot": 28543.0, "basis": 0.0, "spot_mt5": 28543.0, "step": 41.0, "atm_strike": 28514.0, "call_wall": 29960.0, "call_wall_oi": 9649, "put_wall": 28720.0, "put_wall_oi": 8691, "strike_above": 28720.0, "strike_below": 28514.0, "next_above": 28927.0, "next_below": 28307.0, "secondary_support": 28307.0, "expected_move_1s": 534.23, "intraday_rule16_move": 637.9, "total_net_gex": -477.98, "total_net_vex": -4.51, "total_net_chex": 34.35, "dte_days": 1.0, "risk_free_rate": 0.0397, "effective_multiplier": 2.4199, "sigma_atm": 0.3576};
+
+// ----------------------------------------------------------------------------
+// Client-Side Black-76 Greeks & Quant Engine (JavaScript)
+// ----------------------------------------------------------------------------
+const Black76Engine = {
+    normalCdf(x) {
+        const a1 = 0.254829592, a2 = -0.284496736, a3 = 1.421413741;
+        const a4 = -1.453152027, a5 = 1.061405429, p = 0.3275911;
+        const sign = x < 0 ? -1 : 1;
+        const absX = Math.abs(x) / Math.SQRT2;
+        const t = 1.0 / (1.0 + p * absX);
+        const y = 1.0 - (((((a5 * t + a4) * t) + a3) * t + a2) * t + a1) * t * Math.exp(-absX * absX);
+        return 0.5 * (1.0 + sign * y);
+    },
+
+    normalPdf(x) {
+        return Math.exp(-0.5 * x * x) / Math.sqrt(2 * Math.PI);
+    },
+
+    calcGreeks(F, K, T, r, sigma, isCall) {
+        if (T <= 0.0001 || sigma <= 0.0001 || F <= 0 || K <= 0) {
+            return { delta: 0, gamma: 0, vega: 0, theta: 0, vanna: 0, charm: 0 };
+        }
+        const sqrtT = Math.sqrt(T);
+        const d1 = (Math.log(F / K) + 0.5 * sigma * sigma * T) / (sigma * sqrtT);
+        const d2 = d1 - sigma * sqrtT;
+        const df = Math.exp(-r * T);
+        const n_d1 = this.normalCdf(d1);
+        const np_d1 = this.normalPdf(d1);
+
+        const delta = isCall ? df * n_d1 : -df * this.normalCdf(-d1);
+        const gamma = (df * np_d1) / (F * sigma * sqrtT);
+        const vega = F * df * np_d1 * sqrtT;
+
+        const theta_term1 = -(F * df * np_d1 * sigma) / (2 * sqrtT);
+        const theta = isCall
+            ? (theta_term1 + r * df * (F * n_d1 - K * this.normalCdf(d2))) / 365.0
+            : (theta_term1 - r * df * (F * this.normalCdf(-d1) - K * this.normalCdf(-d2))) / 365.0;
+
+        const vanna = -df * np_d1 * (d2 / sigma);
+        const charm = isCall
+            ? df * (r * n_d1 - np_d1 * ((2 * r * T - d2 * sigma * sqrtT) / (2 * T * sigma * sqrtT)))
+            : -df * (r * this.normalCdf(-d1) + np_d1 * ((2 * r * T - d2 * sigma * sqrtT) / (2 * T * sigma * sqrtT)));
+
+        return { delta, gamma, vega, theta, vanna, charm };
+    },
+
+    recalculate(F, options, meta) {
+        const T = Math.max(0.0005, (meta.dte_days || 1.0) / 365.0);
+        const r = meta.risk_free_rate || 0.0397;
+        const mult = meta.effective_multiplier || 20.0;
+        const scale_gex = (F * F) * 0.01 / 1e6;
+        const scale_vex = F * 0.01 / 1e6;
+        const scale_chex = F / 1e6;
+
+        let totalGEX = 0.0;
+        let totalVEX = 0.0;
+        let totalCHEX = 0.0;
+        let atmStrike = options[0].strike;
+        let minDiff = 999999;
+        let atmGreeks = null;
+        let atmIV = 0.18;
+
+        for (let i = 0; i < options.length; i++) {
+            const row = options[i];
+            const K = row.strike;
+            const diff = Math.abs(K - F);
+            if (diff < minDiff) {
+                minDiff = diff;
+                atmStrike = K;
+                atmIV = (row.c_iv + row.p_iv) / 2.0;
+            }
+
+            const cG = this.calcGreeks(F, K, T, r, row.c_iv, true);
+            const pG = this.calcGreeks(F, K, T, r, row.p_iv, false);
+
+            const cGEX = cG.gamma * row.c_oi * mult * scale_gex;
+            const pGEX = -(pG.gamma * row.p_oi * mult * scale_gex);
+            const netGEX = cGEX + pGEX;
+            totalGEX += netGEX;
+
+            const cVEX = cG.vanna * row.c_oi * mult * scale_vex;
+            const pVEX = -(pG.vanna * row.p_oi * mult * scale_vex);
+            const netVEX = cVEX + pVEX;
+            totalVEX += netVEX;
+
+            const cCHEX = (cG.charm / 365.0) * row.c_oi * mult * scale_chex;
+            const pCHEX = -((pG.charm / 365.0) * row.p_oi * mult * scale_chex);
+            const netCHEX = cCHEX + pCHEX;
+            totalCHEX += netCHEX;
+
+            row.currentNetGEX = netGEX;
+            row.currentNetVEX = netVEX;
+            row.currentNetCHEX = netCHEX;
+
+            if (K === atmStrike) {
+                atmGreeks = {
+                    delta: cG.delta,
+                    gamma: cG.gamma,
+                    vega: cG.vega * mult * 0.01 / 1e6,
+                    theta: (cG.theta + pG.theta) * mult * 1000,
+                    vanna: netVEX,
+                    charm: netCHEX
+                };
+            }
+        }
+
+        const expectedMove = F * atmIV * Math.sqrt(T);
+        const intradayMove = (F * atmIV) / 16.0;
+
+        return {
+            spot: F,
+            totalGEX,
+            totalVEX,
+            totalCHEX,
+            atmStrike,
+            atmIV,
+            expectedMove,
+            intradayMove,
+            atmGreeks: atmGreeks || { delta: 0.5, gamma: 0.0004, vega: 24.0, theta: -30.0, vanna: 3.0, charm: -1.5 }
+        };
+    }
+};
+
+// ----------------------------------------------------------------------------
+// TradingView Lightweight Charts & ATAS Orderflow Integration
+// ----------------------------------------------------------------------------
+let chart = null;
+let candleSeries = null;
+let livePriceLine = null;
+let putWallLine = null;
+let callWallLine = null;
+let deepEfLine = null;
+let buyerAbsLine = null;
+let sellerOfferLine = null;
+let gexReactionLine = null;
+
+let currentPrice = window.INITIAL_META.spot;
+const initialBasePrice = window.INITIAL_META.spot;
+let isSimulating = true;
+let simInterval = null;
+let lastCandle = null;
+let currentBarTime = Math.floor(Date.now() / 1000) - (Math.floor(Date.now() / 1000) % 60);
+
+function initAtasChart() {
+    const container = document.getElementById('atas-tv-chart');
+    if (!container || !window.LightweightCharts) return;
+
+    chart = LightweightCharts.createChart(container, {
+        width: container.clientWidth,
+        height: 540,
+        layout: {
+            background: { type: 'solid', color: '#000000' },
+            textColor: '#94A3B8',
+            fontFamily: 'JetBrains Mono, monospace',
+            fontSize: 11,
+        },
+        grid: {
+            vertLines: { color: '#0F1728' },
+            horzLines: { color: '#0F1728' },
+        },
+        crosshair: {
+            mode: LightweightCharts.CrosshairMode.Normal,
+            vertLine: { color: '#38BDF8', width: 1, style: 3 },
+            horzLine: { color: '#38BDF8', width: 1, style: 3 },
+        },
+        rightPriceScale: {
+            borderColor: '#1E293B',
+            scaleMargins: { top: 0.12, bottom: 0.12 },
+        },
+        timeScale: {
+            borderColor: '#1E293B',
+            timeVisible: true,
+            secondsVisible: false,
+        },
+    });
+
+    candleSeries = chart.addCandlestickSeries({
+        upColor: '#22C55E',
+        downColor: '#EF4444',
+        borderVisible: true,
+        borderUpColor: '#22C55E',
+        borderDownColor: '#EF4444',
+        wickUpColor: '#22C55E',
+        wickDownColor: '#EF4444',
+    });
+
+    // Generate realistic prior bars leading to spot
+    const bars = [];
+    let p = initialBasePrice - 18.0;
+    const nowSec = Math.floor(Date.now() / 1000);
+    const startSec = nowSec - (60 * 60); // 60 bars of 1m
+
+    for (let t = startSec; t < nowSec; t += 60) {
+        const change = (Math.random() - 0.48) * 3.5;
+        const open = p;
+        const close = open + change;
+        const high = Math.max(open, close) + Math.random() * 2.5;
+        const low = Math.min(open, close) - Math.random() * 2.5;
+        p = close;
+        bars.push({ time: t - (t % 60), open, high, low, close });
+    }
+    // Last bar lands at currentPrice
+    const lastBarTime = nowSec - (nowSec % 60);
+    lastCandle = {
+        time: lastBarTime,
+        open: p,
+        high: Math.max(p, currentPrice) + 1.0,
+        low: Math.min(p, currentPrice) - 1.0,
+        close: currentPrice
+    };
+    bars.push(lastCandle);
+    candleSeries.setData(bars);
+
+    // ATAS Horizontal Price Lines on Chart
+    const m = window.INITIAL_META;
+    putWallLine = candleSeries.createPriceLine({
+        price: m.put_wall,
+        color: '#22C55E',
+        lineWidth: 2,
+        lineStyle: LightweightCharts.LineStyle.Solid,
+        axisLabelVisible: true,
+        title: "PUT WALL (" + m.put_wall_oi.toLocaleString() + " OI)",
+    });
+
+    callWallLine = candleSeries.createPriceLine({
+        price: m.call_wall,
+        color: '#EF4444',
+        lineWidth: 2,
+        lineStyle: LightweightCharts.LineStyle.Solid,
+        axisLabelVisible: true,
+        title: "CALL WALL (" + m.call_wall_oi.toLocaleString() + " OI)",
+    });
+
+    const deepEfStk = m.strike_above + m.step;
+    deepEfLine = candleSeries.createPriceLine({
+        price: deepEfStk,
+        color: '#94A3B8',
+        lineWidth: 1.5,
+        lineStyle: LightweightCharts.LineStyle.Dashed,
+        axisLabelVisible: true,
+        title: 'DEEP EF STACK',
+    });
+
+    buyerAbsLine = candleSeries.createPriceLine({
+        price: m.strike_below,
+        color: '#38BDF8',
+        lineWidth: 1.5,
+        lineStyle: LightweightCharts.LineStyle.Dotted,
+        axisLabelVisible: true,
+        title: 'BUYER ABS',
+    });
+
+    sellerOfferLine = candleSeries.createPriceLine({
+        price: m.strike_above,
+        color: '#F43F5E',
+        lineWidth: 1.5,
+        lineStyle: LightweightCharts.LineStyle.Dashed,
+        axisLabelVisible: true,
+        title: 'SELLER OFFER (+1R)',
+    });
+
+    const gexReact = m.spot + (0.5 * m.step);
+    gexReactionLine = candleSeries.createPriceLine({
+        price: gexReact,
+        color: '#FACC15',
+        lineWidth: 1.5,
+        lineStyle: LightweightCharts.LineStyle.Dotted,
+        axisLabelVisible: true,
+        title: 'GEX REACTION',
+    });
+
+    // Realtime Tick Price Line
+    livePriceLine = candleSeries.createPriceLine({
+        price: currentPrice,
+        color: '#F43F5E',
+        lineWidth: 2,
+        lineStyle: LightweightCharts.LineStyle.Solid,
+        axisLabelVisible: true,
+        title: 'F0 LIVE',
+    });
+
+    window.addEventListener('resize', () => {
+        chart.applyOptions({ width: container.clientWidth });
+        updateOverlayPositions();
+    });
+
+    chart.timeScale().fitContent();
+    updateOverlayPositions();
+}
+
+// Synchronize ATAS CSS Shaded Boxes to Chart Coordinates
+function updateOverlayPositions() {
+    if (!chart || !candleSeries) return;
+    const m = window.INITIAL_META;
+    const levels = [
+        { id: 'overlay-put-wall', price: m.put_wall },
+        { id: 'overlay-call-wall', price: m.call_wall },
+        { id: 'overlay-deep-ef', price: m.strike_above + m.step },
+        { id: 'overlay-buyer-abs', price: m.strike_below },
+        { id: 'overlay-seller-offer', price: m.strike_above },
+        { id: 'overlay-gex-reaction', price: m.spot + 0.5 * m.step },
+    ];
+
+    levels.forEach(lvl => {
+        const el = document.getElementById(lvl.id);
+        if (!el) return;
+        const y = candleSeries.priceToCoordinate(lvl.price);
+        if (y !== null && !isNaN(y) && y >= 0 && y <= 540) {
+            el.style.top = (y - 9) + "px";
+            el.style.display = 'flex';
+        } else {
+            el.style.display = 'none';
+        }
+    });
+}
+
+// ----------------------------------------------------------------------------
+// Realtime Tick Feeder & In-Browser Dynamic Greeks Recalculation
+// ----------------------------------------------------------------------------
+function onTick(price, isUserOverride = false) {
+    const prevPrice = currentPrice;
+    currentPrice = price;
+
+    // 1. Recalculate Greeks & Net GEX
+    const res = Black76Engine.recalculate(currentPrice, window.INITIAL_OPTIONS, window.INITIAL_META);
+
+    // 2. Update Ticker Bar
+    const elTickerPrice = document.getElementById('top-ticker-price');
+    const elTickerChange = document.getElementById('top-ticker-change');
+    const diff = currentPrice - initialBasePrice;
+    const pct = (diff / initialBasePrice) * 100.0;
+
+    if (elTickerPrice) {
+        elTickerPrice.innerText = currentPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        elTickerPrice.style.color = currentPrice >= prevPrice ? '#4ADE80' : '#F87171';
+    }
+    if (elTickerChange) {
+        elTickerChange.innerText = (diff >= 0 ? "+" : "") + diff.toFixed(2) + " (" + (diff >= 0 ? "+" : "") + pct.toFixed(2) + "%)";
+        elTickerChange.className = 'ticker-change ' + (diff >= 0 ? 'change-up' : 'change-down');
+    }
+    const elAtm = document.getElementById('top-ticker-atm');
+    if (elAtm) elAtm.innerText = res.atmStrike.toLocaleString() + " pts";
+    const elIv = document.getElementById('top-ticker-iv');
+    if (elIv) elIv.innerText = (res.atmIV * 100).toFixed(1) + "%";
+
+    // 3. Update KPI Cards
+    const elSpotNum = document.getElementById('kpi-spot-num');
+    if (elSpotNum) elSpotNum.innerText = currentPrice.toLocaleString('en-US', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+
+    const elMt5Num = document.getElementById('kpi-mt5-num');
+    if (elMt5Num) {
+        const mt5P = currentPrice - window.INITIAL_META.basis;
+        elMt5Num.innerText = mt5P.toLocaleString('en-US', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+    }
+
+    const elGexVal = document.getElementById('kpi-gex-val');
+    if (elGexVal) {
+        elGexVal.innerText = (res.totalGEX >= 0 ? "+" : "") + "$" + res.totalGEX.toFixed(1) + "M GEX";
+        elGexVal.style.color = res.totalGEX >= 0 ? '#4ADE80' : '#F87171';
+    }
+
+    const elRegimeBadge = document.getElementById('regime-badge');
+    if (elRegimeBadge) {
+        if (res.totalGEX >= 5.0) {
+            elRegimeBadge.className = 'badge badge-pos';
+            elRegimeBadge.innerText = 'POSITIVE GAMMA (NÉN BIẾN ĐỘ / FADE)';
+        } else if (res.totalGEX <= -5.0) {
+            elRegimeBadge.className = 'badge badge-neg';
+            elRegimeBadge.innerText = 'NEGATIVE GAMMA (KHUẾCH ĐẠI / BREAKOUT)';
+        } else {
+            elRegimeBadge.className = 'badge badge-gold';
+            elRegimeBadge.innerText = 'NEUTRAL TRANSITION (CÂN BẰNG)';
+        }
+    }
+
+    const elMoveVal = document.getElementById('kpi-move-val');
+    if (elMoveVal) elMoveVal.innerText = "±" + res.expectedMove.toFixed(1) + " pts";
+
+    const elVexVal = document.getElementById('kpi-vex-val');
+    if (elVexVal) {
+        elVexVal.innerText = (res.totalVEX >= 0 ? "+" : "") + "$" + res.totalVEX.toFixed(1) + "M / " + (res.totalCHEX >= 0 ? "+" : "") + "$" + res.totalCHEX.toFixed(1) + "M";
+    }
+
+    // 4. Update Greeks Radar
+    const elRadar = document.getElementById('live-greeks-radar');
+    if (elRadar && res.atmGreeks) {
+        const g = res.atmGreeks;
+        elRadar.innerHTML = "Delta &Delta;: <b>" + g.delta.toFixed(3) + "</b> | Gamma &Gamma;: <b>" + g.gamma.toFixed(5) + "</b> | Vega &nu;: <b>$" + g.vega.toFixed(1) + "M</b> | Theta &theta;: <b>" + g.theta.toFixed(1) + "k/d</b> | Vanna: <b>" + (g.vanna >= 0 ? "+" : "") + "$" + g.vanna.toFixed(1) + "M</b> | Charm: <b>" + (g.charm >= 0 ? "+" : "") + "$" + g.charm.toFixed(1) + "M/d</b>";
+    }
+
+    // 5. Update Lightweight Charts Active Candle & Price Line
+    if (candleSeries && livePriceLine) {
+        livePriceLine.applyOptions({ price: currentPrice });
+
+        const nowSec = Math.floor(Date.now() / 1000);
+        const candlePeriod = 60; // 1m
+        const barTime = nowSec - (nowSec % candlePeriod);
+
+        if (!lastCandle || barTime > lastCandle.time) {
+            lastCandle = {
+                time: barTime,
+                open: currentPrice,
+                high: currentPrice,
+                low: currentPrice,
+                close: currentPrice
+            };
+        } else {
+            lastCandle.high = Math.max(lastCandle.high, currentPrice);
+            lastCandle.low = Math.min(lastCandle.low, currentPrice);
+            lastCandle.close = currentPrice;
+        }
+        candleSeries.update(lastCandle);
+        updateOverlayPositions();
+    }
+
+    // 6. Highlight active strike row in table
+    const strikes = window.INITIAL_OPTIONS;
+    strikes.forEach(s => {
+        const rowEl = document.getElementById("row-strike-" + Math.round(s.strike));
+        const isNear = Math.abs(s.strike - currentPrice) <= (window.INITIAL_META.step * 0.5);
+        if (rowEl) {
+            if (isNear) {
+                rowEl.className = 'row-spot';
+            } else {
+                rowEl.className = '';
+            }
+        }
+        const cellGex = document.getElementById("cell-gex-" + Math.round(s.strike));
+        if (cellGex && s.currentNetGEX !== undefined) {
+            cellGex.innerText = (s.currentNetGEX >= 0 ? "+" : "") + "$" + s.currentNetGEX.toFixed(2) + "M";
+            cellGex.style.color = s.currentNetGEX >= 0 ? '#4ADE80' : '#F87171';
+        }
+    });
+}
+
+function startSimulation() {
+    if (simInterval) clearInterval(simInterval);
+    simInterval = setInterval(() => {
+        if (!isSimulating) return;
+        // Realistic micro-tick: -1.25 to +1.25 pts with slight mean-reverting pull to base
+        const drift = (initialBasePrice - currentPrice) * 0.02;
+        const noise = (Math.random() - 0.495) * 1.5;
+        const tick = Math.round((drift + noise) * 4) / 4; // Quarter-point granularity (0.25)
+        const nextPrice = Math.round((currentPrice + tick) * 4) / 4;
+        onTick(nextPrice);
+    }, 1000);
+}
+
+function toggleSimulation() {
+    isSimulating = !isSimulating;
+    const btn = document.getElementById('btn-toggle-sim');
+    if (btn) {
+        if (isSimulating) {
+            btn.className = 'btn-ctrl btn-sim';
+            btn.innerText = '● SIMULATION: ON';
+        } else {
+            btn.className = 'btn-ctrl btn-sim paused';
+            btn.innerText = '❚❚ SIMULATION: PAUSED';
+        }
+    }
+}
+
+function resetToLiveCME() {
+    const slider = document.getElementById('price-slider');
+    if (slider) slider.value = initialBasePrice;
+    const lbl = document.getElementById('slider-price-val');
+    if (lbl) lbl.innerText = initialBasePrice.toFixed(2);
+    onTick(initialBasePrice);
+}
+
+function onSliderPriceChange(val) {
+    const p = parseFloat(val);
+    const lbl = document.getElementById('slider-price-val');
+    if (lbl) lbl.innerText = p.toFixed(2);
+    onTick(p, true);
+}
+
+function setTimeframe(tf) {
+    document.querySelectorAll('.timeframe-pill').forEach(btn => {
+        if (btn.innerText.toLowerCase() === tf.toLowerCase()) {
+            btn.classList.add('active');
+        } else {
+            btn.classList.remove('active');
+        }
+    });
+}
+
+// Initialize when DOM is ready
+document.addEventListener('DOMContentLoaded', () => {
+    initAtasChart();
+    startSimulation();
+});
+</script>
 </body>
 </html>

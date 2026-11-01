@@ -100,6 +100,20 @@ class NasdaqCollector(BaseCollector):
                         ndx_price = float(hist_ndx["Close"].iloc[-1])
             except Exception:
                 pass
+
+            # 4. Fetch 13-Week Treasury Bill Yield (^IRX) for dynamic risk-free rate r
+            r_rate = 0.0397
+            try:
+                tk_irx = yf.Ticker("^IRX")
+                fast_irx = getattr(tk_irx, "fast_info", None)
+                if fast_irx and "lastPrice" in fast_irx:
+                    r_rate = float(fast_irx["lastPrice"]) / 100.0
+                else:
+                    hist_irx = tk_irx.history(period="1d")
+                    if not hist_irx.empty:
+                        r_rate = float(hist_irx["Close"].iloc[-1]) / 100.0
+            except Exception:
+                pass
         except Exception as e:
             print(f"[NasdaqCollector] Price fetch fallback used ({e})")
 
@@ -111,6 +125,7 @@ class NasdaqCollector(BaseCollector):
             "ndx": float(ndx_price),
             "basis": float(basis_ratio),
             "basis_offset": float(round(auto_basis_offset, 2)),
+            "r_rate": float(round(r_rate, 4)),
         }
 
     def fetch_options_chain(self, expiration_date: Optional[str] = None) -> pd.DataFrame:
