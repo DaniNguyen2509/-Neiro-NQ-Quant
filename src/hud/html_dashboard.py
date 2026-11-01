@@ -806,8 +806,10 @@ def generate_html_terminal(df: pd.DataFrame, meta: Dict[str, Any], fig: go.Figur
                 <span id="top-ticker-delta-f" class="badge {delta_badge_class}">{delta_f:+.1f} pts</span>
                 <span class="atas-win-sep">|</span>
                 <span class="atas-pill-lbl">GEX:</span> <b id="kpi-gex-val" style="color:{regime_color};">${total_gex:+.1f}M</b>
-                <span class="atas-pill-lbl">CHARM:</span> <b id="top-charm-val" style="color:#C084FC;">${total_chex:+.1f}M/d</b>
-                <span class="atas-pill-lbl">VANNA:</span> <b id="kpi-vex-val" style="color:#22D3EE;">${total_vex:+.1f}M</b>
+                <span class="atas-pill-lbl">CHEX:</span> <b id="top-charm-val" style="color:#C084FC;">${total_chex:+.1f}M/d</b>
+                <span class="atas-pill-lbl">VEX:</span> <b id="kpi-vex-val" style="color:#22D3EE;">${total_vex:+.1f}M</b>
+                <span class="atas-pill-lbl">TEX:</span> <b id="top-theta-val" style="color:#FB923C;">--</b>
+                <span class="atas-pill-lbl">SQZ:</span> <b style="color:#4ADE80;">&gt;{strike_above:,.0f}</b>/<b style="color:#F87171;">&lt;{strike_below:,.0f}</b>
                 <span class="atas-pill-lbl">1-&sigma;:</span> <b id="kpi-move-val" style="color:#FACC15;">&plusmn;{expected_move:,.1f}p</b>
             </div>
         </div>
@@ -834,14 +836,14 @@ def generate_html_terminal(df: pd.DataFrame, meta: Dict[str, Any], fig: go.Figur
         <div class="atas-subbar-right">
             <span style="color:#38BDF8; font-weight:700;">⚡ LIVE BLACK-76 REALTIME GREEKS RADAR:</span>
             <span id="live-greeks-radar" style="margin-left: 6px; color: #CBD5E1;">
-                Delta &Delta;: <b>0.505</b> | Gamma &Gamma;: <b>0.00042</b> | Vega &nu;: <b>$18.5M</b> | Theta &theta;: <b>-$28.5k/d</b> | Vanna: <b>+$2.8M</b> | Charm: <b>-$1.4M/d</b>
+                Delta &Delta;: <b>0.505</b> | Gamma &Gamma;: <b>0.00042</b> | Vega &nu;: <b>$18.5M</b> | Theta &theta;: <b>-$28.5k/d</b> | Vanna (VEX): <b>+$2.8M</b> | Charm (CHEX): <b>-$1.4M/d</b>
             </span>
             <span style="color:#64748B; margin-left: 8px;">| ATM: <b id="top-ticker-atm">{meta['atm_strike']:,.0f} pts</b> | IV: <b id="top-ticker-iv">{meta.get('sigma_atm', 0.18)*100:.1f}%</b> | r: <b>{r_rate*100:.2f}%</b></span>
         </div>
     </div>
 
     <!-- Main ATAS Body -->
-    <div class="atas-body-container"><div class="atas-body-container">
+    <div class="atas-body-container">
         <!-- Authentic ATAS Left Drawing Toolbar -->
         <div class="atas-left-tools">
             <span class="tool-btn active" title="Con trỏ">✛</span>
@@ -858,11 +860,12 @@ def generate_html_terminal(df: pd.DataFrame, meta: Dict[str, Any], fig: go.Figur
 
         <div id="tv-chart-wrapper">
             <div class="atas-floating-hud">
-                <div class="hud-item"><span class="hud-label">NET GEX (Regime):</span> <b id="hud-gex-val" style="color:{regime_color};">${total_gex:+.1f}M</b></div>
+                <div class="hud-item"><span class="hud-label">GEX (Net Gamma):</span> <b id="hud-gex-val" style="color:{regime_color};">${total_gex:+.1f}M</b></div>
                 <div class="hud-item"><span class="hud-label">GAMMA SQUEEZE &uarr;:</span> <b style="color:#4ADE80;">&gt; {strike_above:,.0f} &rarr; TP {next_above:,.0f}</b></div>
                 <div class="hud-item"><span class="hud-label">GAMMA SQUEEZE &darr;:</span> <b style="color:#F87171;">&lt; {strike_below:,.0f} &rarr; TP {next_below:,.0f}</b></div>
                 <div class="hud-item"><span class="hud-label">VANNA (VEX):</span> <b id="hud-vanna-val" style="color:#22D3EE;">${total_vex:+.1f}M</b></div>
                 <div class="hud-item"><span class="hud-label">CHARM (CHEX):</span> <b id="hud-charm-val" style="color:#C084FC;">${total_chex:+.1f}M/d</b></div>
+                <div class="hud-item"><span class="hud-label">THETA (TEX):</span> <b id="hud-theta-val" style="color:#FB923C;">--</b></div>
                 <div class="hud-item"><span class="hud-label">1-SIGMA:</span> <b id="hud-sigma-val" style="color:#FACC15;">&plusmn;{expected_move:,.1f}p</b></div>
             </div>
             <div id="atas-tv-chart"></div>
@@ -945,6 +948,8 @@ const Black76Engine = {{
         let totalGEX = 0.0;
         let totalVEX = 0.0;
         let totalCHEX = 0.0;
+        let totalTEX = 0.0;
+        let totalVega = 0.0;
         let atmStrike = options[0].strike;
         let minDiff = 999999;
         let atmGreeks = null;
@@ -978,6 +983,11 @@ const Black76Engine = {{
             const netCHEX = cCHEX + pCHEX;
             totalCHEX += netCHEX;
 
+            // Theta exposure: $M/day decay of open interest (points/day x multiplier x OI)
+            const netTEX = (cG.theta * row.c_oi + pG.theta * row.p_oi) * mult / 1e6;
+            totalTEX += netTEX;
+            totalVega += (cG.vega * row.c_oi + pG.vega * row.p_oi) * mult * 0.01 / 1e6;
+            row.currentNetTEX = netTEX;
             row.currentNetGEX = netGEX;
             row.currentNetVEX = netVEX;
             row.currentNetCHEX = netCHEX;
@@ -986,8 +996,8 @@ const Black76Engine = {{
                 atmGreeks = {{
                     delta: cG.delta,
                     gamma: cG.gamma,
-                    vega: 18.5,
-                    theta: -28.5,
+                    vega: cG.vega * 0.01,
+                    theta: (cG.theta + pG.theta) / 2.0,
                     vanna: totalVEX,
                     charm: totalCHEX
                 }};
@@ -1002,6 +1012,8 @@ const Black76Engine = {{
             totalGEX,
             totalVEX,
             totalCHEX,
+            totalTEX,
+            totalVega,
             atmStrike,
             atmIV,
             expectedMove,
@@ -1080,23 +1092,33 @@ function generateRealisticCandles(currentP, numBars = 60, periodSec = 60) {{
         }}
     }}
 
-    // ATAS anchored orderflow zones: each zone starts at a specific candle and extends right
+    // ATAS anchored orderflow zones: each zone accompanies specific candles (đi theo từng nến)
     anchoredZones = [];
     const zoneDefs = [
-        {{ idx: numBars - 22, label: 'deep ef stack', side: 'high', oval: true }},
-        {{ idx: numBars - 19, label: '',              side: 'high', oval: true }},
-        {{ idx: numBars - 15, label: 'buyer abs',     side: 'low',  oval: false }},
-        {{ idx: numBars - 10, label: 'seller offer',  side: 'high', oval: true, tag: '+1R' }},
-        {{ idx: numBars - 6,  label: '',              side: 'low',  oval: false }},
+        {{ idx: numBars - 24, endIdx: numBars - 20, label: 'deep ef stack', side: 'high', oval: true }},
+        {{ idx: numBars - 21, endIdx: numBars - 18, label: '',              side: 'high', oval: true }},
+        {{ idx: numBars - 18, endIdx: numBars - 13, label: 'buyer abs',     side: 'low',  oval: true }},
+        {{ idx: numBars - 11, endIdx: numBars - 6,  label: 'seller offer',  side: 'high', oval: true, tag: '+1R' }},
+        {{ idx: numBars - 6,  endIdx: numBars - 2,  label: '',              side: 'low',  oval: false }},
     ];
     zoneDefs.forEach(z => {{
         const b = bars[z.idx];
+        const bEnd = bars[z.endIdx] || bars[bars.length - 1];
         if (!b) return;
         const bodyTop = Math.max(b.open, b.close);
         const bodyBot = Math.min(b.open, b.close);
-        const top = z.side === 'high' ? b.high : bodyBot + 0.75;
-        const bot = z.side === 'high' ? Math.max(bodyTop - 0.75, b.low) : b.low;
-        anchoredZones.push({{ time: b.time, top: Math.max(top, bot + 0.75), bottom: bot, label: z.label, oval: z.oval, tag: z.tag || '' }});
+        const top = z.side === 'high' ? b.high : bodyBot + 1.25;
+        const bot = z.side === 'high' ? Math.max(bodyTop - 1.25, b.low) : b.low;
+        anchoredZones.push({{
+            time: b.time,
+            endTime: bEnd ? bEnd.time : null,
+            top: Math.max(top, bot + 1.0),
+            bottom: bot,
+            label: z.label,
+            oval: z.oval,
+            tag: z.tag || '',
+            side: z.side
+        }});
     }});
 
     bars[bars.length - 1].close = currentP;
@@ -1261,38 +1283,56 @@ function drawAtasOverlay() {{
         ctx.fillText('..... Put wall · Gamma C · Gamma P · DEX P · #1 · OI put ' + (m.put_wall_oi || 31287).toLocaleString(), rightX - 5, yPw - 4);
     }}
 
-    // B. ATAS anchored zones: x starts at the source candle, extends to the price scale
+    // B. ATAS orderflow zones: tightly accompanying specific candles (đi theo từng nến)
     anchoredZones.forEach(z => {{
         const x0 = chart.timeScale().timeToCoordinate(z.time);
+        const x1 = z.endTime ? chart.timeScale().timeToCoordinate(z.endTime) : null;
         const yT = candleSeries.priceToCoordinate(z.top);
         const yB = candleSeries.priceToCoordinate(z.bottom);
-        if (x0 === null || yT === null || yB === null || x0 > rightX) return;
-        const xs = Math.max(0, x0 - 4);
+        if (x0 === null || yT === null || yB === null) return;
         const top = Math.min(yT, yB);
-        const hz = Math.max(6, Math.abs(yB - yT));
-        ctx.fillStyle = 'rgba(150, 156, 166, 0.55)';
-        ctx.fillRect(xs, top, rightX - xs, hz);
-        ctx.strokeStyle = 'rgba(200, 204, 212, 0.6)';
+        const hz = Math.max(7, Math.abs(yB - yT));
+        const xs = x0 - 8;
+        const xe = (x1 !== null && x1 > x0) ? (x1 + 8) : (x0 + 38);
+        const wBox = Math.max(22, Math.min(xe - xs, rightX - xs - 8));
+
+        // 1. Shaded orderflow absorption block tightly bounding these candles
+        ctx.fillStyle = 'rgba(148, 163, 184, 0.28)';
+        ctx.fillRect(xs, top, wBox, hz);
+        ctx.strokeStyle = 'rgba(203, 213, 225, 0.55)';
         ctx.lineWidth = 1;
-        ctx.strokeRect(xs, top, rightX - xs, hz);
-        if (z.label) {{
-            ctx.fillStyle = '#FFFFFF';
-            ctx.font = '12px Inter, sans-serif';
-            ctx.textAlign = 'center';
-            ctx.fillText(z.label, xs + (rightX - xs) * 0.55, top - 6);
-        }}
-        if (z.tag) {{
-            ctx.fillStyle = '#FFFFFF';
-            ctx.font = '12px Inter, sans-serif';
-            ctx.textAlign = 'center';
-            ctx.fillText(z.tag, xs + (rightX - xs) * 0.8, top - 24);
-        }}
+        ctx.strokeRect(xs, top, wBox, hz);
+
+        // 2. Red oval circling the trigger candle footprint cluster at x0
         if (z.oval) {{
-            ctx.strokeStyle = 'rgba(239, 68, 68, 0.85)';
-            ctx.lineWidth = 1.4;
+            ctx.strokeStyle = 'rgba(239, 68, 68, 0.92)';
+            ctx.lineWidth = 1.6;
             ctx.beginPath();
-            ctx.ellipse(xs + (rightX - xs) * 0.55, top + hz / 2, 46, 9, 0, 0, Math.PI * 2);
+            ctx.ellipse(x0, top + hz / 2, 14, Math.max(8, hz / 2 + 3), 0, 0, Math.PI * 2);
             ctx.stroke();
+        }}
+
+        // 3. Label badge placed directly at candle x0
+        if (z.label) {{
+            ctx.font = 'bold 10px "JetBrains Mono", monospace';
+            const tw = ctx.measureText(z.label).width;
+            const ly = z.side === 'high' ? (top - 8) : (top + hz + 14);
+            ctx.fillStyle = 'rgba(15, 23, 42, 0.90)';
+            ctx.fillRect(x0 - tw / 2 - 4, ly - 10, tw + 8, 14);
+            ctx.strokeStyle = 'rgba(148, 163, 184, 0.5)';
+            ctx.strokeRect(x0 - tw / 2 - 4, ly - 10, tw + 8, 14);
+            ctx.fillStyle = '#FFFFFF';
+            ctx.textAlign = 'center';
+            ctx.fillText(z.label, x0, ly);
+        }}
+
+        // 4. Tag (+1R) placed right at candle x0
+        if (z.tag) {{
+            ctx.font = 'bold 9.5px "JetBrains Mono", monospace';
+            const ty = z.side === 'high' ? (top - 23) : (top + hz + 28);
+            ctx.fillStyle = '#38BDF8';
+            ctx.textAlign = 'center';
+            ctx.fillText(z.tag, x0, ty);
         }}
     }});
 
@@ -1326,33 +1366,102 @@ function drawAtasOverlay() {{
 
     // F2. Key Greeks levels: Call/Put Wall, Gamma Flip, Gamma Squeeze, Vanna, Charm
     const keyLevels = [
-        {{ p: m.call_wall,    c: '#EF4444', d: [6, 4], txt: 'CALL WALL ' + Math.round(m.call_wall) + ' · OI ' + (m.call_wall_oi || 0).toLocaleString() }},
-        {{ p: m.put_wall,     c: '#22C55E', d: [6, 4], txt: 'PUT WALL ' + Math.round(m.put_wall) + ' · OI ' + (m.put_wall_oi || 0).toLocaleString() }},
-        {{ p: m.strike_above, c: '#4ADE80', d: [2, 3], txt: 'GAMMA SQUEEZE ↑ > ' + Math.round(m.strike_above) + ' → TP ' + Math.round(m.next_above) }},
-        {{ p: m.strike_below, c: '#F87171', d: [2, 3], txt: 'GAMMA SQUEEZE ↓ < ' + Math.round(m.strike_below) + ' → TP ' + Math.round(m.next_below) }},
-        {{ p: m.vanna_level,  c: '#22D3EE', d: [6, 3], txt: 'VANNA · V-REBOUND · ' + (m.total_net_vex || 0).toFixed(1) + 'M' }},
-        {{ p: m.charm_level,  c: '#C084FC', d: [6, 3], txt: 'CHARM (CHEX) · GHIM GIA DEM · ' + (m.total_net_chex || 0).toFixed(1) + 'M/d' }},
+        {{ p: m.tactical_call_wall || m.call_wall, c: '#EF4444', d: [6, 4], txt: 'CALL WALL ' + Math.round(m.tactical_call_wall || m.call_wall) + ' · OI ' + (m.call_wall_oi || 0).toLocaleString() }},
+        {{ p: m.tactical_put_wall || m.put_wall,   c: '#22C55E', d: [6, 4], txt: 'PUT WALL ' + Math.round(m.tactical_put_wall || m.put_wall) + ' · OI ' + (m.put_wall_oi || 0).toLocaleString() }},
+        {{ p: m.strike_above,                      c: '#4ADE80', d: [2, 3], txt: 'GAMMA SQUEEZE ↑ > ' + Math.round(m.strike_above) + ' → TP ' + Math.round(m.next_above) }},
+        {{ p: m.strike_below,                      c: '#F87171', d: [2, 3], txt: 'GAMMA SQUEEZE ↓ < ' + Math.round(m.strike_below) + ' → TP ' + Math.round(m.next_below) }},
+        {{ p: m.vanna_level,                       c: '#22D3EE', d: [6, 3], txt: 'VANNA (VEX) · V-REBOUND · ' + (m.total_net_vex || 0).toFixed(1) + 'M' }},
+        {{ p: m.charm_level,                       c: '#C084FC', d: [6, 3], txt: 'CHARM (CHEX) · GHIM GIÁ ĐÊM · ' + (m.total_net_chex || 0).toFixed(1) + 'M/d' }},
+        {{ p: m.gex_react,                         c: '#FACC15', d: [3, 3], txt: 'GAMMA FLIP (Trục cân đối) ' + Math.round(m.gex_react) }},
     ];
     keyLevels.forEach(L => {{
         if (!L.p) return;
         const y = candleSeries.priceToCoordinate(L.p);
-        if (y === null || y < 0 || y > h) return;
-        ctx.strokeStyle = L.c;
-        ctx.setLineDash(L.d);
-        ctx.lineWidth = 1.3;
-        ctx.beginPath();
-        ctx.moveTo(0, y);
-        ctx.lineTo(rightX, y);
-        ctx.stroke();
-        ctx.setLineDash([]);
-        ctx.font = 'bold 10.5px "JetBrains Mono", monospace';
-        ctx.textAlign = 'right';
-        const tw = ctx.measureText(L.txt).width;
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.75)';
-        ctx.fillRect(rightX - tw - 10, y - 15, tw + 8, 13);
-        ctx.fillStyle = L.c;
-        ctx.fillText(L.txt, rightX - 6, y - 4);
+        if (y !== null && y >= 0 && y <= h) {{
+            // Inside viewport: draw full dashed level line with right contrast tag
+            ctx.strokeStyle = L.c;
+            ctx.setLineDash(L.d);
+            ctx.lineWidth = 1.3;
+            ctx.beginPath();
+            ctx.moveTo(0, y);
+            ctx.lineTo(rightX, y);
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            ctx.font = 'bold 10px "JetBrains Mono", monospace';
+            ctx.textAlign = 'right';
+            const tw = ctx.measureText(L.txt).width;
+            ctx.fillStyle = 'rgba(6, 8, 14, 0.88)';
+            ctx.fillRect(rightX - tw - 12, y - 14, tw + 10, 13);
+            ctx.strokeStyle = L.c;
+            ctx.lineWidth = 1;
+            ctx.strokeRect(rightX - tw - 12, y - 14, tw + 10, 13);
+            ctx.fillStyle = L.c;
+            ctx.fillText(L.txt, rightX - 7, y - 4);
+        }} else if (y !== null && y < 0) {{
+            // Above viewport: draw pinned top edge indicator
+            const edgeY = 16;
+            ctx.font = 'bold 9.5px "JetBrains Mono", monospace';
+            ctx.textAlign = 'right';
+            const shortTxt = '▲ ' + L.txt.split('·')[0];
+            const tw = ctx.measureText(shortTxt).width;
+            ctx.fillStyle = 'rgba(15, 23, 42, 0.92)';
+            ctx.fillRect(rightX - tw - 14, edgeY - 11, tw + 10, 14);
+            ctx.strokeStyle = L.c;
+            ctx.lineWidth = 1;
+            ctx.strokeRect(rightX - tw - 14, edgeY - 11, tw + 10, 14);
+            ctx.fillStyle = L.c;
+            ctx.fillText(shortTxt, rightX - 9, edgeY);
+        }} else if (y !== null && y > h) {{
+            // Below viewport: draw pinned bottom edge indicator
+            const edgeY = h - 8;
+            ctx.font = 'bold 9.5px "JetBrains Mono", monospace';
+            ctx.textAlign = 'right';
+            const shortTxt = '▼ ' + L.txt.split('·')[0];
+            const tw = ctx.measureText(shortTxt).width;
+            ctx.fillStyle = 'rgba(15, 23, 42, 0.92)';
+            ctx.fillRect(rightX - tw - 14, edgeY - 11, tw + 10, 14);
+            ctx.strokeStyle = L.c;
+            ctx.lineWidth = 1;
+            ctx.strokeRect(rightX - tw - 14, edgeY - 11, tw + 10, 14);
+            ctx.fillStyle = L.c;
+            ctx.fillText(shortTxt, rightX - 9, edgeY);
+        }}
     }});
+
+    // F3. Per-strike Greeks exposure profile (GEX | VEX | CHEX | THETA)
+    const opts = window.INITIAL_OPTIONS || [];
+    if (opts.length && opts[0].currentNetGEX !== undefined) {{
+        const cols = [
+            {{ key: 'currentNetGEX',  name: 'GEX',   pos: '#22C55E', neg: '#EF4444' }},
+            {{ key: 'currentNetVEX',  name: 'VEX',   pos: '#22D3EE', neg: '#0E7490' }},
+            {{ key: 'currentNetCHEX', name: 'CHEX',  pos: '#C084FC', neg: '#7E22CE' }},
+            {{ key: 'currentNetTEX',  name: 'THETA', pos: '#FDBA74', neg: '#EA580C' }},
+        ];
+        const colW = 62;
+        const panelX = rightX - cols.length * colW - 8;
+        ctx.fillStyle = 'rgba(5, 7, 11, 0.72)';
+        ctx.fillRect(panelX - 4, 0, cols.length * colW + 8, h);
+        cols.forEach((c, ci) => {{
+            const cx = panelX + ci * colW + colW / 2;
+            let maxAbs = 1e-9;
+            opts.forEach(o => {{ maxAbs = Math.max(maxAbs, Math.abs(o[c.key] || 0)); }});
+            ctx.strokeStyle = 'rgba(148, 163, 184, 0.25)';
+            ctx.beginPath(); ctx.moveTo(cx, 18); ctx.lineTo(cx, h); ctx.stroke();
+            ctx.fillStyle = '#94A3B8';
+            ctx.font = 'bold 10px "JetBrains Mono", monospace';
+            ctx.textAlign = 'center';
+            ctx.fillText(c.name, cx, 12);
+            opts.forEach(o => {{
+                const y = candleSeries.priceToCoordinate(o.strike);
+                const v = o[c.key] || 0;
+                if (y === null || y < 18 || y > h - 4 || v === 0) return;
+                const len = (Math.abs(v) / maxAbs) * (colW / 2 - 4);
+                ctx.fillStyle = v >= 0 ? c.pos : c.neg;
+                ctx.fillRect(v >= 0 ? cx : cx - len, y - 2.5, len, 5);
+            }});
+        }});
+    }}
 
     // G. Right Axis Volume Histogram Bars (ATAS tick ladder volume)
     const rightTicks = [
@@ -1491,10 +1600,36 @@ function onTick(price, isUserOverride = false) {{
         kpiDeltaStatEl.textContent = deltaF > 3 ? "PREMIUM • MUA ĐUỔI" : (deltaF < -3 ? "DISCOUNT • BÁN XẢ" : "FAIR VALUE • CÂN BẰNG");
     }}
 
+    const setHud = (id, v, unit, pos, neg) => {{
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.innerText = (v >= 0 ? '+$' : '-$') + Math.abs(v).toFixed(1) + unit;
+        if (pos) el.style.color = v >= 0 ? pos : neg;
+    }};
+    setHud('hud-gex-val', res.totalGEX, 'M', '#4ADE80', '#F87171');
+    setHud('hud-vanna-val', res.totalVEX, 'M');
+    setHud('hud-charm-val', res.totalCHEX, 'M/d');
+    setHud('hud-theta-val', res.totalTEX, 'M/d');
+
+    // Update top bar stats
+    const topGex = document.getElementById('kpi-gex-val');
+    if (topGex) {{
+        topGex.innerText = (res.totalGEX >= 0 ? '+$' : '-$') + Math.abs(res.totalGEX).toFixed(1) + 'M';
+        topGex.style.color = res.totalGEX >= 0 ? '#4ADE80' : '#F87171';
+    }}
+    const topCharm = document.getElementById('top-charm-val');
+    if (topCharm) topCharm.innerText = (res.totalCHEX >= 0 ? '+$' : '-$') + Math.abs(res.totalCHEX).toFixed(1) + 'M/d';
+    const topVex = document.getElementById('kpi-vex-val');
+    if (topVex) topVex.innerText = (res.totalVEX >= 0 ? '+$' : '-$') + Math.abs(res.totalVEX).toFixed(1) + 'M';
+    const topTex = document.getElementById('top-theta-val');
+    if (topTex) topTex.innerText = (res.totalTEX >= 0 ? '+$' : '-$') + Math.abs(res.totalTEX).toFixed(1) + 'M/d';
+
+    drawAtasOverlay();
+
     const elRadar = document.getElementById('live-greeks-radar');
     if (elRadar && res.atmGreeks) {{
         const g = res.atmGreeks;
-        elRadar.innerHTML = "Delta &Delta;: <b>" + g.delta.toFixed(3) + "</b> | Gamma &Gamma;: <b>" + g.gamma.toFixed(5) + "</b> | Vega &nu;: <b>$" + g.vega.toFixed(1) + "M</b> | Theta &theta;: <b>" + g.theta.toFixed(1) + "k/d</b> | Vanna: <b>" + (g.vanna >= 0 ? "+" : "") + "$" + g.vanna.toFixed(1) + "M</b> | Charm: <b>" + (g.charm >= 0 ? "+" : "") + "$" + g.charm.toFixed(1) + "M/d</b>";
+        elRadar.innerHTML = "Delta &Delta;: <b>" + g.delta.toFixed(3) + "</b> | Gamma &Gamma;: <b>" + g.gamma.toFixed(5) + "</b> | Vega &nu;: <b>$" + g.vega.toFixed(1) + "M</b> | Theta &theta;: <b>" + g.theta.toFixed(1) + "k/d</b> | Vanna (VEX): <b>" + (g.vanna >= 0 ? "+" : "") + "$" + g.vanna.toFixed(1) + "M</b> | Charm (CHEX): <b>" + (g.charm >= 0 ? "+" : "") + "$" + g.charm.toFixed(1) + "M/d</b>";
     }}
 
     if (candleSeries && livePriceLine) {{
@@ -1570,6 +1705,9 @@ function setTimeframe(tf) {{
 
 document.addEventListener('DOMContentLoaded', () => {{
     initAtasChart();
+    if (window.INITIAL_META && window.INITIAL_META.spot) {{
+        onTick(window.INITIAL_META.spot);
+    }}
     startSimulation();
 }});
 </script>
