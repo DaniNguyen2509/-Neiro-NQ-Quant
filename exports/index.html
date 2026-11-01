@@ -157,16 +157,16 @@
     <div class="atas-win-topbar">
         <div class="atas-top-left">
             <span class="atas-blue-indicator"></span>
-            <div class="atas-tab active"><span class="atas-tab-text">NEIRO QUANT &bull; NQ M15</span></div>
+            <div class="atas-tab active"><span class="atas-tab-text">NEIRO QUANT &bull; NQ M1</span></div>
             <span class="atas-win-sep">|</span>
             <div class="atas-tf-group">
-                <button class="timeframe-pill" onclick="setTimeframe('1m')">1M</button>
+                <button class="timeframe-pill active" onclick="setTimeframe('1m')">1M</button>
                 <button class="timeframe-pill" onclick="setTimeframe('5m')">5M</button>
-                <button class="timeframe-pill active" onclick="setTimeframe('15m')">15M</button>
+                <button class="timeframe-pill" onclick="setTimeframe('15m')">15M</button>
                 <button class="timeframe-pill" onclick="setTimeframe('1h')">1H</button>
                 <button class="timeframe-pill" onclick="setTimeframe('d')">1D</button>
             </div>
-            <span class="atas-badge-contract">M15 CANDLES</span>
+            <span class="atas-badge-contract">M1 INTRADAY</span>
         </div>
 
         <!-- Center: Quantitative Metrics -->
@@ -192,7 +192,7 @@
         </div>
 
         <div class="atas-top-right">
-            <span style="color:#64748B; font-size:11px; font-weight:600; margin-right:8px;">CME GLOBEX &bull; 01/11/2026 13:31:21 (VN)</span>
+            <span style="color:#64748B; font-size:11px; font-weight:600; margin-right:8px;">CME GLOBEX &bull; 01/11/2026 13:36:33 (VN)</span>
         </div>
     </div>
 
@@ -376,10 +376,10 @@ const initialBasePrice = window.INITIAL_META.spot;
 
 
 let lastCandle = null;
-let currentTimeframe = '15m';
-let currentPeriod = 900; // 900s default for M15 candles
+let currentTimeframe = '1m';
+let currentPeriod = 60; // 60s default for M1 intraday candles
 // Brownian-Bridge Candlestick Generator: Smooth realistic M15 walk ending EXACTLY at currentP
-function generateRealisticCandles(currentP, numBars = 60, periodSec = 900) {
+function generateRealisticCandles(currentP, numBars = 60, periodSec = 60) {
     const bars = [];
     const nowSec = Math.floor(Date.now() / 1000);
     const startSec = nowSec - (numBars * periodSec);
@@ -467,7 +467,7 @@ function initAtasChart() {
         wickDownColor: '#71717A',
     });
 
-    buildHistoricalBars(900);
+    buildHistoricalBars(60);
 
     livePriceLine = candleSeries.createPriceLine({
         price: currentPrice,
@@ -500,11 +500,11 @@ function initAtasChart() {
     drawAtasOverlay();
 }
 
-function buildHistoricalBars(periodSec = 900) {
+function buildHistoricalBars(periodSec = 60) {
     currentPeriod = periodSec;
-    const tfKey = currentTimeframe || '15m';
+    const tfKey = currentTimeframe || '1m';
     const realCandlesMap = window.REAL_CANDLES_BY_TF || {};
-    const realBars = realCandlesMap[tfKey] || realCandlesMap['15m'];
+    const realBars = realCandlesMap[tfKey] || realCandlesMap['1m'] || realCandlesMap['15m'];
 
     let bars = [];
     if (realBars && realBars.length > 5) {
@@ -817,7 +817,7 @@ function setTimeframe(tf) {
         '1h': 3600,
         'd': 86400
     };
-    const period = periodMap[currentTimeframe] || 900;
+    const period = periodMap[currentTimeframe] || 60;
 
     document.querySelectorAll('.timeframe-pill').forEach(btn => {
         if (btn.innerText.toLowerCase() === currentTimeframe) {
