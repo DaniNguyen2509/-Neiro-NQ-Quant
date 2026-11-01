@@ -928,25 +928,25 @@ def generate_html_terminal(df: pd.DataFrame, meta: Dict[str, Any], fig: go.Figur
         <div id="tv-chart-wrapper">
             <div id="atas-tv-chart"></div>
 
-            <!-- Visual ATAS Quant Bands Overlay -->
+            <!-- Visual ATAS Quant Bands Overlay (Authentic English Labels) -->
             <div class="atas-overlay-container" id="atas-overlay-layer">
                 <div class="atas-band band-put-wall" id="overlay-put-wall">
-                    <span>PUT WALL &bull; MAX GAMMA SUPPORT #{meta['put_wall']:,.0f} ({meta['put_wall_oi']:,} OI)</span>
+                    <span>..... put wall &bull; Gamma C &bull; Gamma P &bull; DEX P &bull; #1 &bull; OI put {meta['put_wall_oi']:,}</span>
                 </div>
                 <div class="atas-band band-call-wall" id="overlay-call-wall">
-                    <span>CALL WALL &bull; MAX GAMMA RESISTANCE #{meta['call_wall']:,.0f} ({meta['call_wall_oi']:,} OI)</span>
+                    <span>..... call wall &bull; Gamma C &bull; Gamma P &bull; DEX C &bull; #1 &bull; OI call {meta['call_wall_oi']:,}</span>
                 </div>
                 <div class="atas-band band-deep-ef" id="overlay-deep-ef">
-                    <span>DEEP EF STACK #{deep_ef_strike:,.0f}</span>
+                    <span>deep ef stack</span>
                 </div>
                 <div class="atas-band band-buyer-abs" id="overlay-buyer-abs">
-                    <span>BUYER ABS #{buyer_abs_strike:,.0f}</span>
+                    <span>buyer abs</span>
                 </div>
                 <div class="atas-band band-seller-offer" id="overlay-seller-offer">
-                    <span>SELLER OFFER #{seller_offer_strike:,.0f} &bull; +1R</span>
+                    <span>seller offer &bull; +1R</span>
                 </div>
                 <div class="atas-band band-gex-reaction" id="overlay-gex-reaction">
-                    <span>GEX REACTION #{gex_reaction_strike:,.0f}</span>
+                    <span>gex 5 reaction</span>
                 </div>
             </div>
         </div>
@@ -1101,6 +1101,61 @@ def generate_html_terminal(df: pd.DataFrame, meta: Dict[str, Any], fig: go.Figur
             </thead>
             <tbody>
                 {table_rows_html}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- ATAS Orderflow & Quant Terminology Glossary (Bảng chú thích & Hướng dẫn tác chiến) -->
+    <div class="table-box" style="margin-top: 20px; border-left: 4px solid #38BDF8;">
+        <div class="section-header">
+            <span>📖 BẢNG CHÚ THÍCH Ý NGHĨA & HƯỚNG DẪN TÁC CHIẾN CÁC DẢI CẢN ORDERFLOW (CHUẨN ATAS)</span>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th style="width: 160px;">Nhãn Dải Cản (ATAS)</th>
+                    <th style="width: 140px;">Màu Sắc & Trực Quan</th>
+                    <th style="width: 320px;">Bản Chất Vi Cấu Trúc (Market Microstructure)</th>
+                    <th>Hành Động Tác Chiến Khuyến Nghị (Trading Playbook)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td style="color: #4ADE80; font-weight: 700; font-size: 13px;">put wall</td>
+                    <td><span class="badge badge-pos">Xanh Lá (Solid Line)</span></td>
+                    <td><b>Thành trì Put Wall</b>: Vùng tập trung Open Interest Put cao nhất thị trường. Khi giá lùi về đây, Market Maker ôm Short Gamma buộc phải mua vào NQ Futures với khối lượng cực lớn để phòng hộ (Delta-hedging).</td>
+                    <td><b>CANH MUA (BUY REBOUND)</b>: Hỗ trợ đáy phiên cực mạnh. Đặt lệnh Buy Limit quanh vùng giá này hoặc Buy khi nến 1M rút chân, Stop Loss ngắn 20-25 điểm phía dưới.</td>
+                </tr>
+                <tr>
+                    <td style="color: #F87171; font-weight: 700; font-size: 13px;">call wall</td>
+                    <td><span class="badge badge-neg">Đỏ (Solid Line)</span></td>
+                    <td><b>Trần nhà Call Wall</b>: Vùng tập trung Open Interest Call dày đặc nhất. Tại đây Market Maker xả bán hợp đồng tương lai để ghìm giá không cho vượt kỳ hạn đáo hạn.</td>
+                    <td><b>CANH BÁN (SELL FADE)</b>: Kháng cự đỉnh phiên bất khả xâm phạm. Canh Sell chặn đầu hoặc chốt lời toàn bộ các vị thế Long khi giá tiệm cận.</td>
+                </tr>
+                <tr>
+                    <td style="color: #E2E8F0; font-weight: 700; font-size: 13px;">deep ef stack</td>
+                    <td><span class="badge" style="background: rgba(148,163,184,0.2); color:#E2E8F0;">Bạc / Xám Tro</span></td>
+                    <td><b>Deep Execution Flow Stack</b>: Chồng lệnh tổ chức nén sâu. Là vùng tập trung các khối lệnh thụ động lớn (Iceberg / Absorption) của các thuật toán HFT và quỹ định lượng.</td>
+                    <td><b>VÙNG TÍCH LŨY / NÉN BIÊN ĐỘ</b>: Giá chạm vào đây thường di chuyển giằng co (sideway). Tuyệt đối không trade breakout đuổi giá ở lưng chừng vùng này.</td>
+                </tr>
+                <tr>
+                    <td style="color: #38BDF8; font-weight: 700; font-size: 13px;">buyer abs</td>
+                    <td><span class="badge" style="background: rgba(56,189,248,0.2); color:#38BDF8;">Xanh Cyan</span></td>
+                    <td><b>Buyer Absorption</b>: Phe Mua hấp thụ chủ động. Dù có lực xả hàng quyết liệt từ phe Gấu nhưng toàn bộ lệnh bán thị trường đều bị các tay to kê lệnh Limit Buy hấp thụ sạch sẽ.</td>
+                    <td><b>BUY THUẬN CHIỀU THEO TỔ CHỨC</b>: Xác nhận phe bán đã kiệt sức. Vào lệnh Buy ngay khi nến 1M đóng cửa xác nhận giữ vững bên trên vùng Buyer Abs.</td>
+                </tr>
+                <tr>
+                    <td style="color: #FDA4AF; font-weight: 700; font-size: 13px;">seller offer</td>
+                    <td><span class="badge" style="background: rgba(244,63,94,0.2); color:#FDA4AF;">Hồng Đỏ (+1R)</span></td>
+                    <td><b>Seller Offer Supply Zone</b>: Vùng cung hàng chủ động của phe Bán sẵn sàng xả hợp đồng để bảo vệ vị thế giá cao.</td>
+                    <td><b>MỐC CHỐT LỜI (+1R) HOẶC CANH SHORT</b>: Là mục tiêu chốt lời tối ưu (+1R đến +2R) cho các lệnh Long từ Buyer Abs, hoặc vị trí mở lệnh Short lướt sóng ăn nhịp hồi.</td>
+                </tr>
+                <tr>
+                    <td style="color: #FACC15; font-weight: 700; font-size: 13px;">gex 5 reaction</td>
+                    <td><span class="badge" style="background: rgba(250,204,21,0.2); color:#FACC15;">Vàng (Dotted Line)</span></td>
+                    <td><b>GEX Reaction Zone</b>: Trục phản ứng biến động nhạy cảm bậc 5 (Pivot phân định giữa chế độ Positive Gamma ghìm giá và Negative Gamma khuếch đại).</td>
+                    <td><b>ĐIỂM XOAY QUYẾT ĐỊNH (PIVOT)</b>: Nếu giá nằm trên &rarr; Ưu tiên đánh hồi quy (Mean Reversion / Fade). Nếu giá gãy xuống dưới &rarr; Kích hoạt đà bán tháo khuếch đại (Trend Following / Breakdown).</td>
+                </tr>
             </tbody>
         </table>
     </div>
@@ -1302,32 +1357,8 @@ function initAtasChart() {{
         wickDownColor: '#EF4444',
     }});
 
-    // Generate realistic prior bars leading to spot
-    const bars = [];
-    let p = initialBasePrice - 18.0;
-    const nowSec = Math.floor(Date.now() / 1000);
-    const startSec = nowSec - (60 * 60); // 60 bars of 1m
-
-    for (let t = startSec; t < nowSec; t += 60) {{
-        const change = (Math.random() - 0.48) * 3.5;
-        const open = p;
-        const close = open + change;
-        const high = Math.max(open, close) + Math.random() * 2.5;
-        const low = Math.min(open, close) - Math.random() * 2.5;
-        p = close;
-        bars.push({{ time: t - (t % 60), open, high, low, close }});
-    }}
-    // Last bar lands at currentPrice
-    const lastBarTime = nowSec - (nowSec % 60);
-    lastCandle = {{
-        time: lastBarTime,
-        open: p,
-        high: Math.max(p, currentPrice) + 1.0,
-        low: Math.min(p, currentPrice) - 1.0,
-        close: currentPrice
-    }};
-    bars.push(lastCandle);
-    candleSeries.setData(bars);
+    // Default timeframe: 1 Minute (M1) for Scalping
+    buildHistoricalBars(60);
 
     // ATAS Horizontal Price Lines on Chart
     const m = window.INITIAL_META;
@@ -1337,7 +1368,7 @@ function initAtasChart() {{
         lineWidth: 2,
         lineStyle: LightweightCharts.LineStyle.Solid,
         axisLabelVisible: true,
-        title: "PUT WALL (" + m.put_wall_oi.toLocaleString() + " OI)",
+        title: 'put wall',
     }});
 
     callWallLine = candleSeries.createPriceLine({{
@@ -1346,7 +1377,7 @@ function initAtasChart() {{
         lineWidth: 2,
         lineStyle: LightweightCharts.LineStyle.Solid,
         axisLabelVisible: true,
-        title: "CALL WALL (" + m.call_wall_oi.toLocaleString() + " OI)",
+        title: 'call wall',
     }});
 
     const deepEfStk = m.strike_above + m.step;
@@ -1356,7 +1387,7 @@ function initAtasChart() {{
         lineWidth: 1.5,
         lineStyle: LightweightCharts.LineStyle.Dashed,
         axisLabelVisible: true,
-        title: 'DEEP EF STACK',
+        title: 'deep ef stack',
     }});
 
     buyerAbsLine = candleSeries.createPriceLine({{
@@ -1365,7 +1396,7 @@ function initAtasChart() {{
         lineWidth: 1.5,
         lineStyle: LightweightCharts.LineStyle.Dotted,
         axisLabelVisible: true,
-        title: 'BUYER ABS',
+        title: 'buyer abs',
     }});
 
     sellerOfferLine = candleSeries.createPriceLine({{
@@ -1374,7 +1405,7 @@ function initAtasChart() {{
         lineWidth: 1.5,
         lineStyle: LightweightCharts.LineStyle.Dashed,
         axisLabelVisible: true,
-        title: 'SELLER OFFER (+1R)',
+        title: 'seller offer',
     }});
 
     const gexReact = m.spot + (0.5 * m.step);
@@ -1384,7 +1415,7 @@ function initAtasChart() {{
         lineWidth: 1.5,
         lineStyle: LightweightCharts.LineStyle.Dotted,
         axisLabelVisible: true,
-        title: 'GEX REACTION',
+        title: 'gex 5 reaction',
     }});
 
     // Realtime Tick Price Line
@@ -1511,8 +1542,7 @@ function onTick(price, isUserOverride = false) {{
         livePriceLine.applyOptions({{ price: currentPrice }});
 
         const nowSec = Math.floor(Date.now() / 1000);
-        const candlePeriod = 60; // 1m
-        const barTime = nowSec - (nowSec % candlePeriod);
+        const barTime = nowSec - (nowSec % currentPeriod);
 
         if (!lastCandle || barTime > lastCandle.time) {{
             lastCandle = {{
@@ -1593,14 +1623,65 @@ function onSliderPriceChange(val) {{
     onTick(p, true);
 }}
 
+let currentTimeframe = '1m';
+let currentPeriod = 60; // Default 1M (60s)
+
+function buildHistoricalBars(periodSec = 60) {{
+    currentPeriod = periodSec;
+    const bars = [];
+    const numBars = 60;
+    const nowSec = Math.floor(Date.now() / 1000);
+    const startSec = nowSec - (numBars * periodSec);
+    const volScale = Math.sqrt(periodSec / 60);
+    let p = initialBasePrice - (18.0 * volScale);
+    const stepVol = 3.5 * volScale;
+
+    for (let t = startSec; t < nowSec; t += periodSec) {{
+        const change = (Math.random() - 0.48) * stepVol;
+        const open = p;
+        const close = open + change;
+        const high = Math.max(open, close) + Math.random() * (stepVol * 0.7);
+        const low = Math.min(open, close) - Math.random() * (stepVol * 0.7);
+        p = close;
+        bars.push({{ time: t - (t % periodSec), open, high, low, close }});
+    }}
+
+    const lastBarTime = nowSec - (nowSec % periodSec);
+    lastCandle = {{
+        time: lastBarTime,
+        open: p,
+        high: Math.max(p, currentPrice) + 0.5,
+        low: Math.min(p, currentPrice) - 0.5,
+        close: currentPrice
+    }};
+    bars.push(lastCandle);
+    candleSeries.setData(bars);
+    chart.timeScale().fitContent();
+    updateOverlayPositions();
+}}
+
 function setTimeframe(tf) {{
+    currentTimeframe = tf.toLowerCase();
+    const periodMap = {{
+        '1m': 60,
+        '5m': 300,
+        '15m': 900,
+        '1h': 3600,
+        'd': 86400
+    }};
+    const period = periodMap[currentTimeframe] || 60;
+
     document.querySelectorAll('.timeframe-pill').forEach(btn => {{
-        if (btn.innerText.toLowerCase() === tf.toLowerCase()) {{
+        if (btn.innerText.toLowerCase() === currentTimeframe) {{
             btn.classList.add('active');
         }} else {{
             btn.classList.remove('active');
         }}
     }});
+
+    if (candleSeries) {{
+        buildHistoricalBars(period);
+    }}
 }}
 
 // Initialize when DOM is ready
