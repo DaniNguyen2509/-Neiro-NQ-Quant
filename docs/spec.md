@@ -1,6 +1,6 @@
 # Spec: Neiro-NQ-Quant (Cloud-Native E-mini Nasdaq Quant Terminal)
 
-> **Mục tiêu:** Hệ thống tự động thu thập chuỗi Options, phân tích vi mô dòng tiền Nhà tạo lập (Dealer GEX/DEX/VEX/CHEX theo mô hình Black-76 chuẩn xác cho Futures Options), tính toán Put-Call Parity Synthetic Pivot, phát hiện bẫy thanh khoản vi mô (Air Pockets, Structural Walls, Gamma Squeeze Triggers), và trực quan hóa Terminal Tác chiến Đa Chế Độ Dual-View (ATAS Orderflow Footprint Canvas + 3-Panel Plotly Quant Price Ladder & Tactical Playbook) cho E-mini Nasdaq-100 Futures (`NQ` / `MNQ` / `QQQ` / `NAS100` / `US100`).  
+> **Mục tiêu:** Hệ thống tự động thu thập chuỗi Options, phân tích vi mô dòng tiền Nhà tạo lập (Dealer GEX/DEX/VEX/CHEX theo mô hình Black-76 chuẩn xác cho Futures Options), tính toán Put-Call Parity Synthetic Pivot, phát hiện bẫy thanh khoản vi mô (Air Pockets, Structural Walls, Gamma Squeeze Triggers), và trực quan hóa Terminal Tác chiến Đa Chế Độ Dual-View (Neiro Orderflow Footprint Canvas + 3-Panel Plotly Quant Price Ladder & Tactical Playbook) cho E-mini Nasdaq-100 Futures (`NQ` / `MNQ` / `QQQ` / `NAS100` / `US100`).  
 > **Kiến trúc vận hành:** **100% Cloud-Native Zero-Touch Automation** chạy hoàn toàn trên **GitHub Actions** với Lưới Cron Đa Tầng Pre-Session Radar & Dual-Stage Thích Ứng 2 Mùa (bao trọn nhịp 0DTE Power Hour), tự động xuất bản lên **GitHub Pages**, hoàn toàn không phụ thuộc máy tính cá nhân hay phần mềm bên ngoài (Không cần bật máy, Không MT5, Không TradingView).
 
 ---
@@ -50,7 +50,7 @@
 
 3. **Giao diện Tác chiến Đa Chế Độ Dual-View Terminal HUD:**
    - Hỗ trợ chuyển đổi mượt mà 2 chế độ tác chiến chuyên nghiệp ngay trên thanh điều khiển (Navigation Header):
-     * **TAB 1: ATAS ORDERFLOW FOOTPRINT:** Bảng thang giá chuyên sâu phong cách ATAS/Sierra Chart vẽ trên Canvas HTML5 hiệu năng cao (60 FPS). Hiển thị Volume Profile, Bid/Ask Footprint Delta, nến micro và bảng khớp lệnh Tick-by-Tick.
+     * **TAB 1: NEIRO ORDERFLOW FOOTPRINT:** Bảng thang giá chuyên sâu phong cách Neiro Orderflow vẽ trên Canvas HTML5 hiệu năng cao (60 FPS). Hiển thị Volume Profile, Bid/Ask Footprint Delta, nến micro và bảng khớp lệnh Tick-by-Tick.
      * **TAB 2: 3-PANEL QUANT LADDER & TACTICAL PLAYBOOK:** Bố cục 3 Panels thang giá ngang Plotly tương tác:
        - **Panel 1:** Net GEX Profile ($M) & Mốc Chiến thuật Dynamic (kèm SL/TP tự động).
        - **Panel 2:** Dòng tiền Khối lượng (Volume) vs Open Interest nén (OI Concentration).
@@ -125,7 +125,7 @@ Neiro-NQ-Quant/
 │       ├── ADR-001-cloud-native-options-quant-pipeline.md
 │       └── ADR-002-dual-view-terminal-and-black76-microstructure.md
 ├── exports/
-│   ├── latest_nq_dashboard.html     # Tactical Terminal Dual-View (ATAS + Plotly 3-Panel)
+│   ├── latest_nq_dashboard.html     # Tactical Terminal Dual-View (Neiro + Plotly 3-Panel)
 │   ├── index.html                   # Web view trực tiếp cho GitHub Pages
 │   └── nq_tactical_levels.json      # Bảng mốc chiến thuật & recommendations JSON
 ├── src/
@@ -140,7 +140,7 @@ Neiro-NQ-Quant/
 │   │   ├── structure.py             # Cấu trúc vi mô & Microstructure levels
 │   │   └── state_machine.py         # Level State Machine Engine & SL/TP Reversal
 │   ├── hud/
-│   │   └── html_dashboard.py        # Terminal Dual-View (ATAS Footprint + Plotly 3-Panel HUD)
+│   │   └── html_dashboard.py        # Terminal Dual-View (Neiro Footprint + Plotly 3-Panel HUD)
 │   ├── dashboard/
 │   │   ├── html_dashboard.py        # Alias import tương thích ngược
 │   │   └── visualizer.py            # Visualizer cổ điển

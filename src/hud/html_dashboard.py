@@ -1,10 +1,10 @@
-"""Neiro-NQ-Quant Tactical HTML Dashboard & True ATAS Orderflow Terminal Generator.
+"""Neiro-NQ-Quant Tactical HTML Dashboard & True Neiro Orderflow Terminal Generator.
 
-Generates a standalone, production-grade ATAS Orderflow Footprint & Quant Terminal for
+Generates a standalone, production-grade Neiro Orderflow Footprint & Quant Terminal for
 E-mini Nasdaq-100 Futures Options (NQ / NQZ26 / NAS100) incorporating:
 - Live Ticker Realtime Bar (CME Globex NQ=F, SOFR/Treasury 13W ^IRX rate, ATM IV)
-- Interactive ATAS Orderflow Footprint Terminal:
-  * High-contrast Pure Black ATAS styling (#000000)
+- Interactive Neiro Orderflow Footprint Terminal:
+  * High-contrast Pure Black Neiro styling (#000000)
   * Brownian-bridge 1-Minute Candlestick generator (zero artificial spike artifacts)
   * HTML5 Canvas Orderflow Layer synchronized with TradingView Lightweight Charts v4.2
   * Pure Institutional CME Globex Candlesticks (1m, 5m, 15m, 1h, 1d)
@@ -23,7 +23,7 @@ E-mini Nasdaq-100 Futures Options (NQ / NQZ26 / NAS100) incorporating:
 - 3-Panel Plotly Interactive Charts & Anti-collision algorithm
 - Intraday Scalping Strategy Table (30-50 pts NQ)
 - Structural Swing Walls Strategy Table (100-250 pts NQ)
-- Bottom Vietnamese Glossary & Tactical Playbook (Giải nghĩa dải cản ATAS)
+- Bottom Vietnamese Glossary & Tactical Playbook (Giải nghĩa dải cản Neiro Quant)
 - Zero-waste & ASCII/UTF-8 compliant.
 """
 from __future__ import annotations
@@ -179,7 +179,7 @@ def load_options_dataset(
 
 
 def build_plotly_terminal(df_full: pd.DataFrame, meta: Dict[str, Any]) -> go.Figure:
-    """Build 3-Panel ATAS-style dark terminal figure with anti-collision algorithm."""
+    """Build 3-Panel Neiro-style dark terminal figure with anti-collision algorithm."""
     spot_price = meta["spot_price"]
     spot_mt5 = meta["spot_mt5"]
     atm_strike = meta["atm_strike"]
@@ -417,7 +417,7 @@ def build_plotly_terminal(df_full: pd.DataFrame, meta: Dict[str, Any]) -> go.Fig
 
 
 def generate_html_terminal(df: pd.DataFrame, meta: Dict[str, Any], fig: go.Figure) -> str:
-    """Generate high-fidelity, standalone dark-mode HTML tactical report with True ATAS Orderflow Terminal."""
+    """Generate high-fidelity, standalone dark-mode HTML tactical report with True Neiro Orderflow Terminal."""
     now_vn = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=7)))
     now_str = now_vn.strftime("%d/%m/%Y %H:%M:%S")
 
@@ -467,7 +467,7 @@ def generate_html_terminal(df: pd.DataFrame, meta: Dict[str, Any], fig: go.Figur
         delta_status = "FAIR VALUE &bull; CÂN BẰNG"
         delta_color = "#FACC15" 
 
-    # Tactical Microstructure Ladder for 1M/5M ATAS Chart (25/50 pts grid centered around spot)
+    # Tactical Microstructure Ladder for 1M/5M Neiro Chart (25/50 pts grid centered around spot)
     tactical_step = 25.0
     atm_pivot = round(spot / tactical_step) * tactical_step
     buyer_abs_price = atm_pivot - 15.0 if spot >= atm_pivot else atm_pivot - 25.0
@@ -635,7 +635,7 @@ def generate_html_terminal(df: pd.DataFrame, meta: Dict[str, Any], fig: go.Figur
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    <title>NEIRO-NQ-QUANT TERMINAL &bull; ATAS REALTIME QUANT ORDERFLOW</title>
+    <title>NEIRO-NQ-QUANT TERMINAL &bull; NEIRO REALTIME QUANT ORDERFLOW</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -653,41 +653,41 @@ def generate_html_terminal(df: pd.DataFrame, meta: Dict[str, Any], fig: go.Figur
             font-family: 'Inter', -apple-system, sans-serif;
             color: #F8FAFC;
         }}
-        .atas-desktop-window {{
+        .neiro-desktop-window {{
             display: flex; flex-direction: column;
             width: 100vw; height: 100vh;
             background-color: #000000;
             user-select: none;
         }}
 
-        /* 100% Authentic ATAS Top Titlebar */
-        .atas-win-topbar {{
+        /* Neiro Top Titlebar */
+        .neiro-win-topbar {{
             height: 34px; background: #161A22; border-bottom: 1px solid #232A37;
             display: flex; align-items: center; justify-content: space-between;
             padding: 0 8px; font-family: 'JetBrains Mono', monospace; font-size: 11px;
             flex-shrink: 0;
         }}
-        .atas-top-left, .atas-top-center, .atas-top-right {{
+        .neiro-top-left, .neiro-top-center, .neiro-top-right {{
             display: flex; align-items: center; gap: 5px;
         }}
-        .atas-blue-indicator {{
+        .neiro-blue-indicator {{
             width: 4px; height: 18px; background: #0284C7; border-radius: 2px; margin-right: 3px;
         }}
-        .atas-tab {{
+        .neiro-tab {{
             background: #202632; border: 1px solid #2F3849; color: #FFFFFF;
             padding: 3px 9px; border-radius: 4px; font-weight: 700; font-size: 11px;
             cursor: pointer;
         }}
-        .atas-tab.active {{
+        .neiro-tab.active {{
             background: #252D3C; border-color: #38BDF8; color: #FFFFFF;
         }}
-        .atas-win-sep {{ color: #3A4556; margin: 0 2px; font-size: 11px; }}
-        .atas-btn-icon {{
+        .neiro-win-sep {{ color: #3A4556; margin: 0 2px; font-size: 11px; }}
+        .neiro-btn-icon {{
             background: #202632; border: 1px solid #2F3849; color: #CBD5E1;
             padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: 600;
             display: flex; align-items: center; gap: 4px;
         }}
-        .atas-tf-group {{ display: flex; align-items: center; gap: 2px; }}
+        .neiro-tf-group {{ display: flex; align-items: center; gap: 2px; }}
         .timeframe-pill {{
             background: transparent; color: #94A3B8; border: 1px solid transparent;
             padding: 2px 6px; border-radius: 3px; font-size: 11px; cursor: pointer; font-weight: 600;
@@ -696,34 +696,34 @@ def generate_html_terminal(df: pd.DataFrame, meta: Dict[str, Any], fig: go.Figur
         .timeframe-pill.active, .timeframe-pill:hover {{
             background: #2A3444; color: #38BDF8; border-color: #38BDF8;
         }}
-        .atas-icon-btn {{
+        .neiro-icon-btn {{
             background: transparent; border: 1px solid transparent; color: #94A3B8;
             padding: 3px 6px; border-radius: 3px; font-size: 11px; cursor: pointer;
             display: flex; align-items: center; gap: 3px; font-family: 'JetBrains Mono', monospace;
         }}
-        .atas-icon-btn:hover {{ background: #202632; color: #E2E8F0; }}
-        .atas-badge-contract {{
+        .neiro-icon-btn:hover {{ background: #202632; color: #E2E8F0; }}
+        .neiro-badge-contract {{
             background: rgba(56, 189, 248, 0.15); border: 1px solid rgba(56, 189, 248, 0.4);
             color: #38BDF8; padding: 2px 6px; border-radius: 3px; font-size: 10.5px; font-weight: 700;
         }}
-        .atas-camera-btn {{
+        .neiro-camera-btn {{
             background: #0284C7; color: #FFFFFF; border: none; padding: 3px 7px;
             border-radius: 4px; font-size: 11px; cursor: pointer; transition: all 0.2s;
         }}
-        .atas-camera-btn:hover {{ background: #0369A1; }}
+        .neiro-camera-btn:hover {{ background: #0369A1; }}
 
         /* Quantitative Top Metrics */
-        .atas-quant-pill {{
+        .neiro-quant-pill {{
             display: flex; align-items: center; gap: 6px; background: #10141C;
             border: 1px solid #1E2635; padding: 2px 8px; border-radius: 4px; font-size: 10.5px;
         }}
-        .atas-sym-label {{ color: #64748B; font-size: 10px; font-weight: 600; }}
-        .atas-price-val {{ font-size: 12px; font-weight: 800; }}
-        .atas-mt5-tag {{ color: #64748B; font-size: 10px; }}
+        .neiro-sym-label {{ color: #64748B; font-size: 10px; font-weight: 600; }}
+        .neiro-price-val {{ font-size: 12px; font-weight: 800; }}
+        .neiro-mt5-tag {{ color: #64748B; font-size: 10px; }}
         .ticker-change {{ font-size: 10px; font-weight: 600; padding: 1px 4px; border-radius: 2px; }}
         .change-up {{ color: #4ADE80; background: rgba(34, 197, 94, 0.12); }}
         .change-down {{ color: #F87171; background: rgba(239, 68, 68, 0.12); }}
-        .atas-pill-lbl {{ color: #64748B; font-size: 9.5px; }}
+        .neiro-pill-lbl {{ color: #64748B; font-size: 9.5px; }}
         .badge {{
             display: inline-block; padding: 1px 5px; border-radius: 2px; font-size: 10px;
             font-weight: 700; font-family: 'JetBrains Mono', monospace;
@@ -743,29 +743,29 @@ def generate_html_terminal(df: pd.DataFrame, meta: Dict[str, Any], fig: go.Figur
         .win-close:hover {{ background: #EF4444; color: #FFFFFF; border-color: #EF4444; }}
 
         /* Subbar Watermark */
-        .atas-win-subbar {{
+        .neiro-win-subbar {{
             height: 20px; background: #0B0E14; border-bottom: 1px solid #161D29;
             display: flex; align-items: center; justify-content: space-between;
             padding: 0 10px; font-family: 'JetBrains Mono', monospace; font-size: 10px;
             flex-shrink: 0;
         }}
-        .atas-watermark-text {{ color: #475569; font-size: 9.5px; }}
+        .neiro-watermark-text {{ color: #475569; font-size: 9.5px; }}
 
         /* Body & Chart */
-        .atas-body-container {{
+        .neiro-body-container {{
             display: flex; flex: 1; width: 100%; height: calc(100vh - 56px);
             position: relative; overflow: hidden; background: #000000;
         }}
         #tv-chart-wrapper {{
             position: relative; width: 100%; height: 100%; background-color: #000000;
         }}
-        #atas-tv-chart {{ width: 100%; height: 100%; }}
-        #atas-canvas {{
+        #neiro-tv-chart {{ width: 100%; height: 100%; }}
+        #neiro-canvas {{
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             pointer-events: none; z-index: 5;
         }}
 
-        .atas-floating-hud {{
+        .neiro-floating-hud {{
             position: absolute; top: 10px; left: 12px; z-index: 10;
             display: flex; flex-direction: column; gap: 4px;
             background: rgba(8, 11, 18, 0.92); border: 1px solid #1E293B; border-radius: 4px;
@@ -775,63 +775,63 @@ def generate_html_terminal(df: pd.DataFrame, meta: Dict[str, Any], fig: go.Figur
         }}
         .hud-item {{ display: flex; align-items: center; gap: 8px; white-space: nowrap; }}
         .hud-label {{ color: #94A3B8; font-weight: 700; font-size: 10.5px; min-width: 130px; }}
-        .atas-win-topbar, .atas-win-subbar {{ overflow: hidden; white-space: nowrap; }}
-        .atas-top-left, .atas-top-center, .atas-top-right {{ flex-shrink: 1; min-width: 0; overflow: hidden; }}
-        .atas-subbar-right {{ overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }}
+        .neiro-win-topbar, .neiro-win-subbar {{ overflow: hidden; white-space: nowrap; }}
+        .neiro-top-left, .neiro-top-center, .neiro-top-right {{ flex-shrink: 1; min-width: 0; overflow: hidden; }}
+        .neiro-subbar-right {{ overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }}
     </style>
 </head>
 <body>
-<div class="atas-desktop-window" id="sec-atas">
+<div class="neiro-desktop-window" id="sec-neiro">
     <!-- Clean Neiro Quant Topbar -->
-    <div class="atas-win-topbar">
-        <div class="atas-top-left">
-            <span class="atas-blue-indicator"></span>
-            <div class="atas-tab active" id="tab-atas" onclick="switchTerminalView('atas')"><span class="atas-tab-text">ATAS ORDERFLOW</span></div>
-            <div class="atas-tab" id="tab-plotly" onclick="switchTerminalView('plotly')"><span class="atas-tab-text">3-PANEL QUANT LADDER</span></div>
-            <span class="atas-win-sep">|</span>
-            <div class="atas-tf-group">
+    <div class="neiro-win-topbar">
+        <div class="neiro-top-left">
+            <span class="neiro-blue-indicator"></span>
+            <div class="neiro-tab active" id="tab-neiro" onclick="switchTerminalView('neiro')"><span class="neiro-tab-text">NEIRO ORDERFLOW</span></div>
+            <div class="neiro-tab" id="tab-plotly" onclick="switchTerminalView('plotly')"><span class="neiro-tab-text">3-PANEL QUANT LADDER</span></div>
+            <span class="neiro-win-sep">|</span>
+            <div class="neiro-tf-group">
                 <button class="timeframe-pill active" onclick="setTimeframe('1m')">1M</button>
                 <button class="timeframe-pill" onclick="setTimeframe('5m')">5M</button>
                 <button class="timeframe-pill" onclick="setTimeframe('15m')">15M</button>
                 <button class="timeframe-pill" onclick="setTimeframe('1h')">1H</button>
                 <button class="timeframe-pill" onclick="setTimeframe('d')">1D</button>
             </div>
-            <span class="atas-badge-contract">M1 INTRADAY</span>
+            <span class="neiro-badge-contract">M1 INTRADAY</span>
         </div>
 
         <!-- Center: Quantitative Metrics -->
-        <div class="atas-top-center">
-            <div class="atas-quant-pill">
-                <span class="atas-sym-label">SPOT CME:</span>
-                <b class="atas-price-val" id="top-ticker-price" style="color: #38BDF8;">{spot:,.2f}</b>
+        <div class="neiro-top-center">
+            <div class="neiro-quant-pill">
+                <span class="neiro-sym-label">SPOT CME:</span>
+                <b class="neiro-price-val" id="top-ticker-price" style="color: #38BDF8;">{spot:,.2f}</b>
                 <span class="ticker-change change-up" id="top-ticker-change">+0.00 (+0.00%)</span>
-                <span class="atas-mt5-tag">(MT5: ~<span id="kpi-mt5-num">{spot_mt5:,.1f}</span>)</span>
-                <span class="atas-win-sep">|</span>
-                <span class="atas-pill-lbl">F0 FAIR:</span>
+                <span class="neiro-mt5-tag">(MT5: ~<span id="kpi-mt5-num">{spot_mt5:,.1f}</span>)</span>
+                <span class="neiro-win-sep">|</span>
+                <span class="neiro-pill-lbl">F0 FAIR:</span>
                 <b id="top-ticker-f0-fair" style="color:#F1F5F9;">{f0_theoretical:,.1f}</b>
-                <span class="atas-pill-lbl">&Delta;F:</span>
+                <span class="neiro-pill-lbl">&Delta;F:</span>
                 <span id="top-ticker-delta-f" class="badge {delta_badge_class}">{delta_f:+.1f} pts</span>
-                <span class="atas-win-sep">|</span>
-                <span class="atas-pill-lbl">GEX:</span> <b id="kpi-gex-val" style="color:{regime_color};">${total_gex:+.1f}M</b>
-                <span class="atas-pill-lbl">CHEX:</span> <b id="top-charm-val" style="color:#C084FC;">${total_chex:+.1f}M/d</b>
-                <span class="atas-pill-lbl">VEX:</span> <b id="kpi-vex-val" style="color:#22D3EE;">${total_vex:+.1f}M</b>
-                <span class="atas-pill-lbl">TEX:</span> <b id="top-theta-val" style="color:#FB923C;">{total_thex_display}</b>
-                <span class="atas-pill-lbl">SQZ:</span> <b style="color:#4ADE80;">&gt;{strike_above:,.0f}</b>/<b style="color:#F87171;">&lt;{strike_below:,.0f}</b>
-                <span class="atas-pill-lbl">1-&sigma;:</span> <b id="kpi-move-val" style="color:#FACC15;">&plusmn;{expected_move:,.1f}p</b>
+                <span class="neiro-win-sep">|</span>
+                <span class="neiro-pill-lbl">GEX:</span> <b id="kpi-gex-val" style="color:{regime_color};">${total_gex:+.1f}M</b>
+                <span class="neiro-pill-lbl">CHEX:</span> <b id="top-charm-val" style="color:#C084FC;">${total_chex:+.1f}M/d</b>
+                <span class="neiro-pill-lbl">VEX:</span> <b id="kpi-vex-val" style="color:#22D3EE;">${total_vex:+.1f}M</b>
+                <span class="neiro-pill-lbl">TEX:</span> <b id="top-theta-val" style="color:#FB923C;">{total_thex_display}</b>
+                <span class="neiro-pill-lbl">SQZ:</span> <b style="color:#4ADE80;">&gt;{strike_above:,.0f}</b>/<b style="color:#F87171;">&lt;{strike_below:,.0f}</b>
+                <span class="neiro-pill-lbl">1-&sigma;:</span> <b id="kpi-move-val" style="color:#FACC15;">&plusmn;{expected_move:,.1f}p</b>
             </div>
         </div>
 
-        <div class="atas-top-right">
+        <div class="neiro-top-right">
             <span style="color:#64748B; font-size:11px; font-weight:600; margin-right:8px;">CME GLOBEX &bull; {now_str} (VN)</span>
         </div>
     </div>
 
     <!-- Authentic Greeks Subbar -->
-    <div class="atas-win-subbar">
-        <div class="atas-subbar-left">
-            <span class="atas-watermark-text" style="color:#38BDF8; font-weight:700;">NEIRO-NQ-QUANT TERMINAL &bull; CME E-MINI NASDAQ-100 [M15]</span>
+    <div class="neiro-win-subbar">
+        <div class="neiro-subbar-left">
+            <span class="neiro-watermark-text" style="color:#38BDF8; font-weight:700;">NEIRO-NQ-QUANT TERMINAL &bull; CME E-MINI NASDAQ-100 [M15]</span>
         </div>
-        <div class="atas-subbar-right">
+        <div class="neiro-subbar-right">
             <span style="color:#38BDF8; font-weight:700;">⚡ LIVE BLACK-76 REALTIME GREEKS RADAR (M15):</span>
             <span id="live-greeks-radar" style="margin-left: 6px; color: #CBD5E1;">
                 Delta &Delta;: <b>0.505</b> | Gamma &Gamma;: <b>0.00042</b> | Vega &nu;: <b>$18.5M</b> | Theta &theta;: <b>-$28.5k/d</b> | Vanna (VEX): <b>+$2.8M</b> | Charm (CHEX): <b>-$1.4M/d</b>
@@ -841,9 +841,9 @@ def generate_html_terminal(df: pd.DataFrame, meta: Dict[str, Any], fig: go.Figur
     </div>
 
     <!-- Main M15 Chart Body (100% Full Width & Height) -->
-    <div class="atas-body-container" id="atas-view-container">
+    <div class="neiro-body-container" id="neiro-view-container">
         <div id="tv-chart-wrapper">
-            <div class="atas-floating-hud">
+            <div class="neiro-floating-hud">
                 <div class="hud-item"><span class="hud-label">NET GEX (Trục ATM):</span> <b id="hud-gex-val" style="color:{regime_color};">${total_gex:+.1f}M</b></div>
                 <div class="hud-item"><span class="hud-label">GAMMA SQUEEZE &uarr;:</span> <b style="color:#4ADE80;">&gt; {strike_above:,.0f} &rarr; TP {next_above:,.0f}</b></div>
                 <div class="hud-item"><span class="hud-label">GAMMA SQUEEZE &darr;:</span> <b style="color:#F87171;">&lt; {strike_below:,.0f} &rarr; TP {next_below:,.0f}</b></div>
@@ -852,8 +852,8 @@ def generate_html_terminal(df: pd.DataFrame, meta: Dict[str, Any], fig: go.Figur
                 <div class="hud-item"><span class="hud-label">THETA (TEX):</span> <b id="hud-theta-val" style="color:#FB923C;">{total_thex_display}</b></div>
                 <div class="hud-item"><span class="hud-label">1-SIGMA:</span> <b id="hud-sigma-val" style="color:#FACC15;">&plusmn;{expected_move:,.1f}p</b></div>
             </div>
-            <div id="atas-tv-chart"></div>
-            <canvas id="atas-canvas"></canvas>
+            <div id="neiro-tv-chart"></div>
+            <canvas id="neiro-canvas"></canvas>
         </div>
     </div>
 
@@ -1010,24 +1010,24 @@ def generate_html_terminal(df: pd.DataFrame, meta: Dict[str, Any], fig: go.Figur
 <script>
 window.INITIAL_OPTIONS = {json_options_str};
 function switchTerminalView(view) {{
-    const atasView = document.getElementById('atas-view-container');
+    const neiroView = document.getElementById('neiro-view-container');
     const plotlyView = document.getElementById('plotly-view-container');
-    const tabAtas = document.getElementById('tab-atas');
+    const tabNeiro = document.getElementById('tab-neiro');
     const tabPlotly = document.getElementById('tab-plotly');
-    if (!atasView || !plotlyView) return;
+    if (!neiroView || !plotlyView) return;
     if (view === 'plotly') {{
-        atasView.style.display = 'none';
+        neiroView.style.display = 'none';
         plotlyView.style.display = 'block';
         if (tabPlotly) tabPlotly.classList.add('active');
-        if (tabAtas) tabAtas.classList.remove('active');
+        if (tabNeiro) tabNeiro.classList.remove('active');
         window.dispatchEvent(new Event('resize'));
     }} else {{
         plotlyView.style.display = 'none';
-        atasView.style.display = 'flex';
-        if (tabAtas) tabAtas.classList.add('active');
+        neiroView.style.display = 'flex';
+        if (tabNeiro) tabNeiro.classList.add('active');
         if (tabPlotly) tabPlotly.classList.remove('active');
         if (chart) chart.timeScale().fitContent();
-        drawAtasOverlay();
+        drawNeiroOverlay();
     }}
 }}
 window.INITIAL_META = {json_meta_str};
@@ -1166,7 +1166,7 @@ const Black76Engine = {{
 }};
 
 // ----------------------------------------------------------------------------
-// TradingView Lightweight Charts & ATAS Orderflow Integration
+// TradingView Lightweight Charts & Neiro Orderflow Integration
 // ----------------------------------------------------------------------------
 let chart = null;
 let candleSeries = null;
@@ -1220,9 +1220,9 @@ function generateRealisticCandles(currentP, numBars = 60, periodSec = 60) {{
     return bars;
 }}
 
-function initAtasChart() {{
-    const container = document.getElementById('atas-tv-chart');
-    const canvas = document.getElementById('atas-canvas');
+function initNeiroChart() {{
+    const container = document.getElementById('neiro-tv-chart');
+    const canvas = document.getElementById('neiro-canvas');
     if (!container || !window.LightweightCharts) return;
 
     chart = LightweightCharts.createChart(container, {{
@@ -1291,13 +1291,13 @@ function initAtasChart() {{
             canvas.width = container.clientWidth;
             canvas.height = newH;
         }}
-        drawAtasOverlay();
+        drawNeiroOverlay();
     }});
 
-    chart.timeScale().subscribeVisibleTimeRangeChange(() => drawAtasOverlay());
-    chart.timeScale().subscribeVisibleLogicalRangeChange(() => drawAtasOverlay());
+    chart.timeScale().subscribeVisibleTimeRangeChange(() => drawNeiroOverlay());
+    chart.timeScale().subscribeVisibleLogicalRangeChange(() => drawNeiroOverlay());
 
-    drawAtasOverlay();
+    drawNeiroOverlay();
 }}
 
 function buildHistoricalBars(periodSec = 60) {{
@@ -1323,14 +1323,14 @@ function buildHistoricalBars(periodSec = 60) {{
         from: Math.max(0, totalBars - 36),
         to: totalBars + 6,
     }});
-    setTimeout(() => drawAtasOverlay(), 80);
+    setTimeout(() => drawNeiroOverlay(), 80);
 }}
 
 // ----------------------------------------------------------------------------
 // Neiro-Quant Orderflow Canvas Drawing Engine
 // ----------------------------------------------------------------------------
-function drawAtasOverlay() {{
-    const canvas = document.getElementById('atas-canvas');
+function drawNeiroOverlay() {{
+    const canvas = document.getElementById('neiro-canvas');
     if (!canvas || !chart || !candleSeries) return;
     const ctx = canvas.getContext('2d');
     const w = canvas.width;
@@ -1558,7 +1558,7 @@ function onTick(price, isUserOverride = false) {{
     const topTex = document.getElementById('top-theta-val');
     if (topTex) topTex.innerText = (res.totalTEX >= 0 ? '+$' : '-$') + Math.abs(res.totalTEX).toFixed(1) + 'M/d';
 
-    drawAtasOverlay();
+    drawNeiroOverlay();
 
     const elRadar = document.getElementById('live-greeks-radar');
     if (elRadar && res.atmGreeks) {{
@@ -1586,7 +1586,7 @@ function onTick(price, isUserOverride = false) {{
             lastCandle.close = currentPrice;
         }}
         candleSeries.update(lastCandle);
-        drawAtasOverlay();
+        drawNeiroOverlay();
     }}
 
     const strikes = window.INITIAL_OPTIONS;
@@ -1635,7 +1635,7 @@ function setTimeframe(tf) {{
 }}
 
 document.addEventListener('DOMContentLoaded', () => {{
-    initAtasChart();
+    initNeiroChart();
     if (window.INITIAL_META && window.INITIAL_META.spot) {{
         onTick(window.INITIAL_META.spot);
     }}

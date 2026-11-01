@@ -10,7 +10,7 @@ Accepted
 Trong quá trình vận hành thực tế hệ thống Neiro-NQ-Quant, đội ngũ kỹ thuật và người dùng phát hiện ra 4 vấn đề kiến trúc và định lượng cần được chuẩn hóa triệt để:
 
 1. **Sự phân tách giữa Giao diện Orderflow Canvas và Bảng điều khiển Plotly Quant:**
-   - Phiên bản trước đây có sự xung đột giao diện: một bên triển khai Canvas HTML5 phong cách ATAS / Sierra Chart (cho phép xem sổ lệnh thang giá dọc, volume footprint, nến micro và tape tick-by-tick ở tốc độ 60 FPS), nhưng lại làm mất đi đồ thị 3-Panel Plotly Quant Ladder (Net GEX Profile, OI Concentration, 2nd Order Greeks Flow) cùng 2 bảng kịch bản tác chiến (Intraday Scalping & Structural Swing Walls).
+   - Phiên bản trước đây có sự xung đột giao diện: một bên triển khai Canvas HTML5 phong cách Neiro Orderflow (cho phép xem sổ lệnh thang giá dọc, volume footprint, nến micro và tape tick-by-tick ở tốc độ 60 FPS), nhưng lại làm mất đi đồ thị 3-Panel Plotly Quant Ladder (Net GEX Profile, OI Concentration, 2nd Order Greeks Flow) cùng 2 bảng kịch bản tác chiến (Intraday Scalping & Structural Swing Walls).
    - Nhà giao dịch cần đồng thời cả 2 góc nhìn: Scalper cần bảng Orderflow Footprint để căn ke từng tick vào lệnh; trong khi Swing trader và Quỹ định lượng cần cấu trúc GEX Profile 3-Panel để định hình xu hướng trung hạn.
 
 2. **Sai số toán học trong công thức Charm (CHEX) của Hợp đồng Tương lai:**
@@ -28,7 +28,7 @@ Trong quá trình vận hành thực tế hệ thống Neiro-NQ-Quant, đội ng
 
 1. **Hợp nhất Kiến trúc Giao diện Đa Chế Độ Dual-View Terminal HUD:**
    - Xây dựng thanh điều khiển chuyển tab (Header Navigation Tab Switcher) ngay trên giao diện web độc lập `latest_nq_dashboard.html`:
-     * **TAB 1 (ATAS ORDERFLOW):** Giữ nguyên Canvas HTML5 60 FPS hiệu năng cao với đầy đủ thang giá dọc, Bid/Ask Footprint Delta, Micro-candles và Tape khớp lệnh.
+     * **TAB 1 (NEIRO ORDERFLOW):** Giữ nguyên Canvas HTML5 60 FPS hiệu năng cao với đầy đủ thang giá dọc, Bid/Ask Footprint Delta, Micro-candles và Tape khớp lệnh.
      * **TAB 2 (3-PANEL QUANT LADDER):** Tích hợp trọn vẹn đồ thị Plotly Dark 3-Panel, hệ thống thẻ KPI Cards, Bảng Kịch bản Chiến thuật Intraday Scalping Strategy, Bảng Structural Swing Walls và Bảng Strike Microstructure Matrix.
    - Thêm sự kiện kích hoạt `window.dispatchEvent(new Event('resize'))` khi đổi tab để Plotly tự động tự co giãn hoàn hảo (responsive) theo kích thước màn hình mà không bị méo layout.
 
@@ -56,7 +56,7 @@ Trong quá trình vận hành thực tế hệ thống Neiro-NQ-Quant, đội ng
 
 ## Alternatives Considered
 
-### Phương án A: Tách thành 2 trang Web độc lập (`atas.html` và `ladder.html`)
+### Phương án A: Tách thành 2 trang Web độc lập (`neiro_orderflow.html` và `ladder.html`)
 - **Ưu điểm:** Mỗi trang hoàn toàn độc lập mã nguồn.
 - **Nhược điểm:** Phức tạp hóa việc triển khai GitHub Pages, người dùng phải chuyển đổi URL qua lại, không có tính liền mạch trong tác chiến.
 - **Kết luận:** Bị loại bỏ. Chọn giải pháp Dual-View Tab trên cùng một file HTML duy nhất.

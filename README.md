@@ -7,7 +7,7 @@
 [![Tests Status](https://img.shields.io/badge/Tests-14%2F14%20PASS-brightgreen.svg)](tests/)
 
 > **Hệ thống Định lượng Vi mô & Terminal Tác chiến E-mini Nasdaq-100 Futures (`NQ` / `MNQ` / `NAS100` / `US100` / `QQQ`)**  
-> **Kiến trúc Cloud-Native 100% (Zero-Touch Automation):** Vận hành hoàn toàn tự động trên **GitHub Actions** theo **Lưới Cron Đa Tầng Pre-Session Radar & Dual-Stage Thích Ứng 2 Mùa**, giải mã ma trận Dealer theo mô hình **Black-76** (Greeks giải tích bậc 1 & bậc 2: Delta, Gamma, Vega, Vanna, Charm), trực quan hóa **Terminal Đa Chế Độ Dual-View** (ATAS Orderflow Footprint Canvas + 3-Panel Plotly Quant Price Ladder & Tactical Playbook), tự động xuất bản lên **GitHub Pages**.  
+> **Kiến trúc Cloud-Native 100% (Zero-Touch Automation):** Vận hành hoàn toàn tự động trên **GitHub Actions** theo **Lưới Cron Đa Tầng Pre-Session Radar & Dual-Stage Thích Ứng 2 Mùa**, giải mã ma trận Dealer theo mô hình **Black-76** (Greeks giải tích bậc 1 & bậc 2: Delta, Gamma, Vega, Vanna, Charm), trực quan hóa **Terminal Đa Chế Độ Dual-View** (Neiro Orderflow Footprint Canvas + 3-Panel Plotly Quant Price Ladder & Tactical Playbook), tự động xuất bản lên **GitHub Pages**.  
 > ⚠️ **Thuần Python Đám mây:** Không cần bật laptop, **KHÔNG phụ thuộc MT5 hay TradingView**.
 
 ---
@@ -17,7 +17,7 @@
 👉 **Bảng điều khiển Tác chiến Live:** [https://daninguyen2509.github.io/-Neiro-NQ-Quant/](https://daninguyen2509.github.io/-Neiro-NQ-Quant/)
 
 Giao diện tích hợp bộ chuyển đổi tab linh hoạt:
-- **TAB 1: ATAS ORDERFLOW:** Sổ lệnh thang giá dọc, Bid/Ask Footprint Delta, Micro-candles và Tape khớp lệnh 60 FPS phong cách ATAS / Sierra Chart.
+- **TAB 1: NEIRO ORDERFLOW:** Sổ lệnh thang giá dọc, Bid/Ask Footprint Delta, Micro-candles và Tape khớp lệnh 60 FPS phong cách Neiro Orderflow.
 - **TAB 2: 3-PANEL QUANT LADDER:** Đồ thị Plotly 3-Panel tương tác (Net GEX Profile, OI Concentration, 2nd Order Greeks Flow), KPI Cards, Bảng Kịch bản Chiến thuật Intraday Scalping Strategy và Bảng Structural Swing Walls.
 
 Tự động cập nhật theo **Lưới Cron Đa Tầng Pre-Session Radar & Dual-Stage 0DTE** (14 lần/ngày):
@@ -82,7 +82,7 @@ Neiro-NQ-Quant/
 │       ├── ADR-001-cloud-native-options-quant-pipeline.md
 │       └── ADR-002-dual-view-terminal-and-black76-microstructure.md
 ├── exports/
-│   ├── latest_nq_dashboard.html     # Tactical Terminal Dual-View (ATAS + Plotly 3-Panel)
+│   ├── latest_nq_dashboard.html     # Tactical Terminal Dual-View (Neiro + Plotly 3-Panel)
 │   ├── index.html                   # Web view trực tiếp cho GitHub Pages
 │   └── nq_tactical_levels.json      # Bảng mốc chiến thuật & recommendations JSON
 ├── src/
@@ -97,7 +97,7 @@ Neiro-NQ-Quant/
 │   │   ├── structure.py             # Cấu trúc vi mô & Microstructure levels
 │   │   └── state_machine.py         # Level State Machine Engine & SL/TP Reversal
 │   ├── hud/
-│   │   └── html_dashboard.py        # Terminal Dual-View (ATAS Footprint + Plotly 3-Panel HUD)
+│   │   └── html_dashboard.py        # Terminal Dual-View (Neiro Footprint + Plotly 3-Panel HUD)
 │   ├── dashboard/
 │   │   ├── html_dashboard.py        # Alias import tương thích ngược
 │   │   └── visualizer.py            # Visualizer cổ điển

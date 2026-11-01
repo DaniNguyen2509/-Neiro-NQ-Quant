@@ -127,10 +127,10 @@ def test_anti_collision_plotly_terminal():
     assert spot_annot[0].x == 0.98
     assert spot_annot[0].xanchor == "right"
 
-    # 3. HTML export contains pure single-screen ATAS terminal and live Greeks radar
+    # 3. HTML export contains pure single-screen Neiro terminal and live Greeks radar
     html = generate_html_terminal(df_clean, meta, fig)
     assert "NEIRO-NQ-QUANT TERMINAL" in html
     assert "LIVE BLACK-76 REALTIME GREEKS RADAR" in html
     assert "SPOT CME" in html
     assert "MT5: ~" in html
-    assert "atas-canvas" in html
+    assert "neiro-canvas" in html

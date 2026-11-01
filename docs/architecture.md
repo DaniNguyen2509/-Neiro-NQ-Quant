@@ -52,8 +52,8 @@ Hệ thống được thiết kế theo tư duy **Cloud-Native 100% & Zero-Waste
 |             TẦNG 5: TERMINAL HUD ĐA CHẾ ĐỘ DUAL-VIEW & GITHUB PAGES               |
 |  [Header Navigation]: Chuyển đổi linh hoạt giữa 2 chế độ tác chiến chuyên sâu:    |
 |                                                                                   |
-|  [TAB 1: ATAS ORDERFLOW FOOTPRINT]                                                |
-|    - Canvas HTML5 Dark Theme 60 FPS phong cách ATAS / Sierra Chart.               |
+|  [TAB 1: NEIRO ORDERFLOW FOOTPRINT]                                                |
+|    - Canvas HTML5 Dark Theme 60 FPS phong cách Neiro Orderflow.               |
 |    - Thang giá dọc (Vertical Price Ladder), Volume Profile, Bid/Ask Footprint,    |
 |      Nến vi mô (Micro-candles), Sổ khớp lệnh Tick-by-Tick & Lưới cản Options.     |
 |    - Hỗ trợ tùy chỉnh đòn bẩy E-mini NQ ($20/pt) hoặc Micro MNQ ($2/pt).          |
@@ -265,32 +265,32 @@ Giao diện HTML độc lập được tạo bởi [`src/hud/html_dashboard.py`]
 
 ### 1. Navigation Header & Cơ chế Chuyển View (Tab Switching Engine)
 Người dùng có thể chuyển đổi tức thì giữa 2 góc nhìn thông qua các nút chuyển tab trên thanh Header:
-- `switchTerminalView('atas')`: Hiển thị Tab 1 (Canvas ATAS Orderflow Footprint).
+- `switchTerminalView('neiro')`: Hiển thị Tab 1 (Canvas Neiro Orderflow Footprint).
 - `switchTerminalView('ladder')`: Hiển thị Tab 2 (Plotly 3-Panel Quant Ladder, KPI Cards và Bảng Kịch bản Chiến thuật).
 
 ```javascript
 function switchTerminalView(view) {
-  var atasTab = document.getElementById('tab-atas-view');
+  var neiroTab = document.getElementById('tab-neiro-view');
   var ladderTab = document.getElementById('tab-ladder-view');
-  var btnAtas = document.getElementById('btn-nav-atas');
+  var btnNeiro = document.getElementById('btn-nav-neiro');
   var btnLadder = document.getElementById('btn-nav-ladder');
-  if (view === 'atas') {
-    atasTab.style.display = 'block';
+  if (view === 'neiro') {
+    neiroTab.style.display = 'block';
     ladderTab.style.display = 'none';
-    btnAtas.className = 'tab-btn active';
+    btnNeiro.className = 'tab-btn active';
     btnLadder.className = 'tab-btn';
     window.dispatchEvent(new Event('resize'));
   } else {
-    atasTab.style.display = 'none';
+    neiroTab.style.display = 'none';
     ladderTab.style.display = 'block';
-    btnAtas.className = 'tab-btn';
+    btnNeiro.className = 'tab-btn';
     btnLadder.className = 'tab-btn active';
     window.dispatchEvent(new Event('resize'));
   }
 }
 ```
 
-### 2. Tab 1: ATAS Orderflow Footprint Terminal
+### 2. Tab 1: Neiro Orderflow Footprint Terminal
 - Sử dụng thẻ `<canvas>` HTML5 kết hợp JavaScript thuần để vẽ sổ lệnh thang giá dọc ở tần số 60 FPS.
 - Cột giá trung tâm (Price Column) hiển thị chi tiết các mốc cản Options (Call Wall, Put Wall, ATM Pivot, Gamma Flip, Squeeze Triggers).
 - Cột Bid/Ask Volume Footprint phản ánh lực mua/bán chủ động tức thời tại từng nấc giá.
@@ -327,6 +327,6 @@ Hệ thống hiển thị đồng thời cả giá CME Futures chuẩn và giá 
 | **Quant Engine** | `src/quant_engine/engine.py` | Tính Net GEX, VEX, CHEX, Put-Call Parity Synthetic Pivot, Squeeze/Waterfall Triggers, Expected Move |
 | **Microstructure** | `src/quant_engine/structure.py` | Phát hiện Air Pockets, phân tích mật độ thanh khoản và cấu trúc vi mô |
 | **State Machine** | `src/quant_engine/state_machine.py` | Mô hình hóa trạng thái từng level (Dormant, Triggered, Absorption, Slicing Risk), tính toán SL/TP đa chiều |
-| **Tactical HUD** | `src/hud/html_dashboard.py` | Generator chính xuất Terminal Đa Chế Độ Dual-View (ATAS Footprint + Plotly 3-Panel) và JSON Feed |
+| **Tactical HUD** | `src/hud/html_dashboard.py` | Generator chính xuất Terminal Đa Chế Độ Dual-View (Neiro Footprint + Plotly 3-Panel) và JSON Feed |
 | **Dashboard Wrapper** | `src/dashboard/html_dashboard.py` | Wrapper tương thích ngược, import và forward toàn bộ hàm từ `src/hud/html_dashboard.py` |
 | **Pipeline Runner** | `src/main.py` | Entrypoint điều phối luồng thực thi khép kín |

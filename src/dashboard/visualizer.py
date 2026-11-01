@@ -1,5 +1,5 @@
 """
-Interactive Plotly ATAS Dark Theme Dashboard & Standalone HTML Report Generator for E-mini Nasdaq.
+Interactive Plotly Neiro Dark Theme Dashboard & Standalone HTML Report Generator for E-mini Nasdaq.
 Renders natively in Google Colab and exports to a complete standalone HTML tactical terminal.
 Panel Layout matches Neiro-Quant exact 3-panel horizontal price ladder:
 - Panel 1: Net GEX ($M) & Moc Chien Thuat (SL/TP) (Horizontal bars, Y-axis = Strike Price)
@@ -29,7 +29,7 @@ def build_tactical_dashboard(
     output_html_path: Optional[str] = None
 ) -> Optional[Any]:
     """
-    Build 3-Panel ATAS-style horizontal price ladder terminal for E-mini Nasdaq & QQQ Options:
+    Build 3-Panel Neiro-style horizontal price ladder terminal for E-mini Nasdaq & QQQ Options:
     - Panel 1: Net Gamma Exposure (Net GEX Profile per Strike) + Structural Reference Lines & Action Badges
     - Panel 2: Volume vs Open Interest (Put on Left, Call on Right)
     - Panel 3: 2nd Order Greeks: Vanna (VEX) & Charm (CHEX)
@@ -329,7 +329,7 @@ def build_tactical_dashboard(
             row=1, col=3
         )
 
-    # Overall Dark ATAS Layout
+    # Overall Dark Neiro Layout
     regime_short = "POS_GAMMA (Mean-Revert)" if "POSITIVE" in regime else "NEG_GAMMA (Volatile)"
     fig.update_layout(
         template="plotly_dark",
@@ -837,7 +837,7 @@ def generate_standalone_html_report(
         </div>
     </div>
 
-    <!-- 3-Panel ATAS Interactive Chart -->
+    <!-- 3-Panel Neiro Interactive Chart -->
     <div class="chart-box">
         {plotly_div}
     </div>
