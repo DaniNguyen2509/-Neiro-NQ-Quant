@@ -50,6 +50,18 @@ def test_black76_put_call_parity_and_greeks():
     discount = math.exp(-r * T)
     assert np.isclose(c_delta[0] - p_delta[0], discount, atol=1e-3)
 
+    # Charm consistency against numerical finite difference (-dDelta/dT)
+    eps = 1e-6
+    _, d_plus, _, _, _, _ = black76_price_and_greeks(F, [K], T + eps, r, [sigma], is_call=True)
+    _, d_minus, _, _, _, _ = black76_price_and_greeks(F, [K], T - eps, r, [sigma], is_call=True)
+    num_charm_call = - (d_plus[0] - d_minus[0]) / (2 * eps)
+    assert np.isclose(c_charm[0], num_charm_call, atol=1e-4)
+
+    _, pd_plus, _, _, _, _ = black76_price_and_greeks(F, [K], T + eps, r, [sigma], is_call=False)
+    _, pd_minus, _, _, _, _ = black76_price_and_greeks(F, [K], T - eps, r, [sigma], is_call=False)
+    num_charm_put = - (pd_plus[0] - pd_minus[0]) / (2 * eps)
+    assert np.isclose(p_charm[0], num_charm_put, atol=1e-4)
+
 
 def test_solve_iv_newton_brent():
     """Verify IV solver accurately recovers known IV even on short DTE."""

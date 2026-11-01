@@ -190,8 +190,10 @@ def process_options_chain_black76(
     step = float(diff_strikes.min()) if len(diff_strikes) > 0 else 50.0
     buffer_val = min(step * 0.15, 25.0)  # Dynamic buffer (no hardcoding)
 
-    squeeze_trigger = call_wall + buffer_val
-    waterfall_trigger = put_wall - buffer_val
+    c_mid_cw = float(call_wall_row["callMid"]) if "callMid" in call_wall_row else buffer_val
+    p_mid_pw = float(put_wall_row["putMid"]) if "putMid" in put_wall_row else buffer_val
+    squeeze_trigger = call_wall + (c_mid_cw if c_mid_cw > 0.5 else buffer_val)
+    waterfall_trigger = put_wall - (p_mid_pw if p_mid_pw > 0.5 else buffer_val)
 
     # Dynamic tactical strikes (Decoded strictly dynamically)
     strikes_above = strikes[strikes > F_futures]

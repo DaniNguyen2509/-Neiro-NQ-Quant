@@ -14,15 +14,40 @@ from src.collector.base import BaseCollector
 from src.collector.greeks import vectorized_black_scholes_greeks, estimate_iv_brent
 
 
+def clean_num(val: Any, default: float = 0.0) -> float:
+    """Sanitize any numeric or NaN value safely."""
+    if val is None or pd.isna(val):
+        return default
+    try:
+        f = float(val)
+        return default if (math.isnan(f) or math.isinf(f)) else f
+    except Exception:
+        return default
+
+
 def calculate_dte(expiration_date_str: str) -> float:
-    """Calculate fractional days to expiration (assuming 16:00 ET settlement)."""
+    """
+    Calculate fractional days to expiration relative to US Eastern Time (16:00 ET settlement).
+    Accurately scales intraday 0DTE time decay (T -> 0) into Power Hour.
+    """
     try:
         exp_date = datetime.datetime.strptime(str(expiration_date_str)[:10], "%Y-%m-%d").date()
-        today = datetime.date.today()
-        diff_days = (exp_date - today).days
+        try:
+            import zoneinfo
+            et_zone = zoneinfo.ZoneInfo("America/New_York")
+            now_et = datetime.datetime.now(et_zone)
+        except Exception:
+            now_utc = datetime.datetime.now(datetime.timezone.utc)
+            now_et = now_utc - datetime.timedelta(hours=5)
+
+        today_et = now_et.date()
+        diff_days = (exp_date - today_et).days
+
         if diff_days <= 0:
-            return 0.35  # Intraday 0DTE (~8.5 trading hours remaining)
-        return float(diff_days)
+            market_close_sec = (16 - now_et.hour) * 3600 - now_et.minute * 60 - now_et.second
+            minutes_left = max(5.0, market_close_sec / 60.0)
+            return max(0.0035, minutes_left / (24.0 * 60.0))
+        return float(diff_days) + max(0.0, (16.0 - now_et.hour) / 24.0)
     except Exception:
         return 1.0
 
@@ -167,19 +192,25 @@ class NasdaqCollector(BaseCollector):
                 rows = []
                 for _, r in merged.iterrows():
                     stk = float(r['strike'])
-                    c_bid = float(r.get('bid_call', 0.0) or 0.0)
-                    c_ask = float(r.get('ask_call', 0.0) or 0.0)
-                    c_mid = 0.5 * (c_bid + c_ask) if (c_bid + c_ask) > 0 else float(r.get('lastPrice_call', 0.0) or 0.0)
-                    c_vol = float(r.get('volume_call', 0.0) or 0.0)
-                    c_oi = float(r.get('openInterest_call', 0.0) or 0.0)
-                    c_iv = float(r.get('impliedVolatility_call', 0.18) or 0.18)
+                    c_bid = clean_num(r.get('bid_call'), 0.0)
+                    c_ask = clean_num(r.get('ask_call'), 0.0)
+                    c_last = clean_num(r.get('lastPrice_call'), 0.0)
+                    c_mid = 0.5 * (c_bid + c_ask) if (c_bid + c_ask) > 0 else c_last
+                    c_vol = clean_num(r.get('volume_call'), 0.0)
+                    c_oi = clean_num(r.get('openInterest_call'), 0.0)
+                    c_iv = clean_num(r.get('impliedVolatility_call'), 0.18)
+                    if c_iv <= 0.01:
+                        c_iv = 0.18
                     
-                    p_bid = float(r.get('bid_put', 0.0) or 0.0)
-                    p_ask = float(r.get('ask_put', 0.0) or 0.0)
-                    p_mid = 0.5 * (p_bid + p_ask) if (p_bid + p_ask) > 0 else float(r.get('lastPrice_put', 0.0) or 0.0)
-                    p_vol = float(r.get('volume_put', 0.0) or 0.0)
-                    p_oi = float(r.get('openInterest_put', 0.0) or 0.0)
-                    p_iv = float(r.get('impliedVolatility_put', 0.18) or 0.18)
+                    p_bid = clean_num(r.get('bid_put'), 0.0)
+                    p_ask = clean_num(r.get('ask_put'), 0.0)
+                    p_last = clean_num(r.get('lastPrice_put'), 0.0)
+                    p_mid = 0.5 * (p_bid + p_ask) if (p_bid + p_ask) > 0 else p_last
+                    p_vol = clean_num(r.get('volume_put'), 0.0)
+                    p_oi = clean_num(r.get('openInterest_put'), 0.0)
+                    p_iv = clean_num(r.get('impliedVolatility_put'), 0.18)
+                    if p_iv <= 0.01:
+                        p_iv = 0.18
                     
                     rows.append({
                         'strike': stk,

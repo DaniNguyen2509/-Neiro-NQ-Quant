@@ -97,7 +97,7 @@ def load_options_dataset(
             if not df_live.empty and len(df_live) >= 5:
                 df_raw = df_live
                 basis_ratio = max(1.0, float(prices.get("basis", 41.3)))
-                eff_multiplier = round(100.0 / basis_ratio, 4)
+                eff_multiplier = round((100.0 / basis_ratio) * (multiplier / 20.0), 4)
 
                 if eff_basis is None:
                     eff_basis = 0.0
@@ -537,6 +537,30 @@ def generate_html_terminal(df: pd.DataFrame, meta: Dict[str, Any], fig: go.Figur
         micro_header = "📊 BẢNG DỮ LIỆU ĐỊNH LƯỢNG MICROSTRUCTURE TỪNG STRIKE (E-MINI NASDAQ & MT5 SPOT)"
 
     table_rows_html = ""
+    df_sorted = df.sort_values("strike", ascending=False)
+    for _, row in df_sorted.iterrows():
+        stk_val = float(row["strike"])
+        gex_val = float(row.get("netGEX", 0.0))
+        c_oi_val = int(row.get("callOpenInterest", 0))
+        p_oi_val = int(row.get("putOpenInterest", 0))
+        c_vol_val = int(row.get("callVolume", 0))
+        p_vol_val = int(row.get("putVolume", 0))
+        vex_val = float(row.get("netVEX", 0.0))
+        chex_val = float(row.get("netCHEX", 0.0))
+        gex_color = "#4ADE80" if gex_val >= 0 else "#F87171"
+        is_near = abs(stk_val - spot) <= (step * 0.5)
+        row_cls = ' class="row-spot"' if is_near else ""
+        table_rows_html += f"""
+        <tr{row_cls} id="row-strike-{int(stk_val)}">
+            <td style="padding:6px 10px;"><b>NQ {stk_val:,.0f}</b></td>
+            <td style="padding:6px 10px; color: {gex_color}; font-weight:600;" id="cell-gex-{int(stk_val)}">${gex_val:+.2f}M</td>
+            <td style="padding:6px 10px; color:#86EFAC;">{c_oi_val:,}</td>
+            <td style="padding:6px 10px; color:#FCA5A5;">{p_oi_val:,}</td>
+            <td style="padding:6px 10px; color:#16A34A;">{c_vol_val:,}</td>
+            <td style="padding:6px 10px; color:#DC2626;">{p_vol_val:,}</td>
+            <td style="padding:6px 10px; color:#FB923C;">${vex_val:+.2f}M</td>
+            <td style="padding:6px 10px; color:#22D3EE;">${chex_val:+.2f}M</td>
+        </tr>"""
 
     js_options_data = []
     for _, r in df.sort_values("strike").iterrows():
@@ -762,7 +786,8 @@ def generate_html_terminal(df: pd.DataFrame, meta: Dict[str, Any], fig: go.Figur
     <div class="atas-win-topbar">
         <div class="atas-top-left">
             <span class="atas-blue-indicator"></span>
-            <div class="atas-tab active"><span class="atas-tab-text">NEIRO QUANT &bull; NQ M1</span></div>
+            <div class="atas-tab active" id="tab-atas" onclick="switchTerminalView('atas')"><span class="atas-tab-text">ATAS ORDERFLOW</span></div>
+            <div class="atas-tab" id="tab-plotly" onclick="switchTerminalView('plotly')"><span class="atas-tab-text">3-PANEL QUANT LADDER</span></div>
             <span class="atas-win-sep">|</span>
             <div class="atas-tf-group">
                 <button class="timeframe-pill active" onclick="setTimeframe('1m')">1M</button>
@@ -816,7 +841,7 @@ def generate_html_terminal(df: pd.DataFrame, meta: Dict[str, Any], fig: go.Figur
     </div>
 
     <!-- Main M15 Chart Body (100% Full Width & Height) -->
-    <div class="atas-body-container">
+    <div class="atas-body-container" id="atas-view-container">
         <div id="tv-chart-wrapper">
             <div class="atas-floating-hud">
                 <div class="hud-item"><span class="hud-label">NET GEX (Trục ATM):</span> <b id="hud-gex-val" style="color:{regime_color};">${total_gex:+.1f}M</b></div>
@@ -831,10 +856,180 @@ def generate_html_terminal(df: pd.DataFrame, meta: Dict[str, Any], fig: go.Figur
             <canvas id="atas-canvas"></canvas>
         </div>
     </div>
+
+    <!-- 3-Panel Plotly & Tactical Playbook View (Dual View) -->
+    <div id="plotly-view-container" style="display:none; flex:1; width:100%; height:calc(100vh - 56px); overflow-y:auto; padding:16px 20px; background:#0A0E17; box-sizing:border-box;">
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:12px; margin-bottom:16px;">
+            {kpi_card_1}
+            <div class="kpi-card" style="background:#0F172A; border:1px solid #1E293B; border-radius:8px; padding:12px 16px;">
+                <div class="kpi-label" style="font-size:11px; color:#94A3B8; font-weight:700;">MARKET REGIME & NET GEX</div>
+                <div class="kpi-val" style="color: {regime_color}; font-size:22px; font-weight:800; font-family:'JetBrains Mono';">${total_gex:+.1f}M GEX</div>
+                <div class="kpi-sub" style="font-size:11px; margin-top:4px;">{regime_badge}</div>
+            </div>
+            <div class="kpi-card" style="background:#0F172A; border:1px solid #1E293B; border-radius:8px; padding:12px 16px;">
+                <div class="kpi-label" style="font-size:11px; color:#94A3B8; font-weight:700;">BIÊN ĐỘ 1-SIGMA EXPECTED MOVE</div>
+                <div class="kpi-val" style="color: #FACC15; font-size:22px; font-weight:800; font-family:'JetBrains Mono';">&plusmn;{expected_move:,.1f} pts</div>
+                <div class="kpi-sub" style="font-size:11px; color:#94A3B8; margin-top:4px;">Intraday (Rule of 16): <b>&plusmn;{intraday_move:,.1f} pts</b> | {spot-intraday_move:,.0f} &ndash; {spot+intraday_move:,.0f}</div>
+            </div>
+            <div class="kpi-card" style="background:#0F172A; border:1px solid #1E293B; border-radius:8px; padding:12px 16px;">
+                <div class="kpi-label" style="font-size:11px; color:#94A3B8; font-weight:700;">GREEKS BẬC 2 (VANNA & CHARM)</div>
+                <div class="kpi-val" style="color: #22D3EE; font-size:22px; font-weight:800; font-family:'JetBrains Mono';">${total_vex:+.1f}M / ${total_chex:+.1f}M</div>
+                <div class="kpi-sub" style="font-size:11px; color:#94A3B8; margin-top:4px;">Net VEX (1% IV) | Net CHEX (Ngày decay)</div>
+            </div>
+        </div>
+
+        <!-- 3-Panel Plotly Horizontal Price Ladder -->
+        <div style="background:#0F172A; border:1px solid #1E293B; border-radius:8px; padding:8px; margin-bottom:18px;">
+            {plotly_div}
+        </div>
+
+        <!-- Bang 1: Intraday Scalping Strategy -->
+        <div class="table-box" style="background:#0F172A; border:1px solid #1E293B; border-radius:8px; padding:14px; margin-bottom:18px; overflow-x:auto;">
+            <div style="font-weight:700; color:#38BDF8; margin-bottom:10px; font-size:12.5px; font-family:'JetBrains Mono';">
+                🎯 PHẦN 1: BẢNG TÁC CHIẾN LƯỚT SÓNG TRONG NGÀY (INTRADAY SCALPING - ĂN 30-50 ĐIỂM NQ)
+            </div>
+            <table style="width:100%; border-collapse:collapse; font-size:11.5px; font-family:'JetBrains Mono';">
+                <thead>
+                    <tr style="background:#111C33; color:#94A3B8; text-align:left;">
+                        <th style="padding:8px 10px;">Chiến Lược</th>
+                        <th style="padding:8px 10px;">{col_cme_act}</th>
+                        {th_mt5}
+                        <th style="padding:8px 10px;">{col_cme_ent}</th>
+                        <th style="padding:8px 10px;">{col_cme_sl}</th>
+                        <th style="padding:8px 10px;">Take Profit (TP)</th>
+                        <th style="padding:8px 10px;">Kịch Bản Tác Chiến</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr style="border-bottom:1px solid #162238;">
+                        <td style="padding:8px 10px; color:#4ADE80; font-weight:700;">1. SQUEEZE BUY (Vượt Cửa Ải)</td>
+                        <td style="padding:8px 10px;">Vượt &gt; {strike_above + buffer_val:,.1f}</td>
+                        {td_mt5_1}
+                        <td style="padding:8px 10px;">{strike_above + buffer_val + 2.0:,.1f}</td>
+                        <td style="padding:8px 10px;">{strike_above + buffer_val - hard_sl_pts:,.1f}</td>
+                        <td style="padding:8px 10px;">{next_above:,.1f}</td>
+                        <td style="padding:8px 10px; color:#94A3B8; font-family:sans-serif;">Breakout nén biến độ -> MM quét lệnh Short Gamma.</td>
+                    </tr>
+                    <tr style="border-bottom:1px solid #162238;">
+                        <td style="padding:8px 10px; color:#F87171; font-weight:700;">2. FADE SHORT (Cản Tiền Tuyến)</td>
+                        <td style="padding:8px 10px;">Chạm {strike_above - buffer_val:,.1f} - {strike_above:,.1f}</td>
+                        {td_mt5_2}
+                        <td style="padding:8px 10px;">{strike_above - 2.0:,.1f}</td>
+                        <td style="padding:8px 10px;">{strike_above + fade_sl_pts:,.1f}</td>
+                        <td style="padding:8px 10px;">{atm_pivot:,.1f}</td>
+                        <td style="padding:8px 10px; color:#94A3B8; font-family:sans-serif;">Đỉnh Gamma nén giá, chặn đà tăng quay về trục Pivot.</td>
+                    </tr>
+                    <tr style="border-bottom:1px solid #162238;">
+                        <td style="padding:8px 10px; color:#38BDF8; font-weight:700;">3. REBOUND BUY (Bắt Sàn Đỡ)</td>
+                        <td style="padding:8px 10px;">Chạm {strike_below:,.1f} - {strike_below + buffer_val:,.1f}</td>
+                        {td_mt5_3}
+                        <td style="padding:8px 10px;">{strike_below + 3.0:,.1f}</td>
+                        <td style="padding:8px 10px;">{strike_below - fade_sl_pts:,.1f}</td>
+                        <td style="padding:8px 10px;">{atm_pivot:,.1f}</td>
+                        <td style="padding:8px 10px; color:#94A3B8; font-family:sans-serif;">Đệm Put hấp thụ lực bán, hồi phục kỹ thuật trong phiên.</td>
+                    </tr>
+                    <tr style="border-bottom:1px solid #162238;">
+                        <td style="padding:8px 10px; color:#EF4444; font-weight:700;">4. BREAKDOWN SHORT (Thủng Sàn Đỡ)</td>
+                        <td style="padding:8px 10px;">Thủng &lt; {strike_below - buffer_val:,.1f}</td>
+                        {td_mt5_4}
+                        <td style="padding:8px 10px;">{strike_below - buffer_val - 2.0:,.1f}</td>
+                        <td style="padding:8px 10px;">{strike_below + hard_sl_pts:,.1f}</td>
+                        <td style="padding:8px 10px;">{secondary_support:,.1f}</td>
+                        <td style="padding:8px 10px; color:#94A3B8; font-family:sans-serif;">Vỡ đệm hỗ trợ -> Trượt chân không về trạm nghỉ kế tiếp.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Bang 2: Structural Swing Walls -->
+        <div class="table-box" style="background:#0F172A; border:1px solid #1E293B; border-radius:8px; padding:14px; margin-bottom:18px; overflow-x:auto;">
+            <div style="font-weight:700; color:#F59E0B; margin-bottom:10px; font-size:12.5px; font-family:'JetBrains Mono';">
+                🏰 PHẦN 2: BẢNG TÁC CHIẾN PHỤC KÍCH THÀNH TRÌ (STRUCTURAL SWING WALLS - ĐÁNH SÓNG LỚN)
+            </div>
+            <table style="width:100%; border-collapse:collapse; font-size:11.5px; font-family:'JetBrains Mono';">
+                <thead>
+                    <tr style="background:#111C33; color:#94A3B8; text-align:left;">
+                        <th style="padding:8px 10px;">Thành Trì</th>
+                        <th style="padding:8px 10px;">Vị Trí Mốc Cản</th>
+                        {th_mt5}
+                        <th style="padding:8px 10px;">Hành Động Khuyên Dùng</th>
+                        <th style="padding:8px 10px;">Hard SL</th>
+                        <th style="padding:8px 10px;">Mục Tiêu TP (Swing)</th>
+                        <th style="padding:8px 10px;">Bản Chất Dòng Tiền Tổ Chức</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr style="border-bottom:1px solid #162238;">
+                        <td style="padding:8px 10px; color:#A855F7; font-weight:700;">CALL WALL ({call_wall_oi:,} OI)</td>
+                        <td style="padding:8px 10px;">NQ {call_wall:,.1f}</td>
+                        {td_mt5_5}
+                        <td style="padding:8px 10px; color:#F87171; font-weight:600;">SELL SWING (Fade Call Wall)</td>
+                        <td style="padding:8px 10px;">{call_wall + 25.0:,.1f}</td>
+                        <td style="padding:8px 10px;">{atm_pivot:,.1f} &rarr; {put_wall:,.1f}</td>
+                        <td style="padding:8px 10px; color:#94A3B8; font-family:sans-serif;">Trần bê tông cốt thép của quỹ lớn.</td>
+                    </tr>
+                    <tr style="border-bottom:1px solid #162238;">
+                        <td style="padding:8px 10px; color:#34D399; font-weight:700;">PUT WALL ({put_wall_oi:,} OI)</td>
+                        <td style="padding:8px 10px;">NQ {put_wall:,.1f}</td>
+                        {td_mt5_6}
+                        <td style="padding:8px 10px; color:#4ADE80; font-weight:600;">BUY SWING (Bắt Đáy Bệ Đỡ)</td>
+                        <td style="padding:8px 10px;">{put_wall - 25.0:,.1f}</td>
+                        <td style="padding:8px 10px;">{atm_pivot:,.1f} &rarr; {call_wall:,.1f}</td>
+                        <td style="padding:8px 10px; color:#94A3B8; font-family:sans-serif;">Đáy thép phòng hộ tối cao của Market Makers.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Bang 3: Strike Microstructure Table -->
+        <div class="table-box" style="background:#0F172A; border:1px solid #1E293B; border-radius:8px; padding:14px; margin-bottom:18px; overflow-x:auto;">
+            <div style="font-weight:700; color:#E2E8F0; margin-bottom:10px; font-size:12.5px; font-family:'JetBrains Mono';">
+                {micro_header}
+            </div>
+            <table style="width:100%; border-collapse:collapse; font-size:11px; font-family:'JetBrains Mono';">
+                <thead>
+                    <tr style="background:#111C33; color:#94A3B8; text-align:left;">
+                        <th style="padding:6px 10px;">NQ Strike</th>
+                        <th style="padding:6px 10px;">Net GEX ($M)</th>
+                        <th style="padding:6px 10px;">Call OI</th>
+                        <th style="padding:6px 10px;">Put OI</th>
+                        <th style="padding:6px 10px;">Call Vol</th>
+                        <th style="padding:6px 10px;">Put Vol</th>
+                        <th style="padding:6px 10px;">Net VEX ($M)</th>
+                        <th style="padding:6px 10px;">Net CHEX ($M/d)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {table_rows_html}
+                </tbody>
+            </table>
+        </div>
+    </div>
 </div>
 
 <script>
 window.INITIAL_OPTIONS = {json_options_str};
+function switchTerminalView(view) {{
+    const atasView = document.getElementById('atas-view-container');
+    const plotlyView = document.getElementById('plotly-view-container');
+    const tabAtas = document.getElementById('tab-atas');
+    const tabPlotly = document.getElementById('tab-plotly');
+    if (!atasView || !plotlyView) return;
+    if (view === 'plotly') {{
+        atasView.style.display = 'none';
+        plotlyView.style.display = 'block';
+        if (tabPlotly) tabPlotly.classList.add('active');
+        if (tabAtas) tabAtas.classList.remove('active');
+        window.dispatchEvent(new Event('resize'));
+    }} else {{
+        plotlyView.style.display = 'none';
+        atasView.style.display = 'flex';
+        if (tabAtas) tabAtas.classList.add('active');
+        if (tabPlotly) tabPlotly.classList.remove('active');
+        if (chart) chart.timeScale().fitContent();
+        drawAtasOverlay();
+    }}
+}}
 window.INITIAL_META = {json_meta_str};
 window.REAL_CANDLES_BY_TF = {json_candles_str};
 
@@ -878,8 +1073,8 @@ const Black76Engine = {{
 
         const vanna = -df * np_d1 * (d2 / sigma);
         const charm = isCall
-            ? df * (r * n_d1 - np_d1 * ((2 * r * T - d2 * sigma * sqrtT) / (2 * T * sigma * sqrtT)))
-            : -df * (r * this.normalCdf(-d1) + np_d1 * ((2 * r * T - d2 * sigma * sqrtT) / (2 * T * sigma * sqrtT)));
+            ? df * (r * n_d1 + np_d1 * (d2 / (2.0 * T)))
+            : df * (-r * this.normalCdf(-d1) + np_d1 * (d2 / (2.0 * T)));
 
         return {{ delta, gamma, vega, theta, vanna, charm }};
     }},
@@ -1311,6 +1506,8 @@ function onTick(price, isUserOverride = false) {{
     }}
 
     // Recalculate F0 Theoretical & Delta F Spread
+    const rRate = window.INITIAL_META.risk_free_rate || 0.0397;
+    const tYears = Math.max(0.0005, (window.INITIAL_META.dte_days || 1.0) / 365.0);
     const divYield = window.INITIAL_META.div_yield || 0.0058;
     const spotUnd = window.INITIAL_META.spot_underlying || (currentPrice - 12.5);
     const f0Fair = spotUnd * Math.exp((rRate - divYield) * tYears);
@@ -1483,12 +1680,49 @@ def build_and_export_dashboard(
     json_path = Path("exports/nq_tactical_levels.json")
     try:
         json_path.parent.mkdir(parents=True, exist_ok=True)
+        from src.quant_engine.state_machine import LevelStateMachine
+        sm = LevelStateMachine()
+        tactical_recs = sm.evaluate(
+            current_nq_price=meta["spot_price"],
+            metrics={
+                "regime": meta["regime"],
+                "total_net_gex_millions": meta["total_net_gex"],
+                "nq_levels": {
+                    "call_wall": meta["call_wall"],
+                    "put_wall": meta["put_wall"],
+                    "atm_synthetic_pivot": meta["atm_strike"],
+                    "pin_risk_magnet": meta.get("pin_risk_magnet", meta["atm_strike"]),
+                    "gamma_flip": meta.get("strike_below", meta["atm_strike"]),
+                },
+                "qqq_levels": {
+                    "call_wall": round(meta["call_wall"] / meta.get("basis_ratio", 41.3), 2),
+                    "put_wall": round(meta["put_wall"] / meta.get("basis_ratio", 41.3), 2),
+                    "atm_synthetic_pivot": round(meta["atm_strike"] / meta.get("basis_ratio", 41.3), 2),
+                    "pin_risk_magnet": round(meta.get("pin_risk_magnet", meta["atm_strike"]) / meta.get("basis_ratio", 41.3), 2),
+                    "gamma_flip": round(meta.get("strike_below", meta["atm_strike"]) / meta.get("basis_ratio", 41.3), 2),
+                },
+                "air_pockets": [],
+            }
+        )
         json_feed = {
             "timestamp": datetime.datetime.now(datetime.timezone.utc).isoformat(),
             "symbol": "QQQ" if source == "yfinance" else "NQ",
             "futures_symbol": "NQ=F",
             "source": source,
             "metrics": meta,
+            "tactical_recommendations": [
+                {
+                    "level_name": r.level_name,
+                    "level_price_nq": r.level_price_nq,
+                    "state": r.state.value,
+                    "action": r.action,
+                    "entry_guide": r.entry_guide,
+                    "stop_loss_nq": r.stop_loss_nq,
+                    "take_profit_nq": r.take_profit_nq,
+                    "risk_warning": r.risk_warning
+                }
+                for r in tactical_recs
+            ]
         }
         with open(json_path, "w", encoding="utf-8") as jf:
             json.dump(json_feed, jf, indent=2, default=str)

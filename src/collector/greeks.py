@@ -75,11 +75,7 @@ def vectorized_black_scholes_greeks(
     vanna = - pdf_d1 * (d2 / sigma)
     
     # 5. Charm (- dDelta / dT) (Delta decay per year)
-    charm_call = - discount * (pdf_d1 * (r / denom - d2 / (2.0 * T)) - r * cdf_d1)
-    if is_call:
-        charm = charm_call
-    else:
-        charm = charm_call - r * discount
+    charm = - pdf_d1 * (r / denom - d2 / (2.0 * T))
     
     return price, delta, gamma, vega, vanna, charm
 

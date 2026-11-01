@@ -77,20 +77,34 @@ class LevelStateMachine:
             has_air_pocket_behind = any(abs(price_nq - ap_nq) <= 25.0 for ap_nq in air_pocket_nq_strikes)
             
             # Determine State
+            if role == "SUPPORT":
+                default_sl = price_nq - 20.0
+                default_tp = atm_pivot_nq if price_nq < atm_pivot_nq else price_nq + 50.0
+            elif role == "RESISTANCE":
+                default_sl = price_nq + 20.0
+                default_tp = atm_pivot_nq if price_nq > atm_pivot_nq else price_nq - 50.0
+            else:
+                if current_nq_price >= price_nq:
+                    default_sl = price_nq - 20.0
+                    default_tp = nq_levels.get("call_wall", price_nq + 80.0)
+                else:
+                    default_sl = price_nq + 20.0
+                    default_tp = nq_levels.get("put_wall", price_nq - 80.0)
+
             if dist > self.proximity_threshold:
                 state = LevelState.DORMANT
                 action = "MONITORING"
                 entry_guide = f"Dung ngoai quan sat. Gia cach level {dist:.1f} diem NQ."
-                sl = price_nq - 20.0 if role == "SUPPORT" else price_nq + 20.0
-                tp = atm_pivot_nq
+                sl = default_sl
+                tp = default_tp
                 warning = "Chua co phan ung vi mo."
                 
             elif dist <= self.proximity_threshold and dist > 3.0:
                 state = LevelState.TRIGGERED_TESTING
                 action = "PREPARING"
                 entry_guide = f"Gia dang tiep can vung dem ({dist:.1f} pts). Quan sat phan ung tai {price_nq:.1f}."
-                sl = price_nq - 20.0 if role == "SUPPORT" else price_nq + 20.0
-                tp = atm_pivot_nq
+                sl = default_sl
+                tp = default_tp
                 warning = "Khong vao lenh Market non truoc khi co xac nhan nen."
                 
             else:

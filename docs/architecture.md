@@ -1,7 +1,7 @@
 # Kiến trúc Hệ thống: Cloud-Native Automation & Quant Terminal cho E-mini Nasdaq
 
 > **Project:** Neiro-NQ-Quant  
-> **Phiên bản:** v3.0 (Cloud-Native Zero-Touch Automation & Black-76 Microstructure Engine)  
+> **Phiên bản:** v3.1 (Cloud-Native Zero-Touch Automation & Dual-View Microstructure Terminal)  
 > **Tài sản mục tiêu:** E-mini Nasdaq-100 Futures (`NQ` / `NQZ26`), Micro E-mini (`MNQ`), Spot Broker Index (`NAS100` / `US100`), và Invesco QQQ Trust Options.
 
 ---
@@ -14,8 +14,9 @@ Hệ thống được thiết kế theo tư duy **Cloud-Native 100% & Zero-Waste
 +-----------------------------------------------------------------------------------+
 |                        TẦNG 1: NGUỒN DỮ LIỆU ĐÁM MÂY (LIVE & FREE)                |
 |    - yfinance API (QQQ Options Chains: 150+ Strikes, 0DTE Hàng Ngày)              |
-|    - Vượt tường lửa Cloudflare 100%, thực thi < 4 giây, không tốn Chromium 300MB   |
+|    - Tốc độ siêu tốc < 4 giây, không tốn Chromium 300MB, vượt Cloudflare          |
 |    - US Treasury Yield 3M (Risk-Free Rate r) & Tỷ giá Futures CME                 |
+|    - Dynamic DTE: Đếm ngược từng phút theo giờ New York (America/New_York)        |
 |    - Benchmark Synthetic Chain Generator dự phòng khi ngoài giờ giao dịch         |
 +-----------------------------------------------------------------------------------+
                                           │
@@ -24,7 +25,7 @@ Hệ thống được thiết kế theo tư duy **Cloud-Native 100% & Zero-Waste
 |               TẦNG 2: THU THẬP & CHUẨN HÓA (COLLECTOR & DATA ENGINE)               |
 |    - symbols_resolver: Tự động phát hiện ngày đáo hạn gần nhất (0DTE/Weekly).     |
 |    - chain_fetcher: Quét toàn bộ Calls & Puts (Bid, Ask, Mid, Volume, OI, IV).    |
-|    - NaN-Safe Converter: Bảo vệ số liệu Volume/OI không bị văng Exception.        |
+|    - clean_num NaN-Safe: Triệt tiêu hoàn toàn lỗi lan truyền NaN từ sàn.          |
 |    - basis_mapper: Ánh xạ chuẩn xác giữa QQQ/NDX và HĐTL E-mini NQ ($20/pt).      |
 +-----------------------------------------------------------------------------------+
                                           │
@@ -36,25 +37,39 @@ Hệ thống được thiết kế theo tư duy **Cloud-Native 100% & Zero-Waste
 |  [GitHub Actions Pre-Session Radar Grid]|   |  - Black-76 Valuation ($e^{-rT}$)   |
 |  14 runs/ngày (CME, Âu 2 nấc, Mỹ 0DTE)  |   |  - Hybrid Newton-Brent IV Solver    |
 |  Chạy tự động đón đầu mở phiên 30-45p   |   |  - Greeks Bậc 1 & 2: Δ, Γ, ν, V, C  |
-|                                         |   |  - Put-Call Parity Synthetic Pivot  |
-|  [Snapshot & Parquet Storage]           |   |  - Net GEX ($M/1%), Net VEX, CHEX   |
-|  options_prices_NQZ26.csv (< 50KB)      |   |  - Brenner-Subrahmanyam 1-Sigma EM  |
-|  Zero-Waste Mandate (< 15MB toàn repo)  |   |  - Rule of 16 Intraday Volatility   |
-|                                         |   |  - Call/Put Walls & Air Pockets     |
-+-----------------------------------------+   |  - Level State Machine Engine       |
-                    │                         +-------------------------------------+
+|                                         |   |  - Đạo hàm Giải tích Charm CHEX     |
+|  [Snapshot & Parquet Storage]           |   |  - Put-Call Parity Synthetic Pivot  |
+|  options_prices_NQZ26.csv (< 50KB)      |   |  - Net GEX ($M/1%), Net VEX, CHEX   |
+|  Zero-Waste Mandate (< 15MB toàn repo)  |   |  - Brenner-Subrahmanyam 1-Sigma EM  |
+|                                         |   |  - Rule of 16 Intraday Volatility   |
+|                                         |   |  - Squeeze & Waterfall Triggers     |
+|                                         |   |  - Level State Machine Engine       |
++-----------------------------------------+   +-------------------------------------+
                     │                                           │
                     └─────────────────────┬─────────────────────┘
                                           ▼
 +-----------------------------------------------------------------------------------+
-|               TẦNG 5: TACTICAL TERMINAL HUD & GITHUB PAGES EXPORT                 |
-|    - Bảng điều khiển tương tác Plotly Dark HUD 3 Panels (Horizontal Price Ladder):|
-|      * Panel 1: Net GEX Profile ($M) & Mốc Chiến Thuật Dynamic                    |
-|      * Panel 2: Khối lượng (Volume) vs Mật độ Open Interest nén                   |
+|             TẦNG 5: TERMINAL HUD ĐA CHẾ ĐỘ DUAL-VIEW & GITHUB PAGES               |
+|  [Header Navigation]: Chuyển đổi linh hoạt giữa 2 chế độ tác chiến chuyên sâu:    |
+|                                                                                   |
+|  [TAB 1: ATAS ORDERFLOW FOOTPRINT]                                                |
+|    - Canvas HTML5 Dark Theme 60 FPS phong cách ATAS / Sierra Chart.               |
+|    - Thang giá dọc (Vertical Price Ladder), Volume Profile, Bid/Ask Footprint,    |
+|      Nến vi mô (Micro-candles), Sổ khớp lệnh Tick-by-Tick & Lưới cản Options.     |
+|    - Hỗ trợ tùy chỉnh đòn bẩy E-mini NQ ($20/pt) hoặc Micro MNQ ($2/pt).          |
+|                                                                                   |
+|  [TAB 2: 3-PANEL QUANT LADDER & TACTICAL PLAYBOOK]                                |
+|    - Bố cục 3 Panels thang giá ngang Plotly tương tác:                            |
+|      * Panel 1: Net GEX Profile ($M) & Mốc Chiến Thuật Dynamic (SL/TP dynamic)    |
+|      * Panel 2: Khối lượng (Volume) vs Mật độ Open Interest nén tổ chức           |
 |      * Panel 3: Greeks Bậc 2 tương tác (Vanna & Charm Flow)                       |
-|    - Anti-Collision Layout (Legend y=1.07, Spot CME x=0.98, Vertical Separation)  |
-|    - 2 Bảng Chiến thuật: Intraday Scalping (30-50 pts) & Structural Swing Walls   |
+|    - Thuật toán Chống Đè Chữ (Anti-Collision Layout: y=1.07, x=0.98, yshift)       |
+|    - 2 Bảng Kịch bản Chiến thuật: Intraday Scalping & Structural Swing Walls      |
+|    - Bảng Phân tích Vi mô Từng Strike (Call/Put OI, Volume, Greeks, Air Pocket)   |
+|                                                                                   |
+|  [EXPORTS & FEEDS]                                                                |
 |    - Đồng bộ độ lệch Spot Broker MT5 qua tham số --basis                          |
+|    - Xuất feed JSON nq_tactical_levels.json kèm đầy đủ tactical_recommendations   |
 |    - Tự động Deploy lên GitHub Pages (gh-pages) xem trực tiếp trên mọi thiết bị   |
 +-----------------------------------------------------------------------------------+
 ```
@@ -65,7 +80,7 @@ Hệ thống được thiết kế theo tư duy **Cloud-Native 100% & Zero-Waste
 
 ### 1. Lưới Cron Đa Tầng Pre-Session Radar & Dual-Stage 0DTE
 
-Áp dụng mô hình **3 Khối Cron chuyên biệt** (`14 lần chạy/ngày, Thứ 2 - Thứ 6`) tối ưu 100% cho cấu trúc E-mini Nasdaq & QQQ Options:
+Hệ thống thiết lập **3 Khối Cron chuyên biệt** (`14 lần chạy/ngày, Thứ 2 - Thứ 6`) trong file workflow [`.github/workflows/daily_options_sync.yml`](file:///c:/Users/Daniel/Documents/My-Projects/Neiro-NQ-Quant/.github/workflows/daily_options_sync.yml):
 
 ```yaml
 on:
@@ -106,81 +121,56 @@ on:
 | **Ephemeral Runner** | GitHub Actions Ubuntu | In-Memory | Chạy pipeline thu thập, giải Black-76 và xuất HTML (< 20 giây) | 0 VNĐ (GitHub Free Tier 2,000 phút/tháng) |
 | **Active Options Snapshot** | GitHub Repository | CSV (`data/options_prices_NQZ26.csv`) | Lưu trữ snapshot phục vụ chạy benchmark và fallback | Dung lượng < 50 KB |
 | **Interactive Terminal Web** | GitHub Pages (`gh-pages`) | HTML độc lập (`exports/index.html`) | Truy cập trực tiếp qua link Web trên điện thoại / PC | 0 VNĐ (Miễn phí vĩnh viễn) |
-| **Tactical Levels Feed** | GitHub Pages (`gh-pages`) | JSON (`exports/nq_tactical_levels.json`) | Nạp vào Bot Telegram, Discord hoặc MetaTrader EA | Dung lượng < 3 KB |
+| **Tactical Levels Feed** | GitHub Pages (`gh-pages`) | JSON (`exports/nq_tactical_levels.json`) | Nạp vào Bot Telegram, Discord hoặc MetaTrader EA | Dung lượng < 10 KB |
 | **Cold Storage (Tùy chọn)** | Google Drive | Apache Parquet (Snappy) | Lưu giữ toàn bộ snapshot lịch sử Options Chain theo từng phút/phiên | 0 VNĐ (Dùng Google Drive cá nhân, nén 85%) |
-
-
-### 2. Cấu trúc Thư mục Phân vùng Parquet (Partitioning Scheme)
-
-Trên Google Drive của người dùng (tự động mount tại `/content/drive/MyDrive/Neiro-NQ-Quant/`):
-```
-Neiro-NQ-Quant/
-└── data/
-    ├── options/
-    │   └── symbol=QQQ/
-    │       └── year=2026/
-    │           └── month=10/
-    │               └── date=2026-10-18/
-    │                   ├── snapshot_093000.parquet
-    │                   ├── snapshot_120000.parquet
-    │                   └── snapshot_160000.parquet
-    ├── daily_summary/
-    │   └── symbol=NQ/
-    │       └── nq_levels_history.parquet
-    └── exports/
-        └── latest_dashboard.html
-```
 
 ---
 
-## III. THIẾT KẾ CHI TIẾT COLLECTOR ĐẦU TIÊN CHO E-MINI NASDAQ
+## III. THIẾT KẾ CHI TIẾT COLLECTOR & CƠ CHẾ DYNAMIC DTE
 
 ### 1. Vì sao chọn QQQ Options làm Proxy số 1 cho E-mini Nasdaq?
 
-- **Khối lượng giao dịch khổng lồ:** QQQ là một trong những tài sản có thanh khoản Options lớn nhất thế giới, tập hợp đầy đủ các Market Makers (Citadel, Jane Street, Susquehanna, Virtu).
+- **Khối lượng giao dịch khổng lồ:** QQQ là một trong những tài sản có thanh khoản Options lớn nhất thế giới, tập hợp đầy đủ các Market Makers hàng đầu (Citadel, Jane Street, Susquehanna, Virtu).
 - **Kỳ hạn 0DTE hàng ngày:** QQQ đáo hạn mỗi ngày (Thứ 2 đến Thứ 6), tạo ra áp lực tái phòng hộ (Gamma Scalping / 0DTE Hedging) trực tiếp lên chỉ số Nasdaq-100 và Hợp đồng Tương lai E-mini Nasdaq (`NQ`).
 - **Tỷ lệ ánh xạ (Basis Ratio):**
-  $$NQ_{Price} \approx QQQ_{Price} \times \text{Basis Factor}$$
-  Ví dụ: Khi QQQ = 500.00, NQ Futures = 20,500.00 $\rightarrow$ Tỷ lệ ánh xạ $\approx 41.0$. Mọi bức tường Call Wall, Put Wall, và vùng chân không của QQQ đều được nhân với hệ số này để ra mốc giá E-mini Nasdaq tương ứng!
+  $$NQ_{\text{Price}} \approx QQQ_{\text{Price}} \times \text{Basis Factor}$$
+  Mọi bức tường Call Wall, Put Wall, và vùng chân không của QQQ đều được nhân với hệ số này để ra mốc giá E-mini Nasdaq tương ứng.
 
-### 2. Chu trình Thu thập (Collection Workflow)
+### 2. Chu trình Thu thập & Chuẩn hóa (Collection Workflow)
 
 ```
-[Khởi động Collector]
-         │
-         ▼
+[Khởi động Collector: src/collector/nasdaq_collector.py]
+          │
+          ▼
 [1. Quét danh sách Expiration Dates của QQQ qua yfinance]
-         │
-         ▼
-[2. Nhận diện kỳ hạn mục tiêu (Target DTE)]
-   - Mặc định: 0DTE (kỳ hạn đáo hạn trong ngày hôm nay)
-   - Nếu ngoài giờ giao dịch / cuối tuần: Kỳ hạn giao dịch kế tiếp (Next Trading Day)
-         │
-         ▼
+          │
+          ▼
+[2. Tính toán Target DTE theo Giờ New York (America/New_York)]
+    - Nếu là 0DTE và đang trong phiên giao dịch:
+      T_days = max(0.01, (16:00 ET - now_et).total_seconds() / 86400)
+    - Nếu ngoài giờ giao dịch / qua đêm: DTE chốt theo số ngày lịch
+          │
+          ▼
 [3. Tải toàn bộ Calls Chain & Puts Chain]
-   - Strike, Bid, Ask, Mid, Last Price, Volume, Open Interest, Implied Volatility
-   - LUÔN DÙNG Mid = (Bid + Ask)/2, LOẠI BỎ hoàn toàn giá khớp trễ Latest
-         │
-         ▼
-[4. Giải bài toán Vectorized Greeks (Black-Scholes Engine)]
-   - Tính toán chính xác Delta, Gamma, Vega, Vanna, Charm cho từng Strike
-         │
-         ▼
-[5. Lưu trữ Parquet vào Google Drive / Cache]
-         │
-         ▼
-[6. Đẩy dữ liệu vào Lõi Quant Engine để vẽ Dashboard]
+    - Strike, Bid, Ask, Mid, Last Price, Volume, Open Interest, Implied Volatility
+    - LUÔN DÙNG Mid = (Bid + Ask) / 2
+    - Áp dụng clean_num() khử bỏ triệt để NaN
+          │
+          ▼
+[4. Giải bài toán Vectorized Greeks (Black-76 Engine)]
+    - Tính toán chính xác Delta, Gamma, Vega, Vanna, Charm cho từng Strike
+          │
+          ▼
+[5. Đẩy dữ liệu vào Lõi Quant Engine để sinh Bảng Chiến thuật & Dual-View HTML]
 ```
 
 ---
 
-## IV. CÂY TRI THỨC ĐỊNH LƯỢNG 3 TẦNG (3-TIER QUANT KNOWLEDGE TREE TỪ NEIRO-QUANT)
-
-Kế thừa trực tiếp cấu trúc định lượng chuẩn từ dự án `Neiro-Quant`:
+## IV. CÂY TRI THỨC ĐỊNH LƯỢNG 3 TẦNG & CÔNG THỨC TOÁN HỌC CHUẨN XÁC
 
 ```
                [TIER 3: DEALER POSITIONING & RISK ENVELOPE]
-         Call Wall #1 | Put Wall #1 | Pin Risk Magnet | Gamma Squeeze
+         Call Wall #1 | Put Wall #1 | Pin Risk Magnet | Squeeze Triggers
                          Air Pockets (< 35% OI Mean)
                                       ▲
                                       │
@@ -194,29 +184,46 @@ Kế thừa trực tiếp cấu trúc định lượng chuẩn từ dự án `Ne
                      Vectorized Greeks (Δ, Γ, ν, Vanna, Charm)
 ```
 
-### 1. Tier 1: Cấu trúc Vi mô (Market Microstructure)
-- Triệt tiêu hoàn toàn sai lệch từ giá khớp trễ (`Latest`), luôn chuẩn hóa qua giá trung bình Market Maker:
-  $$Mid = \frac{Bid + Ask}{2}$$
+### 1. Tier 1: Cấu trúc Vi mô & Mô hình Định giá Black-76
+
+Đối với Hợp đồng Tương lai NQ Futures Options, mô hình định giá chuẩn mực là Black-76 với giá Forward $F$ và lãi suất phi rủi ro $r$:
+
+$$d_1 = \frac{\ln(F/K) + \frac{1}{2}\sigma^2 T}{\sigma \sqrt{T}}, \quad d_2 = d_1 - \sigma \sqrt{T}$$
+
+- **Quyền chọn Mua (Call):** $C = e^{-rT} [F N(d_1) - K N(d_2)]$
+- **Quyền chọn Bán (Put):** $P = e^{-rT} [K N(-d_2) - F N(-d_1)]$
+- **Độ nhạy Delta ($\Delta$):**
+  $$\Delta_{\text{Call}} = e^{-rT} N(d_1), \quad \Delta_{\text{Put}} = -e^{-rT} N(-d_1)$$
+- **Gia tốc Gamma ($\Gamma$):**
+  $$\Gamma = e^{-rT} \frac{N'(d_1)}{F \sigma \sqrt{T}}$$
+- **Độ nhạy Biến động Vega ($\nu$):**
+  $$\nu = e^{-rT} F \sqrt{T} N'(d_1)$$
+- **Độ nhạy Bậc 2 Vanna ($VEX$):**
+  $$\text{Vanna} = \frac{\partial \Delta}{\partial \sigma} = -e^{-rT} N'(d_1) \frac{d_2}{\sigma}$$
+- **Độ nhạy Thời gian Charm ($CHEX = -\partial \Delta / \partial T$):**
+  $$\text{Charm}_{\text{Call}} = e^{-rT} \left[ r N(d_1) + N'(d_1) \frac{d_2}{2T} \right]$$
+  $$\text{Charm}_{\text{Put}} = e^{-rT} \left[ -r N(-d_1) + N'(d_1) \frac{d_2}{2T} \right]$$
 
 ### 2. Tier 2: Trục Định giá Ngầm định (Implied Valuation)
-- **Synthetic ATM Pivot ($S_{Implied}$):** Dựa trên nguyên lý Ngang giá Quyền chọn (Put-Call Parity) tìm Strike $K_{ATM}$ có $|Call_{mid} - Put_{mid}|$ nhỏ nhất:
-  $$S_{Implied} = K_{ATM} + e^{rT} \left( Call_{mid} - Put_{mid} \right)$$
-- **Biên độ Kỳ vọng (ATM Straddle):**
-  $$Straddle = Call_{mid}(ATM) + Put_{mid}(ATM)$$
-- **Dải biên độ 1-Sigma:**
-  $$Upper\ Band\ (+1\sigma) = S_{Implied} + Straddle$$
-  $$Lower\ Band\ (-1\sigma) = S_{Implied} - Straddle$$
-  *(Hệ số điều chỉnh cho 0DTE là $0.85 \times Straddle$)*
 
-### 3. Tier 3: Vị thế Nhà tạo lập (Dealer Positioning)
-- **Call Wall #1:** Strike có $OI_{Call}$ lớn nhất $\rightarrow$ Trần cự kháng cự dương Gamma.
-- **Put Wall #1:** Strike có $OI_{Put}$ lớn nhất $\rightarrow$ Bệ đỡ hỗ trợ âm Gamma.
-- **Pin Risk Magnet (Hố đen ghim giá):** Strike có tổng $(OI_{Call} + OI_{Put})$ cao nhất toàn thị trường.
-- **Gamma Squeeze Triggers:**
-  $$Trigger_{Up} = Strike_{CallWall} + Call_{mid}(CallWall)$$
-  $$Trigger_{Down} = Strike_{PutWall} - Put_{mid}(PutWall)$$
-  Khi nến M5 đóng cửa vượt qua các mốc này, Dealer buộc phải quét lệnh khẩn cấp để stop loss.
-- **OI Air Pockets (Vùng chân không thanh khoản):** Các strike có $OI < 0.35 \times \text{Mean}(OI_{all})$. Khi giá rơi vào vùng này, gia tốc trượt giá sẽ tăng cực đại do thiếu lực đỡ.
+- **Synthetic ATM Pivot ($S_{\text{Implied}}$):** Tìm Strike $K_{\text{ATM}}$ có $|Call_{\text{mid}} - Put_{\text{mid}}|$ nhỏ nhất theo Put-Call Parity:
+  $$S_{\text{Implied}} = K_{\text{ATM}} + e^{rT} \left( Call_{\text{mid}} - Put_{\text{mid}} \right)$$
+- **Biên độ Kỳ vọng (ATM Straddle):**
+  $$\text{Straddle} = Call_{\text{mid}}(ATM) + Put_{\text{mid}}(ATM)$$
+- **Dải Biên độ 1-Sigma:**
+  $$\text{Upper Band } (+1\sigma) = S_{\text{Implied}} + \text{Straddle}$$
+  $$\text{Lower Band } (-1\sigma) = S_{\text{Implied}} - \text{Straddle}$$
+
+### 3. Tier 3: Vị thế Nhà tạo lập & Kích hoạt Bẫy Thanh khoản
+
+- **Call Wall #1:** Strike có $OI_{\text{Call}}$ lớn nhất $\rightarrow$ Trần kháng cự phòng hộ dương Gamma.
+- **Put Wall #1:** Strike có $OI_{\text{Put}}$ lớn nhất $\rightarrow$ Bệ đỡ hỗ trợ phòng hộ âm Gamma.
+- **Pin Risk Magnet (Hố đen ghim giá):** Strike có tổng $(OI_{\text{Call}} + OI_{\text{Put}})$ cao nhất toàn thị trường.
+- **Gamma Squeeze Trigger (Vượt đỉnh ép mua):**
+  $$\text{Trigger}_{\text{Up}} = K_{\text{CallWall}} + C_{\text{mid}}(K_{\text{CallWall}})$$
+- **Waterfall Trigger (Thủng đáy ép bán tháo):**
+  $$\text{Trigger}_{\text{Down}} = K_{\text{PutWall}} - P_{\text{mid}}(K_{\text{PutWall}})$$
+- **OI Air Pockets (Vùng chân không thanh khoản):** Các strike có $OI < 0.35 \times \text{Mean}(OI_{\text{all}})$.
 
 ---
 
@@ -242,39 +249,84 @@ stateDiagram-v2
     NEXT_WALL_REACHED --> DORMANT
 ```
 
-### Quy tắc tác chiến cốt lõi:
-1. **Khi cản ở trạng thái `ABSORPTION_DEFENDED` (Trụ vững - Fade Reversal):**
-   - Đặt lệnh Limit đảo chiều khi nến M1/M5 rút chân trong cản.
-   - SL cực ngắn: 15 - 25 điểm NQ (~0.5 - 0.7 giá QQQ).
-   - TP: Trục cân bằng ATM Pivot hoặc mốc cản đối diện.
-2. **Khi cản ở trạng thái `SLICED_VACUUM` (Đâm thủng - Trượt dốc):**
-   - **LỆNH CẤM TỐI CAO:** **TUYỆT ĐỐI KHÔNG BẮT ĐÁY / KHÔNG ĐỠ DAO**.
-   - Chuyển sang chiến thuật **Breakout Runner** đánh xuôi theo đà trượt giá xuống bức tường tiếp theo.
+### Quy tắc xác định Stop Loss & Take Profit:
+1. **Mốc Cản Có Xu Hướng Rõ Rệt (Call Wall / Put Wall):**
+   - **Call Wall (Kháng cự):** Kịch bản Reversal Short $\rightarrow$ SL đặt phía trên cản (cộng thêm vùng đệm), TP nhắm về Strike bên dưới hoặc Trục Synthetic Pivot.
+   - **Put Wall (Hỗ trợ):** Kịch bản Reversal Long $\rightarrow$ SL đặt phía dưới cản (trừ đi vùng đệm), TP nhắm về Strike bên trên hoặc Trục Synthetic Pivot.
+2. **Mốc Cản Trung Tính / Hai Chiều (ATM Synthetic Pivot, Pin Risk Magnet, Gamma Flip):**
+   - Nếu giá hiện tại đang ở **trên** Level: Level đóng vai trò là **Hỗ trợ** $\rightarrow$ Kịch bản Long với SL bên dưới Level và TP hướng lên Strike liền trên.
+   - Nếu giá hiện tại đang ở **dưới** Level: Level đóng vai trò là **Kháng cự** $\rightarrow$ Kịch bản Short với SL bên trên Level và TP hướng xuống Strike liền dưới.
 
 ---
 
-## VI. CƠ CHẾ DUAL-FRAME EXPIRATION (NGẮN HẠN & DÀI HẠN)
+## VI. THIẾT KẾ GIAO DIỆN TÁC CHIẾN ĐA CHẾ ĐỘ DUAL-VIEW
 
-Hệ thống tự động hỗ trợ 2 khung nhìn:
-- **Khung Intraday (0DTE / Weekly):** Thu thập Options đáo hạn trong ngày để đo lường áp lực Gamma Scalping tức thời của Market Maker.
-- **Khung Institutional (Monthly / Quarterly):** Thu thập Options đáo hạn tháng/quý để nắm bắt vị thế bảo hiểm phòng hộ (Structural Hedging) của các quỹ đầu tư tổ chức.
+Giao diện HTML độc lập được tạo bởi [`src/hud/html_dashboard.py`](file:///c:/Users/Daniel/Documents/My-Projects/Neiro-NQ-Quant/src/hud/html_dashboard.py) (với [`src/dashboard/html_dashboard.py`](file:///c:/Users/Daniel/Documents/My-Projects/Neiro-NQ-Quant/src/dashboard/html_dashboard.py) đóng vai trò là alias tương thích ngược).
 
----
+### 1. Navigation Header & Cơ chế Chuyển View (Tab Switching Engine)
+Người dùng có thể chuyển đổi tức thì giữa 2 góc nhìn thông qua các nút chuyển tab trên thanh Header:
+- `switchTerminalView('atas')`: Hiển thị Tab 1 (Canvas ATAS Orderflow Footprint).
+- `switchTerminalView('ladder')`: Hiển thị Tab 2 (Plotly 3-Panel Quant Ladder, KPI Cards và Bảng Kịch bản Chiến thuật).
 
-## VII. THIẾT KẾ GIAO DIỆN TÁC CHIẾN PLOTLY DARK HUD & THUẬT TOÁN CHỐNG ĐÈ CHỮ
+```javascript
+function switchTerminalView(view) {
+  var atasTab = document.getElementById('tab-atas-view');
+  var ladderTab = document.getElementById('tab-ladder-view');
+  var btnAtas = document.getElementById('btn-nav-atas');
+  var btnLadder = document.getElementById('btn-nav-ladder');
+  if (view === 'atas') {
+    atasTab.style.display = 'block';
+    ladderTab.style.display = 'none';
+    btnAtas.className = 'tab-btn active';
+    btnLadder.className = 'tab-btn';
+    window.dispatchEvent(new Event('resize'));
+  } else {
+    atasTab.style.display = 'none';
+    ladderTab.style.display = 'block';
+    btnAtas.className = 'tab-btn';
+    btnLadder.className = 'tab-btn active';
+    window.dispatchEvent(new Event('resize'));
+  }
+}
+```
 
-### 1. Bố cục 3 Panels Thang giá Ngang (Horizontal Price Ladder)
-- **Panel 1 (Bên trái): Net GEX Profile ($M):** Trực quan hóa bức tranh phòng hộ của Dealer theo từng mức giá. Cột xanh dương dương Gamma (Mean-reverting), cột cam âm Gamma (Trending/Squeeze). Tích hợp các mốc cản chiến thuật và SL/TP.
-- **Panel 2 (Ở giữa): Dòng tiền Khối lượng (Volume) vs Open Interest nén:** Cột xanh lá đo lường thanh khoản Volume đang giao dịch, đường bậc thang vàng thể hiện mật độ vị thế mở Open Interest của tổ chức.
-- **Panel 3 (Bên phải): Greeks Bậc 2 Tương tác (Vanna & Charm):** Đo lường áp lực phòng hộ nhạy theo Độ biến động ngầm định IV (Vanna) và Thời gian trôi qua mỗi ngày (Charm).
+### 2. Tab 1: ATAS Orderflow Footprint Terminal
+- Sử dụng thẻ `<canvas>` HTML5 kết hợp JavaScript thuần để vẽ sổ lệnh thang giá dọc ở tần số 60 FPS.
+- Cột giá trung tâm (Price Column) hiển thị chi tiết các mốc cản Options (Call Wall, Put Wall, ATM Pivot, Gamma Flip, Squeeze Triggers).
+- Cột Bid/Ask Volume Footprint phản ánh lực mua/bán chủ động tức thời tại từng nấc giá.
+- Bảng nến vi mô (Micro-Candles) và Bảng dòng lệnh Tick-by-Tick Tape.
+- Tự động áp dụng hệ số đòn bẩy `multiplier` ($20 cho NQ, $2 cho MNQ).
 
-### 2. Thuật toán Chống Đè Chữ (Anti-Collision Architecture)
-- **Legend dịch chuyển:** Đặt toàn bộ Legend ở tọa độ $y = 1.07$, hướng ngang, không che lấp đỉnh cột nến của Panel 1 và Panel 2.
-- **Spot CME Futures neo mép phải:** Nhãn Spot Futures cố định tại $x = 0.98$, $y_{\text{ref}} = \text{paper}$, đảm bảo không bao giờ đè lên các thanh Net GEX.
-- **Tự động giãn dòng Vanna/Charm:** Nếu mức Strike của đỉnh Vanna lớn nhất trùng với mức Strike của đỉnh Charm, thuật toán tự động áp dụng độ lệch dọc (`yshift`) để cả hai nhãn đều rõ nét 100%.
+### 3. Tab 2: 3-Panel Plotly Quant Ladder & Tactical Playbook
+- **Panel 1 (Trái): Net GEX Profile ($M):** Thang giá ngang thể hiện áp lực phòng hộ ròng của Dealer. Tích hợp vị trí Spot Futures, Spot MT5, Synthetic ATM Pivot, các Wall và dải Expected Move.
+- **Panel 2 (Giữa): Khối lượng (Volume) vs Open Interest nén:** Cột xanh lá thể hiện thanh khoản Volume trong ngày, đường bậc thang vàng thể hiện mật độ vị thế mở Open Interest của các quỹ tổ chức.
+- **Panel 3 (Phải): Greeks Bậc 2 Tương tác (Vanna & Charm Flow):** Đường xanh lục thể hiện dòng tiền nhạy IV (Vanna) và đường tím thể hiện dòng tiền phân rã thời gian (Charm).
+- **Thuật toán Chống Đè Chữ (Anti-Collision Architecture):**
+  * Legend dịch chuyển ra ngoài đồ thị ($y = 1.07$, hướng ngang).
+  * Spot CME Futures neo mép phải ($x = 0.98$, $y_{\text{ref}} = \text{paper}$).
+  * Tự động giãn khoảng cách dọc nếu đỉnh Vanna và Charm trùng Strike.
+- **Bảng Intraday Scalping Strategy:** Cung cấp hướng dẫn hành động cụ thể (Level, Giá NQ, Trạng thái State Machine, Hành động Action, Hướng dẫn vào lệnh Entry Guide, Mức Stop Loss, Mức Take Profit).
+- **Bảng Structural Swing Walls:** Mốc thành trì kiên cố cho các vị thế giữ dài hạn.
+- **Bảng Strike Microstructure Matrix:** Phân tích chi tiết từng Strike trên chuỗi Options (Call/Put OI, Volume, Greeks, Cảnh báo Air Pocket).
 
-### 3. Đồng bộ Sàn Spot MT5 / Broker Index (`--basis`)
+### 4. Đồng bộ Sàn Spot MT5 / Broker Index (`--basis`)
 Thị trường Spot CFD tại các sàn giao dịch MT5 (`NAS100` / `US100`) thường có độ lệch giá (Basis Offset) từ 0 đến 30 điểm so với Hợp đồng Tương lai CME Futures (`NQZ26`):
 $$Spot_{\text{MT5}} = Spot_{\text{Futures}} - \text{Basis}$$
-Hệ thống hiển thị đồng thời cả giá CME Futures chuẩn và giá Spot MT5 tương ứng trên KPI Card cũng như bảng chiến thuật.
+Hệ thống hiển thị đồng thời cả giá CME Futures chuẩn và giá Spot MT5 tương ứng trên mọi KPI Card và bảng chiến thuật.
 
+---
+
+## VII. ĐẶC TẢ MODULE & MỐI QUAN HỆ MÃ NGUỒN
+
+| Module | File | Vai trò & Chức năng |
+|---|---|---|
+| **Collector** | `src/collector/nasdaq_collector.py` | Quét Options QQQ qua `yfinance`, tính dynamic DTE giờ NY, hàm `clean_num()`, tạo benchmark chain |
+| **Greeks Legacy** | `src/collector/greeks.py` | Lớp tính Greeks Black-Scholes cơ bản (đã chuẩn hóa Charm) |
+| **Storage** | `src/collector/storage.py` | Đọc/ghi dữ liệu Parquet và quản lý DuckDB |
+| **Black-76 Model** | `src/quant_engine/black76.py` | Định giá Black-76 cho Futures Options, bộ giải Newton-Brent IV, Greeks giải tích bậc 1 & 2 (Delta, Gamma, Vega, Vanna, Charm) |
+| **Quant Engine** | `src/quant_engine/engine.py` | Tính Net GEX, VEX, CHEX, Put-Call Parity Synthetic Pivot, Squeeze/Waterfall Triggers, Expected Move |
+| **Microstructure** | `src/quant_engine/structure.py` | Phát hiện Air Pockets, phân tích mật độ thanh khoản và cấu trúc vi mô |
+| **State Machine** | `src/quant_engine/state_machine.py` | Mô hình hóa trạng thái từng level (Dormant, Triggered, Absorption, Slicing Risk), tính toán SL/TP đa chiều |
+| **Tactical HUD** | `src/hud/html_dashboard.py` | Generator chính xuất Terminal Đa Chế Độ Dual-View (ATAS Footprint + Plotly 3-Panel) và JSON Feed |
+| **Dashboard Wrapper** | `src/dashboard/html_dashboard.py` | Wrapper tương thích ngược, import và forward toàn bộ hàm từ `src/hud/html_dashboard.py` |
+| **Pipeline Runner** | `src/main.py` | Entrypoint điều phối luồng thực thi khép kín |

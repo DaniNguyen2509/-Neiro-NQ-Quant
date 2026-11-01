@@ -87,11 +87,11 @@ def black76_price_and_greeks(
     vanna = - discount * pdf_d1 * (d2 / sig_arr)
 
     # Charm: Delta time decay per year (- dDelta / dT)
-    charm_call = - discount * (pdf_d1 * (r / denom - d2 / (2.0 * T_val)) - r * cdf_d1)
+    term_d2 = pdf_d1 * (d2 / (2.0 * T_val))
     if is_call:
-        charm = charm_call
+        charm = discount * (r * cdf_d1 + term_d2)
     else:
-        charm = charm_call - r * discount
+        charm = discount * (- r * norm_cdf(-d1) + term_d2)
 
     return price, delta, gamma, vega, vanna, charm
 

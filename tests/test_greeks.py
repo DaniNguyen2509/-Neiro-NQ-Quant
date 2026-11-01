@@ -40,9 +40,14 @@ def test_black_scholes_at_the_money():
     # 4. Vanna should be identical for Call and Put
     assert np.isclose(c_vanna[0], p_vanna[0])
 
-    # 5. Charm exists and is finite
+    # 5. Charm mathematically matches numerical derivative -dDelta/dT
     assert np.isfinite(c_charm[0])
     assert np.isfinite(p_charm[0])
+    eps = 1e-6
+    _, d_plus, _, _, _, _ = vectorized_black_scholes_greeks(spot, strikes, t_years + eps, r, ivs, is_call=True)
+    _, d_minus, _, _, _, _ = vectorized_black_scholes_greeks(spot, strikes, t_years - eps, r, ivs, is_call=True)
+    num_charm_call = - (d_plus[0] - d_minus[0]) / (2 * eps)
+    assert np.isclose(c_charm[0], num_charm_call, atol=1e-4)
 
 
 def test_vectorization_multiple_strikes():
