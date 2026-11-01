@@ -161,6 +161,18 @@
             padding: 0 12px; border-radius: 3px; display: flex; align-items: center;
             color: #60A5FA; font-weight: 700; font-size: 11px;
         }
+        .atas-floating-hud {
+            position: absolute; top: 8px; left: 10px; z-index: 10;
+            display: flex; flex-direction: column; gap: 3px;
+            background: rgba(6, 8, 13, 0.90); border: 1px solid #1E293B; border-radius: 4px;
+            padding: 6px 10px; font-family: 'JetBrains Mono', monospace; font-size: 11px;
+            pointer-events: none;
+        }
+        .hud-item { display: flex; align-items: center; gap: 6px; white-space: nowrap; }
+        .hud-label { color: #94A3B8; font-weight: 600; font-size: 10.5px; min-width: 120px; }
+        .atas-win-topbar, .atas-win-subbar { overflow: hidden; white-space: nowrap; }
+        .atas-top-left, .atas-top-center, .atas-top-right { flex-shrink: 1; min-width: 0; overflow: hidden; }
+        .atas-subbar-right { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     </style>
 </head>
 <body>
@@ -254,9 +266,11 @@
 
         <div id="tv-chart-wrapper">
             <div class="atas-floating-hud">
-                <div class="hud-item"><span class="hud-label">NET GEX:</span> <b id="hud-gex-val" style="color: #F87171;">-478.0M</b></div>
-                <div class="hud-item"><span class="hud-label">CHARM:</span> <b id="hud-charm-val" style="color:#C084FC;">$+34.4M/d</b></div>
-                <div class="hud-item"><span class="hud-label">VANNA:</span> <b id="hud-vanna-val" style="color:#22D3EE;">$-4.5M</b></div>
+                <div class="hud-item"><span class="hud-label">NET GEX (Regime):</span> <b id="hud-gex-val" style="color:#F87171;">$-478.0M</b></div>
+                <div class="hud-item"><span class="hud-label">GAMMA SQUEEZE &uarr;:</span> <b style="color:#4ADE80;">&gt; 28,720 &rarr; TP 28,927</b></div>
+                <div class="hud-item"><span class="hud-label">GAMMA SQUEEZE &darr;:</span> <b style="color:#F87171;">&lt; 28,514 &rarr; TP 28,307</b></div>
+                <div class="hud-item"><span class="hud-label">VANNA (VEX):</span> <b id="hud-vanna-val" style="color:#22D3EE;">$-4.5M</b></div>
+                <div class="hud-item"><span class="hud-label">CHARM (CHEX):</span> <b id="hud-charm-val" style="color:#C084FC;">$+34.4M/d</b></div>
                 <div class="hud-item"><span class="hud-label">1-SIGMA:</span> <b id="hud-sigma-val" style="color:#FACC15;">&plusmn;534.2p</b></div>
             </div>
             <div id="atas-tv-chart"></div>
@@ -269,7 +283,7 @@
         <div class="atas-logo-badge">
             <span style="color:#38BDF8; font-weight:800;">ATAS</span>
             <span style="color:#94A3B8;">TrueVision Levels &bull; 11h [+]</span>
-            <span style="color:#475569; font-size:9.5px; margin-left:8px;">Cập nhật: 01/11/2026 11:27:58 (VN)</span>
+            <span style="color:#475569; font-size:9.5px; margin-left:8px;">Cập nhật: 01/11/2026 11:32:39 (VN)</span>
         </div>
         <div style="display:flex; align-items:center; gap:10px;">
             <span style="color:#475569; font-size:10px;">CME GLOBEX</span>
@@ -685,7 +699,7 @@ function drawAtasOverlay() {
             ctx.strokeStyle = 'rgba(239, 68, 68, 0.85)';
             ctx.lineWidth = 1.4;
             ctx.beginPath();
-            ctx.ellipse(xs + (rightX - xs) * 0.55, top + hz / 2, 50, Math.max(9, hz), 0, 0, Math.PI * 2);
+            ctx.ellipse(xs + (rightX - xs) * 0.55, top + hz / 2, 46, 9, 0, 0, Math.PI * 2);
             ctx.stroke();
         }
     });
@@ -717,6 +731,36 @@ function drawAtasOverlay() {
         ctx.textAlign = 'right';
         ctx.fillText('#5 ' + (m.gex_react - 5).toFixed(2), rightX - 5, yGex + 15);
     }
+
+    // F2. Key Greeks levels: Call/Put Wall, Gamma Flip, Gamma Squeeze, Vanna, Charm
+    const keyLevels = [
+        { p: m.call_wall,    c: '#EF4444', d: [6, 4], txt: 'CALL WALL ' + Math.round(m.call_wall) + ' · OI ' + (m.call_wall_oi || 0).toLocaleString() },
+        { p: m.put_wall,     c: '#22C55E', d: [6, 4], txt: 'PUT WALL ' + Math.round(m.put_wall) + ' · OI ' + (m.put_wall_oi || 0).toLocaleString() },
+        { p: m.strike_above, c: '#4ADE80', d: [2, 3], txt: 'GAMMA SQUEEZE ↑ > ' + Math.round(m.strike_above) + ' → TP ' + Math.round(m.next_above) },
+        { p: m.strike_below, c: '#F87171', d: [2, 3], txt: 'GAMMA SQUEEZE ↓ < ' + Math.round(m.strike_below) + ' → TP ' + Math.round(m.next_below) },
+        { p: m.vanna_level,  c: '#22D3EE', d: [6, 3], txt: 'VANNA · V-REBOUND · ' + (m.total_net_vex || 0).toFixed(1) + 'M' },
+        { p: m.charm_level,  c: '#C084FC', d: [6, 3], txt: 'CHARM (CHEX) · GHIM GIA DEM · ' + (m.total_net_chex || 0).toFixed(1) + 'M/d' },
+    ];
+    keyLevels.forEach(L => {
+        if (!L.p) return;
+        const y = candleSeries.priceToCoordinate(L.p);
+        if (y === null || y < 0 || y > h) return;
+        ctx.strokeStyle = L.c;
+        ctx.setLineDash(L.d);
+        ctx.lineWidth = 1.3;
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(rightX, y);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.font = 'bold 10.5px "JetBrains Mono", monospace';
+        ctx.textAlign = 'right';
+        const tw = ctx.measureText(L.txt).width;
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.75)';
+        ctx.fillRect(rightX - tw - 10, y - 15, tw + 8, 13);
+        ctx.fillStyle = L.c;
+        ctx.fillText(L.txt, rightX - 6, y - 4);
+    });
 
     // G. Right Axis Volume Histogram Bars (ATAS tick ladder volume)
     const rightTicks = [
