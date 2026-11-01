@@ -80,10 +80,9 @@ def load_options_dataset(
                 # QQQ options have 100 shares multiplier; scale to equivalent NQ futures points
                 eff_multiplier = round(100.0 / basis_ratio, 4)
 
-                # Auto-calculate live MT5 CFD basis offset if not manually overridden
-                if eff_basis == 0.0 and "basis_offset" in prices:
-                    eff_basis = float(prices["basis_offset"])
-                    print(f"[+] [Dashboard] Auto-detected live MT5 CFD Basis Offset: {eff_basis:+.2f} points (NQ Futures vs ^NDX Cash).")
+                # Unified Futures mode (basis == 0.0) by default to synchronize with TV Pepperstone Forward & MT5.
+                if eff_basis is None:
+                    eff_basis = 0.0
 
                 print(f"[+] Loaded {len(df_raw)} strikes via yfinance (QQQ ${prices['underlying']:.2f} -> NQ {prices['futures']:.2f}, Basis: {basis_ratio:.2f}, EffMult: {eff_multiplier}).")
                 # Save snapshot to CSV if path provided
@@ -220,9 +219,10 @@ def build_plotly_terminal(df_full: pd.DataFrame, meta: Dict[str, Any]) -> go.Fig
 
     # ANTI-COLLISION FEATURE 1:
     # Spot CME label anchored firmly at right edge (x=0.98, xanchor='right') to avoid colliding with left annotations
+    spot_label = f"◆ NQ FUTURES: {spot_price:,.1f}" if abs(spot_price - spot_mt5) < 0.1 else f"◆ SPOT CME: {spot_price:,.1f} (MT5: ~{spot_mt5:,.1f})"
     fig.add_annotation(
         x=0.98, y=spot_price,
-        text=f"◆ SPOT CME: {spot_price:,.1f} (MT5: ~{spot_mt5:,.1f})",
+        text=spot_label,
         showarrow=False, xanchor="right", xref="x domain", yref="y",
         font=dict(color="#FFFFFF", size=9.5, family="JetBrains Mono"),
         bgcolor="#0284C7", bordercolor="#38BDF8", borderwidth=1, borderpad=3,
@@ -454,6 +454,47 @@ def generate_html_terminal(df: pd.DataFrame, meta: Dict[str, Any], fig: go.Figur
         regime_badge = '<span class="badge badge-gold">NEUTRAL TRANSITION (CÂN BẰNG)</span>'
         regime_color = "#FACC15"
 
+    is_unified = abs(basis) < 0.01
+
+    if is_unified:
+        kpi_card_1 = f"""
+        <div class="kpi-card">
+            <div class="kpi-label">E-MINI NASDAQ 100 FUTURES (NQ)</div>
+            <div class="kpi-val" style="color: #60A5FA;">NQ {spot:,.1f}</div>
+            <div class="kpi-sub">Trục ATM Option Pivot: <b>{meta['atm_strike']:,.0f} pts</b> | Đồng bộ TV & MT5 Forward</div>
+        </div>
+        """
+        th_mt5 = ""
+        td_mt5_1 = ""
+        td_mt5_2 = ""
+        td_mt5_3 = ""
+        td_mt5_4 = ""
+        td_mt5_5 = ""
+        td_mt5_6 = ""
+        micro_header = "📊 BẢNG DỮ LIỆU ĐỊNH LƯỢNG MICROSTRUCTURE TỪNG STRIKE (E-MINI NASDAQ FUTURES)"
+        col_cme_act = "Vùng Kích Hoạt (NQ)"
+        col_cme_ent = "Entry NQ"
+        col_cme_sl = "Hard SL (NQ)"
+    else:
+        kpi_card_1 = f"""
+        <div class="kpi-card">
+            <div class="kpi-label">Spot CME Futures &mdash; Spot MT5 (Quy đổi)</div>
+            <div class="kpi-val" style="color: #60A5FA;">NQ {spot:,.1f} <span style="font-size: 15px; color: #38BDF8;">(MT5: ~{spot_mt5:,.1f})</span></div>
+            <div class="kpi-sub">Trục ATM CME: <b>{meta['atm_strike']:,.0f} pts</b> | Basis MT5 Spot: <b>{basis:+0.1f} pts</b></div>
+        </div>
+        """
+        th_mt5 = "<th>MT5 Spot (~ Basis)</th>"
+        td_mt5_1 = f'<td style="color:#38BDF8; font-weight:600;">~{strike_above + buffer_val + 2.0 - basis:,.1f}</td>'
+        td_mt5_2 = f'<td style="color:#38BDF8; font-weight:600;">~{strike_above - 2.0 - basis:,.1f}</td>'
+        td_mt5_3 = f'<td style="color:#38BDF8; font-weight:600;">~{strike_below + 3.0 - basis:,.1f}</td>'
+        td_mt5_4 = f'<td style="color:#38BDF8; font-weight:600;">~{strike_below - buffer_val - 2.0 - basis:,.1f}</td>'
+        td_mt5_5 = f'<td style="color:#38BDF8; font-weight:600;">~{call_wall - 3.0 - basis:,.1f}</td>'
+        td_mt5_6 = f'<td style="color:#38BDF8; font-weight:600;">~{put_wall + 3.0 - basis:,.1f}</td>'
+        micro_header = "📊 BẢNG DỮ LIỆU ĐỊNH LƯỢNG MICROSTRUCTURE TỪNG STRIKE (E-MINI NASDAQ & MT5 SPOT)"
+        col_cme_act = "Vùng Kích Hoạt (CME)"
+        col_cme_ent = "Entry CME"
+        col_cme_sl = "Hard SL (CME)"
+
     # Microstructure rows near ATM
     table_rows_html = ""
     atm_strike = meta["atm_strike"]
@@ -473,10 +514,12 @@ def generate_html_terminal(df: pd.DataFrame, meta: Dict[str, Any], fig: go.Figur
         is_spot_near = abs(stk - spot) <= (step * 0.5)
         row_class = 'class="row-spot"' if is_spot_near else ""
 
+        mt5_td = f'<td style="color: #38BDF8;">~{stk_mt5:,.1f}</td>' if not is_unified else ""
+
         table_rows_html += f"""
         <tr {row_class}>
             <td><b>{stk:,.0f} pts</b></td>
-            <td style="color: #38BDF8;">~{stk_mt5:,.1f}</td>
+            {mt5_td}
             <td style="{gex_style}">${gex:+.2f}M</td>
             <td>{c_oi:,}</td>
             <td>{p_oi:,}</td>
@@ -606,11 +649,7 @@ def generate_html_terminal(df: pd.DataFrame, meta: Dict[str, Any], fig: go.Figur
 
     <!-- Executive KPI Grid -->
     <div class="kpi-grid">
-        <div class="kpi-card">
-            <div class="kpi-label">Spot CME Futures &mdash; Spot MT5 (Quy đổi)</div>
-            <div class="kpi-val" style="color: #60A5FA;">NQ {spot:,.1f} <span style="font-size: 15px; color: #38BDF8;">(MT5: ~{spot_mt5:,.1f})</span></div>
-            <div class="kpi-sub">Trục ATM CME: <b>{meta['atm_strike']:,.0f} pts</b> | Basis MT5 Spot: <b>{basis:+0.1f} pts</b></div>
-        </div>
+        {kpi_card_1}
         <div class="kpi-card">
             <div class="kpi-label">Market Regime & Net GEX</div>
             <div class="kpi-val" style="color: {regime_color};">${total_gex:+.1f}M GEX</div>
@@ -656,10 +695,10 @@ def generate_html_terminal(df: pd.DataFrame, meta: Dict[str, Any], fig: go.Figur
             <thead>
                 <tr>
                     <th>Chiến Lược</th>
-                    <th>Vùng Kích Hoạt (CME)</th>
-                    <th>Entry CME</th>
-                    <th>MT5 Spot (~ Basis)</th>
-                    <th>Hard SL (CME)</th>
+                    <th>{col_cme_act}</th>
+                    <th>{col_cme_ent}</th>
+                    {th_mt5}
+                    <th>{col_cme_sl}</th>
                     <th>Take Profit (TP)</th>
                     <th>Ghi Chú Hành Vi Market Maker</th>
                 </tr>
@@ -669,7 +708,7 @@ def generate_html_terminal(df: pd.DataFrame, meta: Dict[str, Any], fig: go.Figur
                     <td class="tag-buy">1. BUY MUA ĐUỔI (Squeeze {strike_above:,.0f})</td>
                     <td>Vượt > {strike_above + buffer_val:,.1f}</td>
                     <td>{strike_above + buffer_val + 2.0:,.1f}</td>
-                    <td style="color:#38BDF8; font-weight:600;">~{strike_above + buffer_val + 2.0 - basis:,.1f}</td>
+                    {td_mt5_1}
                     <td style="color:#F87171;">{strike_above - hard_sl_pts:,.1f} ({hard_sl_pts:.0f}p)</td>
                     <td style="color:#4ADE80;">{next_above - front_run_tp:,.1f}</td>
                     <td style="font-family: sans-serif; color: var(--text-secondary);">MM vỡ trận Short -> Gamma Squeeze đẩy giá bốc đầu lên nấc {next_above:,.0f}</td>
@@ -678,7 +717,7 @@ def generate_html_terminal(df: pd.DataFrame, meta: Dict[str, Any], fig: go.Figur
                     <td class="tag-sell">2. SELL CHẶN TIỀN TUYẾN (Fade {strike_above:,.0f})</td>
                     <td>{strike_above - 10.0:,.1f} - {strike_above:,.1f}</td>
                     <td>{strike_above - 2.0:,.1f}</td>
-                    <td style="color:#38BDF8; font-weight:600;">~{strike_above - 2.0 - basis:,.1f}</td>
+                    {td_mt5_2}
                     <td style="color:#F87171;">{strike_above + fade_sl_pts:,.1f} ({fade_sl_pts:.0f}p)</td>
                     <td style="color:#4ADE80;">{spot:,.1f}</td>
                     <td style="font-family: sans-serif; color: var(--text-secondary);">Call Vol cực đại -> MM bán Futures chặn đầu ghìm giá hồi về Spot</td>
@@ -687,7 +726,7 @@ def generate_html_terminal(df: pd.DataFrame, meta: Dict[str, Any], fig: go.Figur
                     <td class="tag-buy">3. BUY BẮT SÀN ATM (Rebound {strike_below:,.0f})</td>
                     <td>{strike_below:,.1f} - {strike_below + 10.0:,.1f}</td>
                     <td>{strike_below + 3.0:,.1f}</td>
-                    <td style="color:#38BDF8; font-weight:600;">~{strike_below + 3.0 - basis:,.1f}</td>
+                    {td_mt5_3}
                     <td style="color:#F87171;">{strike_below - hard_sl_pts:,.1f} ({hard_sl_pts:.0f}p)</td>
                     <td style="color:#4ADE80;">{strike_above - front_run_tp:,.1f}</td>
                     <td style="font-family: sans-serif; color: var(--text-secondary);">Đệm Put hỗ trợ kỹ thuật trong phiên đẩy giá hồi phục cân bằng</td>
@@ -696,7 +735,7 @@ def generate_html_terminal(df: pd.DataFrame, meta: Dict[str, Any], fig: go.Figur
                     <td class="tag-sell">4. SELL THỦNG SÀN ATM (Breakdown {strike_below:,.0f})</td>
                     <td>Thủng &lt; {strike_below - buffer_val:,.1f}</td>
                     <td>{strike_below - buffer_val - 2.0:,.1f}</td>
-                    <td style="color:#38BDF8; font-weight:600;">~{strike_below - buffer_val - 2.0 - basis:,.1f}</td>
+                    {td_mt5_4}
                     <td style="color:#F87171;">{strike_below + fade_sl_pts:,.1f} ({fade_sl_pts:.0f}p)</td>
                     <td style="color:#4ADE80;">{secondary_support + front_run_tp:,.1f}</td>
                     <td style="font-family: sans-serif; color: var(--text-secondary);">Mất mốc ATM Pivot -> Rơi tự do về trạm nghỉ {secondary_support:,.0f} (Đệm nấc 2)</td>
@@ -714,10 +753,10 @@ def generate_html_terminal(df: pd.DataFrame, meta: Dict[str, Any], fig: go.Figur
             <thead>
                 <tr>
                     <th>Chiến Lược</th>
-                    <th>Vùng Kích Hoạt (CME)</th>
-                    <th>Entry CME</th>
-                    <th>MT5 Spot (~ Basis)</th>
-                    <th>Hard SL (CME)</th>
+                    <th>{col_cme_act}</th>
+                    <th>{col_cme_ent}</th>
+                    {th_mt5}
+                    <th>{col_cme_sl}</th>
                     <th>Take Profit (TP)</th>
                     <th>Ghi Chú Cấu Trúc Khối Lượng</th>
                 </tr>
@@ -727,7 +766,7 @@ def generate_html_terminal(df: pd.DataFrame, meta: Dict[str, Any], fig: go.Figur
                     <td class="tag-sell">5. BÁN ĐỈNH CALL WALL ({call_wall:,.0f})</td>
                     <td>{call_wall - 15.0:,.1f} - {call_wall:,.1f}</td>
                     <td>{call_wall - 3.0:,.1f}</td>
-                    <td style="color:#38BDF8; font-weight:600;">~{call_wall - 3.0 - basis:,.1f}</td>
+                    {td_mt5_5}
                     <td style="color:#F87171;">{call_wall + 25.0:,.1f} (25p)</td>
                     <td style="color:#4ADE80;">{strike_above:,.1f} / {spot:,.1f}</td>
                     <td style="font-family: sans-serif; color: var(--text-secondary);">Call Wall {call_wall_oi:,} OI (Nóc nhà kiên cố cuối cùng của MM)</td>
@@ -736,7 +775,7 @@ def generate_html_terminal(df: pd.DataFrame, meta: Dict[str, Any], fig: go.Figur
                     <td class="tag-buy">6. MUA ĐÁY PUT WALL ({put_wall:,.0f})</td>
                     <td>{put_wall:,.1f} - {put_wall + 15.0:,.1f}</td>
                     <td>{put_wall + 3.0:,.1f}</td>
-                    <td style="color:#38BDF8; font-weight:600;">~{put_wall + 3.0 - basis:,.1f}</td>
+                    {td_mt5_6}
                     <td style="color:#F87171;">{put_wall - 25.0:,.1f} (25p)</td>
                     <td style="color:#4ADE80;">{strike_below:,.1f} / {spot:,.1f}</td>
                     <td style="font-family: sans-serif; color: var(--text-secondary);">Major Put Wall {put_wall_oi:,} OI (Đáy bê tông cốt thép phòng ngự của cá mập)</td>
@@ -748,13 +787,13 @@ def generate_html_terminal(df: pd.DataFrame, meta: Dict[str, Any], fig: go.Figur
     <!-- Microstructure Strike Table -->
     <div class="table-box">
         <div class="section-header">
-            <span>📊 BẢNG DỮ LIỆU ĐỊNH LƯỢNG MICROSTRUCTURE TỪNG STRIKE (E-MINI NASDAQ & MT5 SPOT)</span>
+            <span>{micro_header}</span>
         </div>
         <table>
             <thead>
                 <tr>
                     <th>Strike NQ</th>
-                    <th>MT5 Spot (~ Basis)</th>
+                    {th_mt5}
                     <th>Net GEX ($M)</th>
                     <th>Call OI</th>
                     <th>Put OI</th>
