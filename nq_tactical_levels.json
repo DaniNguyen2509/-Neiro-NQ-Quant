@@ -1,28 +1,28 @@
 {
-  "timestamp": "2026-11-02T10:19:16.589898+00:00",
+  "timestamp": "2026-11-02T10:29:40.130548+00:00",
   "symbol": "QQQ",
   "futures_symbol": "NQ=F",
   "source": "yfinance",
   "metrics": {
-    "spot_price": 28775.0,
-    "s_implied": 28813.09,
-    "spot_mt5": 28775.0,
+    "spot_price": 28787.5,
+    "s_implied": 28826.09,
+    "spot_mt5": 28787.5,
     "basis_offset": 0.0,
-    "multiplier": 2.3996,
-    "atm_strike": 28796.0,
-    "atm_straddle": 427.99,
-    "sigma_atm": 0.5339,
-    "expected_move_1s": 536.4,
-    "intraday_rule16_move": 960.17,
-    "upper_band_1s": 29311.4,
-    "lower_band_1s": 28238.6,
-    "upper_band_2s": 29847.79,
-    "lower_band_2s": 27702.21,
-    "call_wall": 18753.0,
+    "multiplier": 2.3986,
+    "atm_strike": 28809.0,
+    "atm_straddle": 428.17,
+    "sigma_atm": 0.5383,
+    "expected_move_1s": 536.62,
+    "intraday_rule16_move": 968.47,
+    "upper_band_1s": 29324.12,
+    "lower_band_1s": 28250.88,
+    "upper_band_2s": 29860.74,
+    "lower_band_2s": 27714.26,
+    "call_wall": 18761.0,
     "call_wall_oi": 0,
-    "put_wall": 18753.0,
+    "put_wall": 18761.0,
     "put_wall_oi": 0,
-    "pin_risk_magnet": 18753.0,
+    "pin_risk_magnet": 18761.0,
     "total_net_gex": 0.0,
     "total_net_vex": 0.0,
     "total_net_chex": 0.0,
@@ -30,99 +30,19 @@
     "regime_description": "Th\u1ecb tr\u01b0\u1eddng chuy\u1ec3n giao tr\u1ea1ng th\u00e1i c\u00e2n b\u1eb1ng. C\u1ea7n theo d\u00f5i ch\u1eb7t ch\u1ebd ph\u1ea3n \u1ee9ng t\u1ea1i tr\u1ee5c ATM Pivot.",
     "step": 41.0,
     "buffer_val": 6.15,
-    "squeeze_trigger": 28635.41,
-    "waterfall_trigger": 18746.85,
-    "strike_above": 28796.0,
-    "next_above": 28838.0,
-    "strike_below": 28755.0,
-    "next_below": 28713.0,
-    "secondary_support": 28713.0,
+    "squeeze_trigger": 28647.7,
+    "waterfall_trigger": 18754.85,
+    "strike_above": 28809.0,
+    "next_above": 28850.0,
+    "strike_below": 28767.0,
+    "next_below": 28725.0,
+    "secondary_support": 28725.0,
     "raw_source": "yfinance",
-    "effective_multiplier": 2.3996,
-    "dte_days": 0.4449652777777778,
+    "effective_multiplier": 2.3986,
+    "dte_days": 0.4377430555555556,
     "risk_free_rate": 0.0397,
     "real_candles": {
       "1m": [
-        {
-          "time": 1793607000,
-          "open": 28746.75,
-          "high": 28751.75,
-          "low": 28740.25,
-          "close": 28751.5,
-          "volume": 156
-        },
-        {
-          "time": 1793607060,
-          "open": 28751.75,
-          "high": 28755.75,
-          "low": 28742.0,
-          "close": 28749.25,
-          "volume": 192
-        },
-        {
-          "time": 1793607120,
-          "open": 28749.0,
-          "high": 28754.0,
-          "low": 28741.0,
-          "close": 28741.5,
-          "volume": 118
-        },
-        {
-          "time": 1793607180,
-          "open": 28741.25,
-          "high": 28749.25,
-          "low": 28741.25,
-          "close": 28748.5,
-          "volume": 129
-        },
-        {
-          "time": 1793607240,
-          "open": 28747.75,
-          "high": 28753.0,
-          "low": 28744.0,
-          "close": 28750.75,
-          "volume": 83
-        },
-        {
-          "time": 1793607300,
-          "open": 28749.75,
-          "high": 28757.75,
-          "low": 28748.0,
-          "close": 28755.0,
-          "volume": 162
-        },
-        {
-          "time": 1793607360,
-          "open": 28754.75,
-          "high": 28761.25,
-          "low": 28752.0,
-          "close": 28752.0,
-          "volume": 164
-        },
-        {
-          "time": 1793607420,
-          "open": 28750.75,
-          "high": 28757.75,
-          "low": 28747.25,
-          "close": 28752.0,
-          "volume": 146
-        },
-        {
-          "time": 1793607480,
-          "open": 28751.75,
-          "high": 28753.5,
-          "low": 28746.0,
-          "close": 28747.25,
-          "volume": 132
-        },
-        {
-          "time": 1793607540,
-          "open": 28746.75,
-          "high": 28751.0,
-          "low": 28732.5,
-          "close": 28734.25,
-          "volume": 227
-        },
         {
           "time": 1793607600,
           "open": 28734.0,
@@ -1000,27 +920,91 @@
           "open": 28769.25,
           "high": 28781.5,
           "low": 28767.5,
-          "close": 28774.75,
+          "close": 28779.25,
+          "volume": 128
+        },
+        {
+          "time": 1793614200,
+          "open": 28781.75,
+          "high": 28783.75,
+          "low": 28778.5,
+          "close": 28781.0,
+          "volume": 98
+        },
+        {
+          "time": 1793614260,
+          "open": 28782.25,
+          "high": 28789.5,
+          "low": 28782.25,
+          "close": 28787.0,
+          "volume": 94
+        },
+        {
+          "time": 1793614320,
+          "open": 28788.0,
+          "high": 28790.0,
+          "low": 28785.25,
+          "close": 28787.5,
+          "volume": 37
+        },
+        {
+          "time": 1793614380,
+          "open": 28787.25,
+          "high": 28787.75,
+          "low": 28782.5,
+          "close": 28782.5,
+          "volume": 43
+        },
+        {
+          "time": 1793614440,
+          "open": 28779.75,
+          "high": 28782.0,
+          "low": 28778.75,
+          "close": 28781.25,
+          "volume": 43
+        },
+        {
+          "time": 1793614500,
+          "open": 28781.0,
+          "high": 28787.25,
+          "low": 28779.75,
+          "close": 28786.75,
+          "volume": 103
+        },
+        {
+          "time": 1793614560,
+          "open": 28787.0,
+          "high": 28791.0,
+          "low": 28785.25,
+          "close": 28786.0,
+          "volume": 189
+        },
+        {
+          "time": 1793614620,
+          "open": 28786.25,
+          "high": 28786.75,
+          "low": 28781.25,
+          "close": 28781.75,
+          "volume": 70
+        },
+        {
+          "time": 1793614680,
+          "open": 28781.75,
+          "high": 28785.0,
+          "low": 28776.5,
+          "close": 28777.0,
+          "volume": 50
+        },
+        {
+          "time": 1793614740,
+          "open": 28777.25,
+          "high": 28790.75,
+          "low": 28774.0,
+          "close": 28788.0,
           "volume": 0
         }
       ],
       "5m": [
-        {
-          "time": 1793578200,
-          "open": 28694.75,
-          "high": 28716.0,
-          "low": 28690.25,
-          "close": 28700.0,
-          "volume": 780
-        },
-        {
-          "time": 1793578500,
-          "open": 28701.75,
-          "high": 28722.0,
-          "low": 28680.75,
-          "close": 28684.75,
-          "volume": 761
-        },
         {
           "time": 1793578800,
           "open": 28686.5,
@@ -1962,19 +1946,27 @@
           "open": 28772.0,
           "high": 28781.5,
           "low": 28762.0,
-          "close": 28774.75,
-          "volume": 330
+          "close": 28779.25,
+          "volume": 458
+        },
+        {
+          "time": 1793614200,
+          "open": 28781.75,
+          "high": 28790.0,
+          "low": 28778.5,
+          "close": 28781.25,
+          "volume": 315
+        },
+        {
+          "time": 1793614500,
+          "open": 28781.0,
+          "high": 28791.0,
+          "low": 28774.0,
+          "close": 28787.5,
+          "volume": 412
         }
       ],
       "15m": [
-        {
-          "time": 1793327400,
-          "open": 28888.75,
-          "high": 28924.25,
-          "low": 28862.25,
-          "close": 28914.25,
-          "volume": 4188
-        },
         {
           "time": 1793328300,
           "open": 28912.0,
@@ -2922,10 +2914,18 @@
         {
           "time": 1793613600,
           "open": 28779.0,
-          "high": 28781.5,
+          "high": 28790.0,
           "low": 28761.5,
-          "close": 28774.75,
-          "volume": 964
+          "close": 28781.25,
+          "volume": 1407
+        },
+        {
+          "time": 1793614500,
+          "open": 28781.0,
+          "high": 28791.0,
+          "low": 28774.0,
+          "close": 28787.5,
+          "volume": 412
         }
       ],
       "1h": [
@@ -3884,10 +3884,10 @@
         {
           "time": 1793613600,
           "open": 28779.0,
-          "high": 28781.5,
+          "high": 28791.0,
           "low": 28761.5,
-          "close": 28774.75,
-          "volume": 964
+          "close": 28787.5,
+          "volume": 1819
         }
       ],
       "1d": [
@@ -4408,44 +4408,44 @@
           "open": 28587.75,
           "high": 28831.5,
           "low": 28587.0,
-          "close": 28774.75,
-          "volume": 103092
+          "close": 28787.5,
+          "volume": 104249
         }
       ]
     },
-    "vanna_peak_strike": 28750.0,
+    "vanna_peak_strike": 28775.0,
     "vanna_peak_val": 0.0,
-    "charm_peak_strike": 28800.0,
+    "charm_peak_strike": 28825.0,
     "charm_peak_val": 0.0,
     "air_pockets": [
       {
-        "from": 18753.0,
-        "to": 18961.0,
-        "strike_nq": 18857.0,
+        "from": 18761.0,
+        "to": 18970.0,
+        "strike_nq": 18865.5,
         "avg_oi": 0.0,
-        "gap": 208.0,
+        "gap": 209.0,
         "severity": "HIGH"
       },
       {
-        "from": 19170.0,
-        "to": 19586.0,
-        "strike_nq": 19378.0,
+        "from": 19178.0,
+        "to": 19595.0,
+        "strike_nq": 19386.5,
         "avg_oi": 0.0,
-        "gap": 416.0,
+        "gap": 417.0,
         "severity": "HIGH"
       },
       {
-        "from": 20003.0,
-        "to": 26463.0,
-        "strike_nq": 23233.0,
+        "from": 20012.0,
+        "to": 26474.0,
+        "strike_nq": 23243.0,
         "avg_oi": 0.0,
-        "gap": 6460.0,
+        "gap": 6462.0,
         "severity": "HIGH"
       },
       {
-        "from": 26671.0,
-        "to": 26879.0,
-        "strike_nq": 26775.0,
+        "from": 26683.0,
+        "to": 26891.0,
+        "strike_nq": 26787.0,
         "avg_oi": 0.0,
         "gap": 208.0,
         "severity": "HIGH"
@@ -4455,52 +4455,52 @@
   "tactical_recommendations": [
     {
       "level_name": "CALL WALL #1",
-      "level_price_nq": 18753.0,
+      "level_price_nq": 18761.0,
       "state": "DORMANT",
       "action": "MONITORING",
-      "entry_guide": "Dung ngoai quan sat. Gia cach level 10022.0 diem NQ.",
-      "stop_loss_nq": 18773.0,
-      "take_profit_nq": 18703.0,
+      "entry_guide": "Dung ngoai quan sat. Gia cach level 10026.5 diem NQ.",
+      "stop_loss_nq": 18781.0,
+      "take_profit_nq": 18711.0,
       "risk_warning": "Chua co phan ung vi mo."
     },
     {
       "level_name": "PUT WALL #1",
-      "level_price_nq": 18753.0,
+      "level_price_nq": 18761.0,
       "state": "DORMANT",
       "action": "MONITORING",
-      "entry_guide": "Dung ngoai quan sat. Gia cach level 10022.0 diem NQ.",
-      "stop_loss_nq": 18733.0,
-      "take_profit_nq": 28796.0,
+      "entry_guide": "Dung ngoai quan sat. Gia cach level 10026.5 diem NQ.",
+      "stop_loss_nq": 18741.0,
+      "take_profit_nq": 28809.0,
       "risk_warning": "Chua co phan ung vi mo."
     },
     {
       "level_name": "ATM SYNTHETIC PIVOT",
-      "level_price_nq": 28796.0,
+      "level_price_nq": 28809.0,
       "state": "DORMANT",
       "action": "MONITORING",
-      "entry_guide": "Dung ngoai quan sat. Gia cach level 21.0 diem NQ.",
-      "stop_loss_nq": 28816.0,
-      "take_profit_nq": 18753.0,
+      "entry_guide": "Dung ngoai quan sat. Gia cach level 21.5 diem NQ.",
+      "stop_loss_nq": 28829.0,
+      "take_profit_nq": 18761.0,
       "risk_warning": "Chua co phan ung vi mo."
     },
     {
       "level_name": "PIN RISK MAGNET",
-      "level_price_nq": 18753.0,
+      "level_price_nq": 18761.0,
       "state": "DORMANT",
       "action": "MONITORING",
-      "entry_guide": "Dung ngoai quan sat. Gia cach level 10022.0 diem NQ.",
-      "stop_loss_nq": 18733.0,
-      "take_profit_nq": 18753.0,
+      "entry_guide": "Dung ngoai quan sat. Gia cach level 10026.5 diem NQ.",
+      "stop_loss_nq": 18741.0,
+      "take_profit_nq": 18761.0,
       "risk_warning": "Chua co phan ung vi mo."
     },
     {
       "level_name": "GAMMA FLIP POINT",
-      "level_price_nq": 28755.0,
+      "level_price_nq": 28767.0,
       "state": "DORMANT",
       "action": "MONITORING",
-      "entry_guide": "Dung ngoai quan sat. Gia cach level 20.0 diem NQ.",
-      "stop_loss_nq": 28735.0,
-      "take_profit_nq": 18753.0,
+      "entry_guide": "Dung ngoai quan sat. Gia cach level 20.5 diem NQ.",
+      "stop_loss_nq": 28747.0,
+      "take_profit_nq": 18761.0,
       "risk_warning": "Chua co phan ung vi mo."
     }
   ]
