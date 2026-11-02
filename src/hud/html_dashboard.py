@@ -1671,7 +1671,6 @@ function drawNeiroOverlay() {{
         ctx.fillText(ttLines[3], ttX + 6, ttY + 55);
     }}
 }}
-}}
 
 // ----------------------------------------------------------------------------
 // Realtime Tick Feeder & In-Browser Dynamic Greeks Recalculation

@@ -168,3 +168,20 @@ def test_terminal_canvas_greeks_and_air_pockets():
     assert len(meta["air_pockets"]) >= 1
     assert any(ap["gap"] >= 5.0 for ap in meta["air_pockets"])
 
+
+def test_javascript_syntax_integrity():
+    """Verify generated HTML terminal has zero JavaScript syntax errors using Node.js."""
+    import re, shutil, subprocess
+    df_raw = generate_benchmark_nq_chain(spot=20500.0)
+    df_clean, meta = process_options_chain_black76(df_raw, basis_offset=15.0)
+    fig = build_plotly_terminal(df_clean, meta)
+    html = generate_html_terminal(df_clean, meta, fig)
+
+    node_path = shutil.which("node")
+    if node_path:
+        scripts = re.findall(r"<script>(.*?)</script>", html, re.DOTALL)
+        for i, s in enumerate(scripts):
+            res = subprocess.run([node_path, "--input-type=module", "--check"], input=s.encode("utf-8"), capture_output=True)
+            assert res.returncode == 0, f"Script {i} contains JavaScript syntax error: {res.stderr.decode('utf-8', errors='ignore')}"
+
+
