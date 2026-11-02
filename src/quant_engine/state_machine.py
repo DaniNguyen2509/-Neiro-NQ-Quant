@@ -66,8 +66,19 @@ class LevelStateMachine:
             ("GAMMA FLIP POINT", nq_levels["gamma_flip"], qqq_levels["gamma_flip"], "REGIME_BOUNDARY"),
         ]
         
-        # Check if any air pocket is nearby
-        air_pocket_nq_strikes = [ap["strike_nq"] for ap in air_pockets]
+        # Check if any air pocket is nearby (polymorphic extraction: dict or object)
+        air_pocket_nq_strikes = []
+        for ap in air_pockets:
+            if isinstance(ap, dict):
+                if "strike_nq" in ap:
+                    air_pocket_nq_strikes.append(float(ap["strike_nq"]))
+                elif "from" in ap and "to" in ap:
+                    air_pocket_nq_strikes.append(float((ap["from"] + ap["to"]) / 2.0))
+            else:
+                p_from = float(getattr(ap, "start_strike", getattr(ap, "low_strike", getattr(ap, "from_strike", 0.0))))
+                p_to = float(getattr(ap, "end_strike", getattr(ap, "high_strike", getattr(ap, "to_strike", 0.0))))
+                if p_from > 0 and p_to > 0:
+                    air_pocket_nq_strikes.append(float((p_from + p_to) / 2.0))
 
         for name, price_nq, price_qqq, role in levels_to_track:
             if price_nq <= 0:

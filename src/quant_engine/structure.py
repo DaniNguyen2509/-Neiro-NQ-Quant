@@ -7,9 +7,113 @@ Inherits full 3-Tier Quantitative Knowledge Tree & State Machine from Neiro-Quan
 - Level State Machine: DORMANT, TESTING, ABSORPTION_DEFENDED, SLICED_VACUUM
 """
 import math
+from dataclasses import dataclass
 import numpy as np
 import pandas as pd
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Optional
+
+
+@dataclass
+class AirPocketZone:
+    start_strike: float
+    end_strike: float
+    gap_size: float
+    avg_oi: float
+    avg_volume: float
+    direction: str = "DOWN"
+
+
+def detect_strike_air_pockets(
+    df: pd.DataFrame,
+    start_strike: float,
+    end_strike: float,
+    threshold_ratio: float = 0.40,
+    baseline_mean_oi: Optional[float] = None,
+) -> List[AirPocketZone]:
+    """Detects air pocket zones between start_strike and end_strike where total OI < threshold_ratio * mean_oi."""
+    if df.empty or "strike" not in df.columns:
+        return []
+
+    lo, hi = min(start_strike, end_strike), max(start_strike, end_strike)
+    direction = "DOWN" if start_strike > end_strike else "UP"
+
+    sub = df[(df["strike"] >= lo) & (df["strike"] <= hi)].sort_values("strike")
+    if len(sub) < 2:
+        return []
+
+    total_oi = (sub["callOpenInterest"].fillna(0) + sub["putOpenInterest"].fillna(0)).values
+    total_vol = (sub["callVolume"].fillna(0) + sub["putVolume"].fillna(0)).values if "callVolume" in sub.columns and "putVolume" in sub.columns else np.zeros(len(sub))
+    strikes = sub["strike"].values
+
+    if baseline_mean_oi is not None and baseline_mean_oi > 0:
+        mean_activity = float(baseline_mean_oi)
+        activity_values = total_oi
+    else:
+        if "callOpenInterest" in df.columns and "putOpenInterest" in df.columns:
+            all_oi = (df["callOpenInterest"].fillna(0) + df["putOpenInterest"].fillna(0)).values
+            mean_oi = float(np.mean(all_oi)) if len(all_oi) > 0 and np.sum(all_oi) > 0 else 0.0
+        else:
+            mean_oi = float(np.mean(total_oi)) if len(total_oi) > 0 and np.sum(total_oi) > 0 else 0.0
+
+        if mean_oi > 0:
+            mean_activity = mean_oi
+            activity_values = total_oi
+        else:
+            # Fallback to volume if open interest is 0 across entire chain (e.g. 0DTE intraday)
+            if "callVolume" in df.columns and "putVolume" in df.columns:
+                all_vol = (df["callVolume"].fillna(0) + df["putVolume"].fillna(0)).values
+                mean_vol = float(np.mean(all_vol)) if len(all_vol) > 0 else 0.0
+            else:
+                mean_vol = float(np.mean(total_vol)) if len(total_vol) > 0 else 0.0
+            mean_activity = mean_vol
+            activity_values = total_vol
+
+    if mean_activity <= 0:
+        return []
+
+    threshold = mean_activity * threshold_ratio
+    pockets: List[AirPocketZone] = []
+
+    in_pocket = False
+    p_start = 0.0
+    pocket_ois: List[float] = []
+    pocket_vols: List[float] = []
+
+    for s, act, oi, vol in zip(strikes, activity_values, total_oi, total_vol):
+        if act < threshold:
+            if not in_pocket:
+                in_pocket = True
+                p_start = s
+            pocket_ois.append(float(oi))
+            pocket_vols.append(float(vol))
+        else:
+            if in_pocket:
+                in_pocket = False
+                pockets.append(AirPocketZone(
+                    start_strike=float(p_start),
+                    end_strike=float(s),
+                    gap_size=float(abs(s - p_start)),
+                    avg_oi=float(np.mean(pocket_ois)) if pocket_ois else 0.0,
+                    avg_volume=float(np.mean(pocket_vols)) if pocket_vols else 0.0,
+                    direction=direction,
+                ))
+                pocket_ois = []
+                pocket_vols = []
+
+    if in_pocket and len(pocket_ois) > 0:
+        end_s = strikes[-1]
+        gap = float(abs(end_s - p_start))
+        pockets.append(AirPocketZone(
+            start_strike=float(p_start),
+            end_strike=float(end_s),
+            gap_size=gap,
+            avg_oi=float(np.mean(pocket_ois)) if pocket_ois else 0.0,
+            avg_volume=float(np.mean(pocket_vols)) if pocket_vols else 0.0,
+            direction=direction,
+        ))
+
+    return pockets
+
 
 
 def calculate_microstructure_levels(

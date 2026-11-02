@@ -134,3 +134,37 @@ def test_anti_collision_plotly_terminal():
     assert "SPOT CME" in html
     assert "MT5: ~" in html
     assert "neiro-canvas" in html
+
+
+def test_terminal_canvas_greeks_and_air_pockets():
+    """Verify Canvas Orderflow Greeks profile normalization (VEX/CHEX) and Cross-Canvas Air Pocket integration."""
+    df_raw = generate_benchmark_nq_chain(spot=20500.0)
+    df_clean, meta = process_options_chain_black76(df_raw, basis_offset=15.0)
+
+    # Inject mock air pocket to ensure cross-canvas integration works
+    meta["air_pockets"] = [
+        {"from": 20200.0, "to": 20300.0, "severity": "HIGH", "avg_oi": 50.0}
+    ]
+
+    fig = build_plotly_terminal(df_clean, meta)
+    html = generate_html_terminal(df_clean, meta, fig)
+
+    # 1. Greeks Profile: Dynamic Visible Normalization and Square-Root Scaling
+    assert "visibleMaxAbs" in html
+    assert "Math.pow(norm, 0.50)" in html
+    assert "scaleTxt" in html
+
+    # 2. Interactive Greeks Hover Tooltip Card
+    assert "hoveredOption" in html
+    assert "canvas.addEventListener('mousemove'" in html
+
+    # 3. Cross-Canvas Air Pocket Matrix & Badges
+    assert "AIR POCKET VACUUM" in html
+    assert "AIR POCKET (CẤM ĐỠ)" in html
+    assert "m.air_pockets" in html
+
+    # 4. Verified polymorphic extraction in meta
+    assert "air_pockets" in meta
+    assert len(meta["air_pockets"]) >= 1
+    assert any(ap["gap"] >= 5.0 for ap in meta["air_pockets"])
+

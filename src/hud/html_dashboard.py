@@ -43,6 +43,7 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
 from src.quant_engine.engine import process_options_chain_black76
+from src.quant_engine.structure import detect_strike_air_pockets, AirPocketZone
 from src.collector.nasdaq_collector import generate_benchmark_nq_chain
 
 
@@ -562,8 +563,48 @@ def generate_html_terminal(df: pd.DataFrame, meta: Dict[str, Any], fig: go.Figur
             <td style="padding:6px 10px; color:#22D3EE;">${chex_val:+.2f}M</td>
         </tr>"""
 
+    # Prepare Air Pockets & Structural Vacuum Matrix for All-in-One Orderflow Canvas
+    major_down_wall = min(put_wall, tactical_put_wall) if put_wall > 0 else tactical_put_wall
+    major_up_wall = max(call_wall, tactical_call_wall) if call_wall > 0 else tactical_call_wall
+
+    # Scan adjacent pockets between spot strikes and major walls
+    down_pockets = detect_strike_air_pockets(df, strike_below, major_down_wall, threshold_ratio=0.40)
+    up_pockets = detect_strike_air_pockets(df, strike_above, major_up_wall, threshold_ratio=0.40)
+
+    # Scan structural pockets beyond Put Wall (-150 pts) and above Call Wall (+150 pts)
+    down_beyond = detect_strike_air_pockets(df, major_down_wall - 150.0, major_down_wall, threshold_ratio=0.40)
+    up_beyond = detect_strike_air_pockets(df, major_up_wall, major_up_wall + 150.0, threshold_ratio=0.40)
+
+    all_raw_pockets = meta.get("air_pockets", []) + down_pockets + down_beyond + up_pockets + up_beyond
+    all_air_pockets = []
+    seen_zones = set()
+
+    for p in all_raw_pockets:
+        p_from = float(getattr(p, "start_strike", getattr(p, "low_strike", getattr(p, "from_strike", p.get("from_strike", p.get("start_strike", p.get("from", 0.0))) if isinstance(p, dict) else 0.0))))
+        p_to = float(getattr(p, "end_strike", getattr(p, "high_strike", getattr(p, "to_strike", p.get("to_strike", p.get("end_strike", p.get("to", 0.0))) if isinstance(p, dict) else 0.0))))
+        gap = abs(p_to - p_from)
+        zone_key = (round(min(p_from, p_to), 1), round(max(p_from, p_to), 1))
+        # Chi nap cac tui co gap = abs(p_to - p_from) >= 5.0 (voi NQ) va khu trung lap
+        if gap >= 5.0 and zone_key not in seen_zones:
+            seen_zones.add(zone_key)
+            avg_oi = float(getattr(p, "avg_oi", p.get("avg_oi", 0.0) if isinstance(p, dict) else 0.0))
+            all_air_pockets.append({
+                "from": min(p_from, p_to),
+                "to": max(p_from, p_to),
+                "strike_nq": round((min(p_from, p_to) + max(p_from, p_to)) / 2.0, 2),
+                "avg_oi": avg_oi,
+                "gap": gap,
+                "severity": "HIGH" if avg_oi < 150.0 else "MEDIUM",
+            })
+
+    meta["air_pockets"] = all_air_pockets
+
     js_options_data = []
     for _, r in df.sort_values("strike").iterrows():
+        gex_v = float(round(clean_val(r.get("netGEX", 0.0)), 3))
+        vex_v = float(round(clean_val(r.get("netVEX", 0.0)), 3))
+        chex_v = float(round(clean_val(r.get("netCHEX", 0.0)), 3))
+        tex_v = float(round(clean_val(r.get("netTEX", 0.0)), 3))
         js_options_data.append({
             "strike": float(r["strike"]),
             "c_oi": int(r.get("callOpenInterest", 0)),
@@ -582,9 +623,13 @@ def generate_html_terminal(df: pd.DataFrame, meta: Dict[str, Any], fig: go.Figur
             "p_vanna": float(round(clean_val(r.get("putVanna", 0.0)), 6)),
             "c_charm": float(round(clean_val(r.get("callCharm", 0.0)), 6)),
             "p_charm": float(round(clean_val(r.get("putCharm", 0.0)), 6)),
-            "netGEX": float(round(clean_val(r.get("netGEX", 0.0)), 3)),
-            "netVEX": float(round(clean_val(r.get("netVEX", 0.0)), 3)),
-            "netCHEX": float(round(clean_val(r.get("netCHEX", 0.0)), 3)),
+            "netGEX": gex_v,
+            "netVEX": vex_v,
+            "netCHEX": chex_v,
+            "currentNetGEX": gex_v,
+            "currentNetVEX": vex_v,
+            "currentNetCHEX": chex_v,
+            "currentNetTEX": tex_v,
         })
 
     json_options_str = json.dumps(js_options_data)
@@ -617,6 +662,7 @@ def generate_html_terminal(df: pd.DataFrame, meta: Dict[str, Any], fig: go.Figur
         "total_net_gex": total_gex,
         "total_net_vex": total_vex,
         "total_net_chex": total_chex,
+        "air_pockets": all_air_pockets,
         "dte_days": meta.get("dte_days", 1.0),
         "risk_free_rate": r_rate,
         "effective_multiplier": meta.get("effective_multiplier", 20.0),
@@ -1282,6 +1328,44 @@ function initNeiroChart() {{
     if (canvas) {{
         canvas.width = container.clientWidth;
         canvas.height = initialH;
+
+        canvas.addEventListener('mousemove', (e) => {{
+            const rect = canvas.getBoundingClientRect();
+            const mx = e.clientX - rect.left;
+            const my = e.clientY - rect.top;
+            const rightX = canvas.width - 70;
+            const colW = 68;
+            const panelW = 4 * colW + 8;
+            const panelX = rightX - panelW;
+            if (mx >= panelX - 4 && mx <= rightX) {{
+                const opts = window.INITIAL_OPTIONS || [];
+                let closest = null;
+                let minDist = 16;
+                let closestY = null;
+                opts.forEach(o => {{
+                    const y = candleSeries.priceToCoordinate(o.strike);
+                    if (y !== null) {{
+                        const d = Math.abs(y - my);
+                        if (d < minDist) {{
+                            minDist = d;
+                            closest = o;
+                            closestY = y;
+                        }}
+                    }}
+                }});
+                hoveredOption = closest;
+                hoveredY = closestY;
+            }} else {{
+                hoveredOption = null;
+                hoveredY = null;
+            }}
+            drawNeiroOverlay();
+        }});
+        canvas.addEventListener('mouseleave', () => {{
+            hoveredOption = null;
+            hoveredY = null;
+            drawNeiroOverlay();
+        }});
     }}
 
     window.addEventListener('resize', () => {{
@@ -1296,9 +1380,15 @@ function initNeiroChart() {{
 
     chart.timeScale().subscribeVisibleTimeRangeChange(() => drawNeiroOverlay());
     chart.timeScale().subscribeVisibleLogicalRangeChange(() => drawNeiroOverlay());
+    chart.subscribeCrosshairMove(() => {{
+        drawNeiroOverlay();
+    }});
 
     drawNeiroOverlay();
 }}
+
+let hoveredOption = null;
+let hoveredY = null;
 
 function buildHistoricalBars(periodSec = 60) {{
     currentPeriod = periodSec;
@@ -1338,10 +1428,80 @@ function drawNeiroOverlay() {{
 
     ctx.clearRect(0, 0, w, h);
 
-    const m = window.INITIAL_META;
+    const m = window.INITIAL_META || {{}};
     const rightX = w - 70;
+    const colW = 68;
+    const cols = [
+        {{ key: 'currentNetGEX',  name: 'GEX',   unit: 'M',   pos: '#10B981', neg: '#EF4444', bPos: '#34D399', bNeg: '#F87171' }},
+        {{ key: 'currentNetVEX',  name: 'VEX',   unit: 'M',   pos: '#06B6D4', neg: '#0284C7', bPos: '#22D3EE', bNeg: '#38BDF8' }},
+        {{ key: 'currentNetCHEX', name: 'CHEX',  unit: 'M/d', pos: '#A855F7', neg: '#7E22CE', bPos: '#C084FC', bNeg: '#D8B4FE' }},
+        {{ key: 'currentNetTEX',  name: 'THETA', unit: 'M/d', pos: '#F59E0B', neg: '#D97706', bPos: '#FBBF24', bNeg: '#FCD34D' }},
+    ];
+    const panelW = cols.length * colW + 8;
+    const panelX = rightX - panelW;
+    const chartW = panelX - 6;
 
-    // 1. Key Quant Options Levels: Call/Put Wall, Gamma Flip, Gamma Squeeze, Vanna, Charm
+    // 1. Right Greeks Panel Background
+    ctx.fillStyle = 'rgba(5, 7, 11, 0.82)';
+    ctx.fillRect(panelX - 4, 0, panelW, h);
+    ctx.strokeStyle = 'rgba(30, 41, 59, 0.7)';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(panelX - 4, 0, panelW, h);
+
+    // 2. Draw Air Pocket Vacuum Zones (Both Main Chart Canvas and Right Greeks Panel)
+    const airPockets = m.air_pockets || [];
+    airPockets.forEach(ap => {{
+        const pFrom = parseFloat(ap.from || 0);
+        const pTo = parseFloat(ap.to || 0);
+        if (!pFrom || !pTo) return;
+        const y1 = candleSeries.priceToCoordinate(Math.max(pFrom, pTo));
+        const y2 = candleSeries.priceToCoordinate(Math.min(pFrom, pTo));
+        if (y1 !== null && y2 !== null) {{
+            const topY = Math.min(y1, y2);
+            const botY = Math.max(y1, y2);
+            const bandH = Math.max(14, botY - topY);
+            if (topY <= h && botY >= 0) {{
+                // A. Main Chart Canvas Area:
+                ctx.fillStyle = 'rgba(245, 158, 11, 0.12)';
+                ctx.fillRect(0, topY, chartW, bandH);
+                ctx.strokeStyle = '#F59E0B';
+                ctx.setLineDash([4, 4]);
+                ctx.lineWidth = 1;
+                ctx.strokeRect(0, topY, chartW, bandH);
+                ctx.setLineDash([]);
+
+                ctx.font = 'bold 9.5px "JetBrains Mono", monospace';
+                ctx.textAlign = 'left';
+                ctx.fillStyle = '#FACC15';
+                ctx.fillText('⚠️ AIR POCKET VACUUM [NQ ' + Math.min(pFrom, pTo).toFixed(0) + ' - ' + Math.max(pFrom, pTo).toFixed(0) + '] · NGUY CƠ TRƯỢT DÀI (CẤM ĐỠ DAO / KHÔNG CHẶN ĐẦU XE)', 20, topY + Math.min(bandH - 3, 13));
+
+                // B. Right Greeks / Orderflow Panel Area (User requested: highlight right profile):
+                ctx.fillStyle = 'rgba(245, 158, 11, 0.22)';
+                ctx.fillRect(panelX - 4, topY, panelW, bandH);
+                ctx.strokeStyle = '#F59E0B';
+                ctx.setLineDash([3, 3]);
+                ctx.lineWidth = 1;
+                ctx.strokeRect(panelX - 4, topY, panelW, bandH);
+                ctx.setLineDash([]);
+
+                // Amber caution badge inside right panel
+                const bW = Math.min(panelW - 14, 210);
+                const bX = panelX + (panelW - bW) / 2 - 4;
+                const bY = topY + Math.max(1, (bandH - 15) / 2);
+                ctx.fillStyle = 'rgba(15, 23, 42, 0.92)';
+                ctx.fillRect(bX, bY, bW, 15);
+                ctx.strokeStyle = '#F59E0B';
+                ctx.lineWidth = 1;
+                ctx.strokeRect(bX, bY, bW, 15);
+                ctx.fillStyle = '#FDE047';
+                ctx.font = 'bold 8.5px "JetBrains Mono", monospace';
+                ctx.textAlign = 'center';
+                ctx.fillText('⚠️ AIR POCKET (CẤM ĐỠ) NQ ' + Math.min(pFrom, pTo).toFixed(0) + '-' + Math.max(pFrom, pTo).toFixed(0), bX + bW / 2, bY + 11);
+            }}
+        }}
+    }});
+
+    // 3. Key Quant Options Levels: Call/Put Wall, Gamma Flip, Gamma Squeeze, Vanna, Charm
     const keyLevels = [
         {{ p: m.tactical_call_wall || m.call_wall, c: '#EF4444', d: [6, 4], txt: 'CALL WALL ' + Math.round(m.tactical_call_wall || m.call_wall) + ' · OI ' + (m.call_wall_oi || 0).toLocaleString() }},
         {{ p: m.tactical_put_wall || m.put_wall,   c: '#22C55E', d: [6, 4], txt: 'PUT WALL ' + Math.round(m.tactical_put_wall || m.put_wall) + ' · OI ' + (m.put_wall_oi || 0).toLocaleString() }},
@@ -1361,7 +1521,7 @@ function drawNeiroOverlay() {{
             ctx.lineWidth = 1.3;
             ctx.beginPath();
             ctx.moveTo(0, y);
-            ctx.lineTo(rightX, y);
+            ctx.lineTo(chartW, y);
             ctx.stroke();
             ctx.setLineDash([]);
 
@@ -1369,12 +1529,12 @@ function drawNeiroOverlay() {{
             ctx.textAlign = 'right';
             const tw = ctx.measureText(L.txt).width;
             ctx.fillStyle = 'rgba(6, 8, 14, 0.88)';
-            ctx.fillRect(rightX - tw - 12, y - 14, tw + 10, 13);
+            ctx.fillRect(chartW - tw - 12, y - 14, tw + 10, 13);
             ctx.strokeStyle = L.c;
             ctx.lineWidth = 1;
-            ctx.strokeRect(rightX - tw - 12, y - 14, tw + 10, 13);
+            ctx.strokeRect(chartW - tw - 12, y - 14, tw + 10, 13);
             ctx.fillStyle = L.c;
-            ctx.fillText(L.txt, rightX - 7, y - 4);
+            ctx.fillText(L.txt, chartW - 7, y - 4);
         }} else if (y !== null && y < 0) {{
             // Above viewport: draw pinned top edge indicator
             const edgeY = 16;
@@ -1383,12 +1543,12 @@ function drawNeiroOverlay() {{
             const shortTxt = '▲ ' + L.txt.split('·')[0];
             const tw = ctx.measureText(shortTxt).width;
             ctx.fillStyle = 'rgba(15, 23, 42, 0.92)';
-            ctx.fillRect(rightX - tw - 14, edgeY - 11, tw + 10, 14);
+            ctx.fillRect(chartW - tw - 14, edgeY - 11, tw + 10, 14);
             ctx.strokeStyle = L.c;
             ctx.lineWidth = 1;
-            ctx.strokeRect(rightX - tw - 14, edgeY - 11, tw + 10, 14);
+            ctx.strokeRect(chartW - tw - 14, edgeY - 11, tw + 10, 14);
             ctx.fillStyle = L.c;
-            ctx.fillText(shortTxt, rightX - 9, edgeY);
+            ctx.fillText(shortTxt, chartW - 9, edgeY);
         }} else if (y !== null && y > h) {{
             // Below viewport: draw pinned bottom edge indicator
             const edgeY = h - 8;
@@ -1397,48 +1557,120 @@ function drawNeiroOverlay() {{
             const shortTxt = '▼ ' + L.txt.split('·')[0];
             const tw = ctx.measureText(shortTxt).width;
             ctx.fillStyle = 'rgba(15, 23, 42, 0.92)';
-            ctx.fillRect(rightX - tw - 14, edgeY - 11, tw + 10, 14);
+            ctx.fillRect(chartW - tw - 14, edgeY - 11, tw + 10, 14);
             ctx.strokeStyle = L.c;
             ctx.lineWidth = 1;
-            ctx.strokeRect(rightX - tw - 14, edgeY - 11, tw + 10, 14);
+            ctx.strokeRect(chartW - tw - 14, edgeY - 11, tw + 10, 14);
             ctx.fillStyle = L.c;
-            ctx.fillText(shortTxt, rightX - 9, edgeY);
+            ctx.fillText(shortTxt, chartW - 9, edgeY);
         }}
     }});
 
-    // 2. Per-strike Greeks exposure profile (GEX | VEX | CHEX | THETA)
+    // 4. Per-strike Greeks exposure profile (GEX | VEX | CHEX | THETA) with Dynamic Visible Normalization
     const opts = window.INITIAL_OPTIONS || [];
-    if (opts.length && opts[0].currentNetGEX !== undefined) {{
-        const cols = [
-            {{ key: 'currentNetGEX',  name: 'GEX',   pos: '#22C55E', neg: '#EF4444' }},
-            {{ key: 'currentNetVEX',  name: 'VEX',   pos: '#22D3EE', neg: '#0E7490' }},
-            {{ key: 'currentNetCHEX', name: 'CHEX',  pos: '#C084FC', neg: '#7E22CE' }},
-            {{ key: 'currentNetTEX',  name: 'THETA', pos: '#FDBA74', neg: '#EA580C' }},
-        ];
-        const colW = 62;
-        const panelX = rightX - cols.length * colW - 8;
-        ctx.fillStyle = 'rgba(5, 7, 11, 0.72)';
-        ctx.fillRect(panelX - 4, 0, cols.length * colW + 8, h);
+    if (opts.length && (opts[0].currentNetGEX !== undefined || opts[0].netGEX !== undefined)) {{
         cols.forEach((c, ci) => {{
             const cx = panelX + ci * colW + colW / 2;
-            let maxAbs = 1e-9;
-            opts.forEach(o => {{ maxAbs = Math.max(maxAbs, Math.abs(o[c.key] || 0)); }});
-            ctx.strokeStyle = 'rgba(148, 163, 184, 0.25)';
-            ctx.beginPath(); ctx.moveTo(cx, 18); ctx.lineTo(cx, h); ctx.stroke();
-            ctx.fillStyle = '#94A3B8';
+            let visibleMaxAbs = 1e-9;
+            let globalMaxAbs = 1e-9;
+
+            opts.forEach(o => {{
+                const val = Math.abs((o[c.key] !== undefined ? o[c.key] : o[c.key.replace('currentNet', 'net')]) || 0);
+                globalMaxAbs = Math.max(globalMaxAbs, val);
+                const y = candleSeries.priceToCoordinate(o.strike);
+                if (y !== null && y >= 28 && y <= h - 4) {{
+                    visibleMaxAbs = Math.max(visibleMaxAbs, val);
+                }}
+            }});
+            if (visibleMaxAbs < 1e-6) visibleMaxAbs = globalMaxAbs > 1e-6 ? globalMaxAbs : 1.0;
+
+            // Center divider line
+            ctx.strokeStyle = 'rgba(148, 163, 184, 0.18)';
+            ctx.beginPath();
+            ctx.moveTo(cx, 26);
+            ctx.lineTo(cx, h);
+            ctx.stroke();
+
+            // Column Header: Name
+            ctx.fillStyle = c.name === 'VEX' ? '#22D3EE' : (c.name === 'CHEX' ? '#C084FC' : (c.name === 'GEX' ? '#34D399' : '#FBBF24'));
             ctx.font = 'bold 10px "JetBrains Mono", monospace';
             ctx.textAlign = 'center';
             ctx.fillText(c.name, cx, 12);
+
+            // Column Subheader: Visible Magnitude Scale (e.g. ±2.8M or ±1.1M/d)
+            const scaleTxt = '±' + (visibleMaxAbs >= 10 ? visibleMaxAbs.toFixed(0) : (visibleMaxAbs >= 1 ? visibleMaxAbs.toFixed(1) : visibleMaxAbs.toFixed(2))) + c.unit;
+            ctx.fillStyle = 'rgba(148, 163, 184, 0.75)';
+            ctx.font = '8px "JetBrains Mono", monospace';
+            ctx.fillText(scaleTxt, cx, 22);
+
+            // Render Per-Strike Bars with Square-Root / Sublinear Boost
+            const maxBarW = colW / 2 - 3;
             opts.forEach(o => {{
                 const y = candleSeries.priceToCoordinate(o.strike);
-                const v = o[c.key] || 0;
-                if (y === null || y < 18 || y > h - 4 || v === 0) return;
-                const len = (Math.abs(v) / maxAbs) * (colW / 2 - 4);
+                const v = (o[c.key] !== undefined ? o[c.key] : o[c.key.replace('currentNet', 'net')]) || 0;
+                if (y === null || y < 28 || y > h - 4 || v === 0) return;
+
+                // Square-root boost: makes small VEX and CHEX clearly visible without blowing out
+                const norm = Math.min(1.0, Math.abs(v) / visibleMaxAbs);
+                const scaled = Math.pow(norm, 0.50);
+                let len = scaled * maxBarW;
+                if (Math.abs(v) > 0.0001) len = Math.max(3.5, len);
+
+                const barX = v >= 0 ? cx : cx - len;
+                const barH = 6;
                 ctx.fillStyle = v >= 0 ? c.pos : c.neg;
-                ctx.fillRect(v >= 0 ? cx : cx - len, y - 2.5, len, 5);
+                ctx.fillRect(barX, y - barH / 2, len, barH);
+                ctx.strokeStyle = v >= 0 ? c.bPos : c.bNeg;
+                ctx.lineWidth = 0.8;
+                ctx.strokeRect(barX, y - barH / 2, len, barH);
             }});
         }});
     }}
+
+    // 5. Interactive Tooltip when hovering over Greeks panel
+    if (hoveredOption && hoveredY !== null && hoveredY >= 28 && hoveredY <= h - 4) {{
+        ctx.strokeStyle = 'rgba(250, 204, 21, 0.6)';
+        ctx.setLineDash([2, 2]);
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(panelX - 4, hoveredY);
+        ctx.lineTo(rightX, hoveredY);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        const gexVal = hoveredOption.currentNetGEX !== undefined ? hoveredOption.currentNetGEX : (hoveredOption.netGEX || 0);
+        const vexVal = hoveredOption.currentNetVEX !== undefined ? hoveredOption.currentNetVEX : (hoveredOption.netVEX || 0);
+        const chexVal = hoveredOption.currentNetCHEX !== undefined ? hoveredOption.currentNetCHEX : (hoveredOption.netCHEX || 0);
+
+        const ttLines = [
+            'NQ Strike ' + hoveredOption.strike.toLocaleString('en-US', {{ maximumFractionDigits: 0 }}),
+            'GEX: ' + (gexVal >= 0 ? '+' : '') + gexVal.toFixed(1) + 'M',
+            'VEX: ' + (vexVal >= 0 ? '+' : '') + vexVal.toFixed(2) + 'M',
+            'CHEX: ' + (chexVal >= 0 ? '+' : '') + chexVal.toFixed(2) + 'M/d',
+        ];
+        const ttW = 125;
+        const ttH = 62;
+        const ttX = Math.max(10, panelX - ttW - 8);
+        const ttY = Math.min(h - ttH - 10, Math.max(10, hoveredY - ttH / 2));
+        ctx.fillStyle = 'rgba(15, 23, 42, 0.95)';
+        ctx.fillRect(ttX, ttY, ttW, ttH);
+        ctx.strokeStyle = '#38BDF8';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(ttX, ttY, ttW, ttH);
+
+        ctx.textAlign = 'left';
+        ctx.font = 'bold 9.5px "JetBrains Mono", monospace';
+        ctx.fillStyle = '#F8FAFC';
+        ctx.fillText(ttLines[0], ttX + 6, ttY + 13);
+        ctx.font = '8.5px "JetBrains Mono", monospace';
+        ctx.fillStyle = gexVal >= 0 ? '#4ADE80' : '#F87171';
+        ctx.fillText(ttLines[1], ttX + 6, ttY + 27);
+        ctx.fillStyle = '#22D3EE';
+        ctx.fillText(ttLines[2], ttX + 6, ttY + 41);
+        ctx.fillStyle = '#C084FC';
+        ctx.fillText(ttLines[3], ttX + 6, ttY + 55);
+    }}
+}}
 }}
 
 // ----------------------------------------------------------------------------
@@ -1701,7 +1933,7 @@ def build_and_export_dashboard(
                     "pin_risk_magnet": round(meta.get("pin_risk_magnet", meta["atm_strike"]) / meta.get("basis_ratio", 41.3), 2),
                     "gamma_flip": round(meta.get("strike_below", meta["atm_strike"]) / meta.get("basis_ratio", 41.3), 2),
                 },
-                "air_pockets": [],
+                "air_pockets": meta.get("air_pockets", []),
             }
         )
         json_feed = {
