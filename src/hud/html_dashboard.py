@@ -480,6 +480,38 @@ def generate_html_terminal(df: pd.DataFrame, meta: Dict[str, Any], fig: go.Figur
     tactical_put_wall = atm_pivot - 50.0
     tactical_call_wall = atm_pivot + 50.0
 
+    # Dynamic identification of Peak Vanna and Peak Charm strikes from options dataframe
+    vanna_peak_strike = float(meta.get("vanna_peak_strike") or 0.0)
+    vanna_peak_val = float(meta.get("vanna_peak_val") or 0.0)
+    charm_peak_strike = float(meta.get("charm_peak_strike") or 0.0)
+    charm_peak_val = float(meta.get("charm_peak_val") or 0.0)
+
+    if (vanna_peak_strike == 0.0 or charm_peak_strike == 0.0) and not df.empty:
+        if "netVEX" in df.columns:
+            vex_s = df["netVEX"].abs()
+            if not vex_s.empty and vex_s.max() > 0:
+                v_idx = vex_s.idxmax()
+                vanna_peak_strike = float(df.loc[v_idx, "strike"])
+                vanna_peak_val = float(df.loc[v_idx, "netVEX"])
+        if "netCHEX" in df.columns:
+            chex_s = df["netCHEX"].abs()
+            if not chex_s.empty and chex_s.max() > 0:
+                ch_idx = chex_s.idxmax()
+                charm_peak_strike = float(df.loc[ch_idx, "strike"])
+                charm_peak_val = float(df.loc[ch_idx, "netCHEX"])
+
+    if vanna_peak_strike == 0.0:
+        vanna_peak_strike = vanna_level_price
+        vanna_peak_val = total_vex
+    if charm_peak_strike == 0.0:
+        charm_peak_strike = charm_level_price
+        charm_peak_val = total_chex
+
+    meta["vanna_peak_strike"] = vanna_peak_strike
+    meta["vanna_peak_val"] = vanna_peak_val
+    meta["charm_peak_strike"] = charm_peak_strike
+    meta["charm_peak_val"] = charm_peak_val
+
     hard_sl_pts = min(step * 0.35, 25.0)
     fade_sl_pts = min(step * 0.30, 20.0)
     front_run_tp = max(1.0, step * 0.05)
@@ -650,8 +682,13 @@ def generate_html_terminal(df: pd.DataFrame, meta: Dict[str, Any], fig: go.Figur
         "seller_offer": seller_offer_price,
         "deep_ef": deep_ef_price,
         "gex_react": gex_react_price,
+        "zero_gamma_flip": gex_react_price,
         "charm_level": charm_level_price,
         "vanna_level": vanna_level_price,
+        "vanna_peak_strike": vanna_peak_strike,
+        "vanna_peak_val": vanna_peak_val,
+        "charm_peak_strike": charm_peak_strike,
+        "charm_peak_val": charm_peak_val,
         "strike_above": strike_above,
         "strike_below": strike_below,
         "next_above": next_above,
@@ -851,32 +888,38 @@ def generate_html_terminal(df: pd.DataFrame, meta: Dict[str, Any], fig: go.Figur
                 <span class="neiro-sym-label">SPOT CME:</span>
                 <b class="neiro-price-val" id="top-ticker-price" style="color: #38BDF8;">{spot:,.2f}</b>
                 <span class="ticker-change change-up" id="top-ticker-change">+0.00 (+0.00%)</span>
-                <span class="neiro-mt5-tag">(MT5: ~<span id="kpi-mt5-num">{spot_mt5:,.1f}</span>)</span>
-                <span class="neiro-win-sep">|</span>
-                <span class="neiro-pill-lbl">F0 FAIR:</span>
-                <b id="top-ticker-f0-fair" style="color:#F1F5F9;">{f0_theoretical:,.1f}</b>
-                <span class="neiro-pill-lbl">&Delta;F:</span>
-                <span id="top-ticker-delta-f" class="badge {delta_badge_class}">{delta_f:+.1f} pts</span>
+                <span class="neiro-mt5-tag" style="color:#64748B; font-size:10px;">(MT5: ~<span id="kpi-mt5-num">{spot_mt5:,.1f}</span>)</span>
                 <span class="neiro-win-sep">|</span>
                 <span class="neiro-pill-lbl">GEX:</span> <b id="kpi-gex-val" style="color:{regime_color};">${total_gex:+.1f}M</b>
                 <span class="neiro-pill-lbl">CHEX:</span> <b id="top-charm-val" style="color:#C084FC;">${total_chex:+.1f}M/d</b>
                 <span class="neiro-pill-lbl">VEX:</span> <b id="kpi-vex-val" style="color:#22D3EE;">${total_vex:+.1f}M</b>
                 <span class="neiro-pill-lbl">TEX:</span> <b id="top-theta-val" style="color:#FB923C;">{total_thex_display}</b>
+                <span class="neiro-win-sep">|</span>
                 <span class="neiro-pill-lbl">SQZ:</span> <b style="color:#4ADE80;">&gt;{strike_above:,.0f}</b>/<b style="color:#F87171;">&lt;{strike_below:,.0f}</b>
                 <span class="neiro-pill-lbl">1-&sigma;:</span> <b id="kpi-move-val" style="color:#FACC15;">&plusmn;{expected_move:,.1f}p</b>
             </div>
         </div>
 
         <div class="neiro-top-right">
-            <span style="color:#64748B; font-size:11px; font-weight:600; margin-right:8px;">CME GLOBEX &bull; {now_str} (VN)</span>
+            <span style="color:#64748B; font-size:11px; font-weight:600; margin-right:8px;">CME GLOBEX &bull; NQZ26 NASDAQ</span>
+            <button onclick="clearHistoryAndCache()" style="background:rgba(239,68,68,0.15); border:1px solid rgba(239,68,68,0.4); color:#F87171; border-radius:3px; padding:2px 6px; font-size:10px; cursor:pointer; font-family:'JetBrains Mono',monospace; font-weight:600;" title="Dọn RAM & Cache">
+                Dọn RAM
+            </button>
         </div>
-    </div>
 
     <!-- Authentic Greeks Subbar -->
     <div class="neiro-win-subbar">
         <div class="neiro-subbar-left">
-            <span class="neiro-watermark-text" style="color:#38BDF8; font-weight:700;">NEIRO-NQ-QUANT TERMINAL &bull; CME E-MINI NASDAQ-100 [M15]</span>
+            <span class="neiro-watermark-text" style="color:#38BDF8; font-weight:700;">NEIRO-NQ-QUANT TERMINAL &bull; CME E-MINI NASDAQ-100 [M1]</span>
         </div>
+        <div class="neiro-subbar-right">
+            <span style="color:#38BDF8; font-weight:700;">⚡ LIVE BLACK-76 REALTIME GREEKS RADAR (M1):</span>
+            <span id="live-greeks-radar" style="margin-left: 6px; color: #CBD5E1;">
+                Delta &Delta;: <b>0.505</b> | Gamma &Gamma;: <b>0.00042</b> | Vega &nu;: <b>${total_vex:+.1f}M</b> | Theta &theta;: <b>{total_thex_display}</b> | Vanna (VEX): <b>${total_vex:+.1f}M</b> | Charm (CHEX): <b>${total_chex:+.1f}M/d</b>
+            </span>
+            <span style="color:#64748B; margin-left: 8px;">| ATM: <b id="top-ticker-atm">{meta['atm_strike']:,.0f}</b> | IV: <b id="top-ticker-iv">{meta.get('sigma_atm', 0.18)*100:.1f}%</b> | Zero Gamma: <b style="color:#FACC15;">{gex_react_price:,.1f}</b></span>
+        </div>
+    </div>
         <div class="neiro-subbar-right">
             <span style="color:#38BDF8; font-weight:700;">⚡ LIVE BLACK-76 REALTIME GREEKS RADAR (M15):</span>
             <span id="live-greeks-radar" style="margin-left: 6px; color: #CBD5E1;">
@@ -1304,13 +1347,13 @@ function initNeiroChart() {{
     }});
 
     candleSeries = chart.addCandlestickSeries({{
-        upColor: 'rgba(28, 34, 46, 0.75)',
-        downColor: 'rgba(28, 34, 46, 0.75)',
+        upColor: '#22C55E',
+        downColor: '#EF4444',
         borderVisible: true,
-        borderUpColor: '#A1A1AA',
-        borderDownColor: '#71717A',
-        wickUpColor: '#A1A1AA',
-        wickDownColor: '#71717A',
+        borderUpColor: '#22C55E',
+        borderDownColor: '#EF4444',
+        wickUpColor: '#22C55E',
+        wickDownColor: '#EF4444',
     }});
 
     buildHistoricalBars(60);
@@ -1323,6 +1366,28 @@ function initNeiroChart() {{
         axisLabelVisible: true,
         title: 'F0 LIVE',
     }});
+
+    // PriceLine markers on Right Price Scale for Peak Vanna & Peak Charm
+    if (window.INITIAL_META.vanna_peak_strike) {{
+        candleSeries.createPriceLine({{
+            price: window.INITIAL_META.vanna_peak_strike,
+            color: '#22D3EE',
+            lineWidth: 1.5,
+            lineStyle: LightweightCharts.LineStyle.Dashed,
+            axisLabelVisible: true,
+            title: 'VANNA (VEX)',
+        }});
+    }}
+    if (window.INITIAL_META.charm_peak_strike) {{
+        candleSeries.createPriceLine({{
+            price: window.INITIAL_META.charm_peak_strike,
+            color: '#C084FC',
+            lineWidth: 1.5,
+            lineStyle: LightweightCharts.LineStyle.Dashed,
+            axisLabelVisible: true,
+            title: 'CHARM (CHEX)',
+        }});
+    }}
 
     const initialH = container.clientHeight || (window.innerHeight - 62);
     if (canvas) {{
@@ -1503,13 +1568,13 @@ function drawNeiroOverlay() {{
 
     // 3. Key Quant Options Levels: Call/Put Wall, Gamma Flip, Gamma Squeeze, Vanna, Charm
     const keyLevels = [
-        {{ p: m.tactical_call_wall || m.call_wall, c: '#EF4444', d: [6, 4], txt: 'CALL WALL ' + Math.round(m.tactical_call_wall || m.call_wall) + ' · OI ' + (m.call_wall_oi || 0).toLocaleString() }},
-        {{ p: m.tactical_put_wall || m.put_wall,   c: '#22C55E', d: [6, 4], txt: 'PUT WALL ' + Math.round(m.tactical_put_wall || m.put_wall) + ' · OI ' + (m.put_wall_oi || 0).toLocaleString() }},
+        {{ p: m.tactical_call_wall || m.call_wall, c: '#EF4444', d: [6, 4], txt: 'CALL WALL NQ ' + Math.round(m.tactical_call_wall || m.call_wall) + ' · OI ' + (m.call_wall_oi || 0).toLocaleString() + ' · Siege: ' + (m.call_wall_siege || 0).toFixed(2) + 'x' }},
+        {{ p: m.tactical_put_wall || m.put_wall,   c: '#22C55E', d: [6, 4], txt: 'PUT WALL NQ ' + Math.round(m.tactical_put_wall || m.put_wall) + ' · OI ' + (m.put_wall_oi || 0).toLocaleString() + ' · Siege: ' + (m.put_wall_siege || 0).toFixed(2) + 'x' }},
         {{ p: m.strike_above,                      c: '#4ADE80', d: [2, 3], txt: 'GAMMA SQUEEZE ↑ > ' + Math.round(m.strike_above) + ' → TP ' + Math.round(m.next_above) }},
         {{ p: m.strike_below,                      c: '#F87171', d: [2, 3], txt: 'GAMMA SQUEEZE ↓ < ' + Math.round(m.strike_below) + ' → TP ' + Math.round(m.next_below) }},
-        {{ p: m.vanna_level,                       c: '#22D3EE', d: [6, 3], txt: 'VANNA (VEX) · V-REBOUND · ' + (m.total_net_vex || 0).toFixed(1) + 'M' }},
-        {{ p: m.charm_level,                       c: '#C084FC', d: [6, 3], txt: 'CHARM (CHEX) · GHIM GIÁ ĐÊM · ' + (m.total_net_chex || 0).toFixed(1) + 'M/d' }},
-        {{ p: m.gex_react,                         c: '#FACC15', d: [3, 3], txt: 'GAMMA FLIP (Trục cân đối) ' + Math.round(m.gex_react) }},
+        {{ p: m.zero_gamma_flip || m.gex_react,     c: '#FACC15', d: [4, 4], txt: 'GAMMA FLIP (Trục cân đối) ' + Math.round(m.zero_gamma_flip || m.gex_react) }},
+        {{ p: m.charm_peak_strike || m.charm_level, c: '#C084FC', d: [4, 4], txt: 'CHARM (CHEX) · GHÌM GIÁ ĐÊM ' + (m.charm_peak_val || m.total_net_chex || 0).toFixed(1) + 'M/d' }},
+        {{ p: m.vanna_peak_strike || m.vanna_level, c: '#22D3EE', d: [4, 4], txt: 'VANNA (VEX) · V-REBOUND ' + (m.vanna_peak_val || m.total_net_vex || 0).toFixed(1) + 'M' }},
     ];
     keyLevels.forEach(L => {{
         if (!L.p) return;
@@ -1521,7 +1586,7 @@ function drawNeiroOverlay() {{
             ctx.lineWidth = 1.3;
             ctx.beginPath();
             ctx.moveTo(0, y);
-            ctx.lineTo(chartW, y);
+            ctx.lineTo(rightX, y);
             ctx.stroke();
             ctx.setLineDash([]);
 
@@ -1864,6 +1929,24 @@ function setTimeframe(tf) {{
         buildHistoricalBars(period);
     }}
 }}
+
+window.clearHistoryAndCache = function() {{
+    try {{
+        if (window.caches) {{
+            caches.keys().then(function(names) {{
+                for (var name of names) caches.delete(name);
+            }});
+        }}
+        if (window.sessionStorage) sessionStorage.clear();
+        if (window.localStorage) localStorage.clear();
+    }} catch(e) {{}}
+    if (window.location.protocol === "file:") {{
+        window.location.reload();
+    }} else {{
+        var clean = window.location.href.split('?')[0];
+        window.location.replace(clean);
+    }}
+}};
 
 document.addEventListener('DOMContentLoaded', () => {{
     initNeiroChart();

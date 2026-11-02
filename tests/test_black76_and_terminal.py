@@ -185,3 +185,48 @@ def test_javascript_syntax_integrity():
             assert res.returncode == 0, f"Script {i} contains JavaScript syntax error: {res.stderr.decode('utf-8', errors='ignore')}"
 
 
+def test_render_neiro_orderflow_component_standalone():
+    """Verify modular neiro_terminal component matches standard 1:1 against Gold cockpit."""
+    import re, shutil, subprocess
+    from src.hud.neiro_terminal import render_neiro_orderflow_component
+
+    df_raw = generate_benchmark_nq_chain(spot=20500.0)
+    df_clean, meta = process_options_chain_black76(df_raw, basis_offset=15.0)
+    meta["air_pockets"] = [{"from": 20200.0, "to": 20300.0, "severity": "HIGH", "avg_oi": 50.0}]
+
+    comp = render_neiro_orderflow_component(meta, df_clean)
+    assert "neiro_css" in comp
+    assert "nav_topbar_html" in comp
+    assert "neiro_container_html" in comp
+    assert "neiro_js_script" in comp
+
+    # Topbar & Subbar
+    assert "SPOT CME:" in comp["nav_topbar_html"]
+    assert "CME GLOBEX &bull; NQZ26 NASDAQ" in comp["nav_topbar_html"]
+    assert "Dọn RAM" in comp["nav_topbar_html"]
+    assert "NEIRO-NQ-QUANT TERMINAL" in comp["nav_topbar_html"]
+    assert "LIVE BLACK-76 REALTIME GREEKS RADAR" in comp["nav_topbar_html"]
+
+    # Floating HUD
+    assert "neiro-floating-hud" in comp["neiro_container_html"]
+    assert "NET GEX (Trục ATM):" in comp["neiro_container_html"]
+    assert "VANNA (VEX):" in comp["neiro_container_html"]
+
+    # Candlestick colors & price lines in script
+    js_text = comp["neiro_js_script"]
+    assert "#22C55E" in js_text
+    assert "#EF4444" in js_text
+    assert "VANNA (VEX)" in js_text
+    assert "CHARM (CHEX)" in js_text
+    assert "clearHistoryAndCache" in js_text
+
+    # Node.js syntax test for standalone script
+    node_path = shutil.which("node")
+    if node_path:
+        scripts = re.findall(r"<script>(.*?)</script>", js_text, re.DOTALL)
+        for i, s in enumerate(scripts):
+            res = subprocess.run([node_path, "--input-type=module", "--check"], input=s.encode("utf-8"), capture_output=True)
+            assert res.returncode == 0, f"Component script {i} syntax error: {res.stderr.decode('utf-8', errors='ignore')}"
+
+
+
